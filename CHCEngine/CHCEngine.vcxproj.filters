@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="CHCEngine.h" />
+    <ClInclude Include="Window\Window.h">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Window\InputTable.h">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Window\GLFWInputConvert.h">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\DescriptorHeap.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\CommandQueue.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\ClassName.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\Resource.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\SwapChainBuffer.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\D3D12Convert.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\Context.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\ContextPool.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\Command.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\CopyContext.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\ComputeContext.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\GraphicsContext.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\Fence.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\FencePool.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Context\ContextQueue.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\Buffer.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\ResourcePool.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\Utility.hpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\Shader.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\Pipeline.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\BindLayout.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Utilities.hpp">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CHCEngine.cpp" />
+    <ClCompile Include="Window\Window.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Window\GLFWInputConvert.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\DescriptorHeap.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\CommandQueue.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\D3D12Convert.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\D3D12Utilities.hpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\Command.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\Context.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\ContextPool.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\CopyContext.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\ComputeContext.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\GraphicsContext.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\Fence.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\FencePool.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\ContextQueue.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\SwapChainBuffer.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\Buffer.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\ResourcePool.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\Resource.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Pipeline\Shader.cpp">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Pipeline\Pipeline.cpp">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\ClassName.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Pipeline\BindLayout.cpp">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Window">
+      <UniqueIdentifier>{a35a3475-716d-4bab-ad00-01a61a67ce1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{e47219cc-9dd4-4e9b-8133-57f6f048e67f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\Resource">
+      <UniqueIdentifier>{0ff989bc-ae9f-4563-ba57-522c9894d3fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\Context">
+      <UniqueIdentifier>{0abcef90-d740-49bf-ad98-b02e90d08089}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\Pipeline">
+      <UniqueIdentifier>{d2c89615-148f-43c2-8cae-2ca9219a7885}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
