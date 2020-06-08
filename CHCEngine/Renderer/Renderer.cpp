@@ -123,16 +123,9 @@ void Renderer::createContexts() {
     std::cout << "graphics wait end" << std::endl;
   });
 
-  /*auto compute_context = compute_pool_->getContext([](Context::CopyContext* t)
-  { std::cout << "compute wait" << std::endl; std::cout << "compute wait end" <<
-  std::endl;
-  });*/
-
   fence_pool_ = std::make_shared<Context::FencePool>(device_);
   auto fence = fence_pool_->getContextFence();
-  // std::vector<std::shared_ptr<Context::ContextCommand>> dummy;
-  /*fence->insertFenceSignal(command_queues_[CommandType::COMMAND_TYPE_GRAPHICS],
-                           dummy);*/
+
   std::vector<std::shared_ptr<Context::Context>> t = {grpahics_context};
   context_queues_[CommandType::COMMAND_TYPE_GRAPHICS]->SubmitContextCommand(
       t, fence);
