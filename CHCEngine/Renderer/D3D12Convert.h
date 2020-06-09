@@ -19,5 +19,8 @@ D3D12_BLEND convertToD3D12Blend(Blend blend);
 D3D12_BLEND_OP conertToD3D12BlendOP(BlendOperation operation);
 D3D12_LOGIC_OP convertToD3D12LogicOP(LogicOperation logic_operation);
 D3D12_COLOR_WRITE_ENABLE convertToD3D12ColorWriteEnbale(ColorWriteMask mask);
+D3D12_DEPTH_WRITE_MASK convertToD3D12DepthWriteMask(DepthWriteMask mask);
+D3D12_COMPARISON_FUNC convertToD3D12ComparisonFUNC(ComparisonFunction function);
+D3D12_STENCIL_OP convertToD3D12StencilOP(StencilOperation stencil_operation);
 }  // namespace Renderer
 }  // namespace CHCEngine

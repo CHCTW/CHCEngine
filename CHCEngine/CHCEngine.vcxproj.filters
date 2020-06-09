@@ -83,6 +83,9 @@
     <ClInclude Include="Renderer\Pipeline\RenderTargetSetup.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\DepthStencilSetup.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -159,6 +162,9 @@
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\Pipeline\RenderTargetSetup.cpp">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Pipeline\DepthStencilSetup.cpp">
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
   </ItemGroup>

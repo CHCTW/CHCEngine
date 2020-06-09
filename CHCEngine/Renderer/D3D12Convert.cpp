@@ -494,5 +494,52 @@ D3D12_COLOR_WRITE_ENABLE convertToD3D12ColorWriteEnbale(ColorWriteMask mask) {
   return static_cast<D3D12_COLOR_WRITE_ENABLE>(
       static_cast<std::underlying_type<ColorWriteMask>::type>(mask));
 }
+D3D12_DEPTH_WRITE_MASK convertToD3D12DepthWriteMask(DepthWriteMask mask) {
+  return static_cast<D3D12_DEPTH_WRITE_MASK>(
+      static_cast<std::underlying_type<DepthWriteMask>::type>(mask));
+}
+D3D12_COMPARISON_FUNC
+convertToD3D12ComparisonFUNC(ComparisonFunction function) {
+  switch (function) {
+  case ComparisonFunction::COMPARISON_FUNCTION_NEVER:
+    return D3D12_COMPARISON_FUNC_NEVER;
+  case ComparisonFunction::COMPARISON_FUNCTION_LESS:
+    return D3D12_COMPARISON_FUNC_LESS;
+  case ComparisonFunction::COMPARISON_FUNCTION_EQUAL:
+    return D3D12_COMPARISON_FUNC_EQUAL;
+  case ComparisonFunction::COMPARISON_FUNCTION_LESS_EQUAL:
+    return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+  case ComparisonFunction::COMPARISON_FUNCTION_GREATER:
+    return D3D12_COMPARISON_FUNC_GREATER;
+  case ComparisonFunction::COMPARISON_FUNCTION_NOT_EQUAL:
+    return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+  case ComparisonFunction::COMPARISON_FUNCTION_GREATER_EQUAL:
+    return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+  case ComparisonFunction::COMPARISON_FUNCTION_ALWAYS:
+    return D3D12_COMPARISON_FUNC_ALWAYS;
+  }
+  return D3D12_COMPARISON_FUNC_ALWAYS;
+}
+D3D12_STENCIL_OP convertToD3D12StencilOP(StencilOperation stencil_operation) {
+  switch (stencil_operation) {
+  case StencilOperation::STENCIL_OPERATION_KEEP:
+    return D3D12_STENCIL_OP_KEEP;
+  case StencilOperation::STENCIL_OPERATION_ZERO:
+    return D3D12_STENCIL_OP_ZERO;
+  case StencilOperation::STENCIL_OPERATION_REPLACE:
+    return D3D12_STENCIL_OP_REPLACE;
+  case StencilOperation::STENCIL_OPERATION_INCR_SAT:
+    return D3D12_STENCIL_OP_INCR_SAT;
+  case StencilOperation::STENCIL_OPERATION_DECR_SAT:
+    return D3D12_STENCIL_OP_DECR_SAT;
+  case StencilOperation::STENCIL_OPERATION_INVERT:
+    return D3D12_STENCIL_OP_INVERT;
+  case StencilOperation::STENCIL_OPERATION_INCR:
+    return D3D12_STENCIL_OP_INCR;
+  case StencilOperation::STENCIL_OPERATION_DECR:
+    return D3D12_STENCIL_OP_DECR;
+  }
+  return D3D12_STENCIL_OP_KEEP;
+}
 } // namespace Renderer
 } // namespace CHCEngine

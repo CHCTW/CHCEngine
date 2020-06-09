@@ -17,7 +17,7 @@ void checkSize(size_t size) {
 }
 RenderTargetSetup::RenderTargetSetup(const std::vector<DataFormat> &formats) {
   checkSize(formats.size());
-  for (int i = 0 ; i < formats.size() ; ++i) {
+  for (int i = 0; i < formats.size(); ++i) {
     render_formats_[i] = formats[i];
   }
 }
@@ -39,12 +39,12 @@ RenderTargetSetup::RenderTargetSetup(
 }
 void RenderTargetSetup::setFormat(unsigned int index,
                                   const DataFormat &formats) {
-  checkSize(index);
+  checkSize(static_cast<size_t>(index) + 1u);
   render_formats_[index] = formats;
 }
 void RenderTargetSetup::setBlendState(unsigned int index,
                                       const BlendState &state) {
-  checkSize(index);
+  checkSize(static_cast<size_t>(index) + 1u);
   blend_states_[index] = state;
 }
 RenderTargetSetup::RenderTargetSetup(unsigned int count,
@@ -53,7 +53,6 @@ RenderTargetSetup::RenderTargetSetup(unsigned int count,
   for (unsigned int i = 0; i < count; ++i) {
     render_formats_[i] = formats;
   }
-
 }
 } // namespace Pipeline
 } // namespace Renderer

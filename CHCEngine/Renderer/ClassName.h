@@ -476,5 +476,30 @@ inline ColorWriteMask operator|(const ColorWriteMask &lhs,
       static_cast<std::underlying_type<ColorWriteMask>::type>(rhs));
 }
 static const unsigned int render_targets_limits_ = 8;
+enum class DepthWriteMask
+{
+  DEPTH_WRITE_MASK_ZERO = 0,
+  DEPTH_WRITE_MASK_ALL = 1
+};
+enum class ComparisonFunction {
+  COMPARISON_FUNCTION_NEVER,
+  COMPARISON_FUNCTION_LESS,
+  COMPARISON_FUNCTION_EQUAL,
+  COMPARISON_FUNCTION_LESS_EQUAL,
+  COMPARISON_FUNCTION_GREATER,
+  COMPARISON_FUNCTION_NOT_EQUAL,
+  COMPARISON_FUNCTION_GREATER_EQUAL,
+  COMPARISON_FUNCTION_ALWAYS
+};
+enum class StencilOperation {
+  STENCIL_OPERATION_KEEP,
+  STENCIL_OPERATION_ZERO,
+  STENCIL_OPERATION_REPLACE,
+  STENCIL_OPERATION_INCR_SAT,
+  STENCIL_OPERATION_DECR_SAT,
+  STENCIL_OPERATION_INVERT,
+  STENCIL_OPERATION_INCR,
+  STENCIL_OPERATION_DECR
+};
 } // namespace Renderer
 } // namespace CHCEngine

@@ -18,9 +18,9 @@ struct BlendState {
 };
 class RenderTargetSetup {
 private:
-  unsigned size_ = 0;
+  unsigned int size_ = 0;
   bool alpha_to_coverage_enable_ = false;
-  bool independent_blend_enable = false;
+  bool independent_blend_enable_ = false;
   BlendState blend_states_[render_targets_limits_];
   DataFormat render_formats_[render_targets_limits_] = {
       DataFormat::DATA_FORMAT_UNKNOWN};
@@ -35,7 +35,7 @@ public:
   void setAlphaToCoverage(bool coverage) {
     alpha_to_coverage_enable_ = coverage;
   }
-  void setIndependentBlend(bool blend) { independent_blend_enable = blend;
+  void setIndependentBlend(bool blend) { independent_blend_enable_ = blend;
   }
   void setFormat(unsigned int index, const DataFormat &formats);
   void setBlendState(unsigned int index, const BlendState &state);
