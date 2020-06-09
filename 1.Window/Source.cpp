@@ -5,6 +5,8 @@
 #include "CHCEngine.h"
 #include "Renderer/Pipeline/Shader.h"
 
+#include <functional>
+
 using CHCEngine::Renderer::BindType;
 using CHCEngine::Renderer::DataFormat;
 using CHCEngine::Renderer::Renderer;
@@ -161,12 +163,15 @@ int main() {
   Shader computeshader(compute, "CSMain", ShaderType::SHADER_TYPE_COMPUTE);
   ShaderSet shset(sh, sh2);
 
+  
+  const auto input = sh.getInputTable();
+
   auto compute_bind = computeshader.getBindFormats(BindType::BIND_TYPE_SIT_ALL);
 
   auto compute_bind_layout =
       renderer.getBindLayout({{"compute point", compute_bind}});
 
-  auto input = sh.getOutputTable();
+  //auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);

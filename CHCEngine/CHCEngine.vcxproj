@@ -90,6 +90,7 @@
     <ClInclude Include="Renderer\DescriptorHeap.h" />
     <ClInclude Include="Renderer\Pipeline\BindLayout.h" />
     <ClInclude Include="Renderer\Pipeline\Pipeline.h" />
+    <ClInclude Include="Renderer\Pipeline\RenderTargetSetup.h" />
     <ClInclude Include="Renderer\Pipeline\Shader.h" />
     <ClInclude Include="Renderer\Renderer.h" />
     <ClInclude Include="Renderer\Resource\Buffer.h" />
@@ -117,6 +118,12 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Renderer\Pipeline\Pipeline.cpp" />
+    <ClCompile Include="Renderer\Pipeline\RenderTargetSetup.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Renderer\Pipeline\Shader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>

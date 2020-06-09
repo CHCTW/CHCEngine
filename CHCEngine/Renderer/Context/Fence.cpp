@@ -18,6 +18,9 @@ void BaseFence::insertFenceSignal(
   std::vector<CommandListBase*> submit_list(execute_commands.size());
   for (int i = 0; i < execute_commands.size(); ++i) {
     submit_list[i] = execute_commands[i]->list_.Get();
+    using_resources_.insert(using_resources_.begin(),
+                            execute_commands[i]->referenced_resources_.begin(),
+                            execute_commands[i]->referenced_resources_.end());
   }
   executing_commands_ = execute_commands;  // copy to fence, 
 
@@ -32,6 +35,7 @@ void BaseFence::completeCallback() {
   for (auto &command : executing_commands_) {
     command->free();
   }
+  using_resources_.clear();
   executing_commands_.clear();
   ++expected_value_;
   state_.store(FenceState::FENCE_STATE_IDLE);

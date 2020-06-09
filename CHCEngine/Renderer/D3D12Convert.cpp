@@ -399,5 +399,100 @@ D3D12_DESCRIPTOR_RANGE_TYPE convertToD3D12DescriptorRangeType(BindType type) {
     return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
   return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 }
+D3D12_BLEND convertToD3D12Blend(Blend blend) {
+  switch (blend) {
+  case Blend::BLEND_ZERO:
+    return D3D12_BLEND_ZERO;
+  case Blend::BLEND_ONE:
+    return D3D12_BLEND_ONE;
+  case Blend::BLEND_SRC_COLOR:
+    return D3D12_BLEND_SRC_COLOR;
+  case Blend::BLEND_INV_SRC_COLOR:
+    return D3D12_BLEND_INV_SRC_COLOR;
+  case Blend::BLEND_SRC_ALPHA:
+    return D3D12_BLEND_SRC_ALPHA;
+  case Blend::BLEND_INV_SRC_ALPHA:
+    return D3D12_BLEND_INV_SRC_ALPHA;
+  case Blend::BLEND_DEST_ALPHA:
+    return D3D12_BLEND_DEST_ALPHA;
+  case Blend::BLEND_INV_DEST_ALPHA:
+    return D3D12_BLEND_INV_DEST_ALPHA;
+  case Blend::BLEND_DEST_COLOR:
+    return D3D12_BLEND_DEST_COLOR;
+  case Blend::BLEND_INV_DEST_COLOR:
+    return D3D12_BLEND_INV_DEST_COLOR;
+  case Blend::BLEND_SRC_ALPHA_SAT:
+    return D3D12_BLEND_SRC_ALPHA_SAT;
+  case Blend::BLEND_BLEND_FACTOR:
+    return D3D12_BLEND_BLEND_FACTOR;
+  case Blend::BLEND_INV_BLEND_FACTOR:
+    return D3D12_BLEND_INV_BLEND_FACTOR;
+  case Blend::BLEND_SRC1_COLOR:
+    return D3D12_BLEND_SRC1_COLOR;
+  case Blend::BLEND_INV_SRC1_COLOR:
+    return D3D12_BLEND_INV_SRC1_COLOR;
+  case Blend::BLEND_SRC1_ALPHA:
+    return D3D12_BLEND_SRC1_ALPHA;
+  case Blend::BLEND_INV_SRC1_ALPHA:
+    return D3D12_BLEND_INV_SRC1_ALPHA;
+  }
+  return D3D12_BLEND_ZERO;
+}
+D3D12_BLEND_OP conertToD3D12BlendOP(BlendOperation operation) {
+  switch (operation) {
+  case BlendOperation::BLEND_OPERATION_ADD:
+    return D3D12_BLEND_OP_ADD;
+  case BlendOperation::BLEND_OPERATION_SUBTRACT:
+    return D3D12_BLEND_OP_SUBTRACT;
+  case BlendOperation::BLEND_OPERATION_REV_SUBTRACT:
+    return D3D12_BLEND_OP_REV_SUBTRACT;
+  case BlendOperation::BLEND_OPERATION_MIN:
+    return D3D12_BLEND_OP_MIN;
+  case BlendOperation::BLEND_OPERATION_MAX:
+    return D3D12_BLEND_OP_MAX;
+  }
+  return D3D12_BLEND_OP_ADD;
+}
+D3D12_LOGIC_OP convertToD3D12LogicOP(LogicOperation logic_operation) {
+  switch (logic_operation) {
+  case LogicOperation::LOGIC_OPERATION_CLEAR:
+    return D3D12_LOGIC_OP_CLEAR;
+  case LogicOperation::LOGIC_OPERATION_SET:
+    return D3D12_LOGIC_OP_SET;
+  case LogicOperation::LOGIC_OPERATION_COPY:
+    return D3D12_LOGIC_OP_COPY;
+  case LogicOperation::LOGIC_OPERATION_COPY_INVERTED:
+    return D3D12_LOGIC_OP_COPY_INVERTED;
+  case LogicOperation::LOGIC_OPERATION_NOOP:
+    return D3D12_LOGIC_OP_NOOP;
+  case LogicOperation::LOGIC_OPERATION_INVERT:
+    return D3D12_LOGIC_OP_INVERT;
+  case LogicOperation::LOGIC_OPERATION_AND:
+    return D3D12_LOGIC_OP_AND;
+  case LogicOperation::LOGIC_OPERATION_NAND:
+    return D3D12_LOGIC_OP_NAND;
+  case LogicOperation::LOGIC_OPERATION_OR:
+    return D3D12_LOGIC_OP_OR;
+  case LogicOperation::LOGIC_OPERATION_NOR:
+    return D3D12_LOGIC_OP_NOR;
+  case LogicOperation::LOGIC_OPERATION_XOR:
+    return D3D12_LOGIC_OP_XOR;
+  case LogicOperation::LOGIC_OPERATION_EQUIV:
+    return D3D12_LOGIC_OP_EQUIV;
+  case LogicOperation::LOGIC_OPERATION_AND_REVERSE:
+    return D3D12_LOGIC_OP_AND_REVERSE;
+  case LogicOperation::LOGIC_OPERATION_AND_INVERTED:
+    return D3D12_LOGIC_OP_AND_INVERTED;
+  case LogicOperation::LOGIC_OPERATION_OR_REVERSE:
+    return D3D12_LOGIC_OP_OR_REVERSE;
+  case LogicOperation::LOGIC_OPERATION_OR_INVERTED:
+    return D3D12_LOGIC_OP_OR_INVERTED;
+  }
+  return D3D12_LOGIC_OP_CLEAR;
+}
+D3D12_COLOR_WRITE_ENABLE convertToD3D12ColorWriteEnbale(ColorWriteMask mask) {
+  return static_cast<D3D12_COLOR_WRITE_ENABLE>(
+      static_cast<std::underlying_type<ColorWriteMask>::type>(mask));
+}
 } // namespace Renderer
 } // namespace CHCEngine

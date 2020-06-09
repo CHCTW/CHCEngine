@@ -10,6 +10,8 @@
 
 #include "../ClassName.h"
 #include "Command.h"
+#include "../Resource/Resource.h"
+
 using Microsoft::WRL::ComPtr;
 
 namespace CHCEngine {
@@ -36,6 +38,7 @@ class BaseFence {
   std::mutex wait_mutex_;
   std::mutex submit_mutex_;
   std::weak_ptr<FencePool> owner_;
+  std::vector<std::shared_ptr<Resource::Resource>> using_resources_; 
   FenceState getState();
   void waitFenceComplete();
   void insertFenceSignal(

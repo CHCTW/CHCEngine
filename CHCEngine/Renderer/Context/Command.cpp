@@ -11,6 +11,7 @@ namespace Renderer {
 
 namespace Context {
 void ContextCommand::free() {
+  referenced_resources_.clear();
   if (auto use_owner = owner_.lock()) {
     reset();
     use_owner->freeContextCommand(id_);
@@ -27,6 +28,7 @@ void ContextCommand::close() { ThrowIfFailed(list_->Close()); }
 void ContextCommand::resrourceTransition(std::vector<Transition>& transitions) {
   std::vector<D3D12_RESOURCE_BARRIER> barriers_(transitions.size());
   for (int i = 0; i < transitions.size(); ++i) {
+    referenced_resources_.emplace_back(transitions[i].resource);
     barriers_[i].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barriers_[i].Flags =
         convertToD3D12ResourceBarrierFlags(transitions[i].flag);

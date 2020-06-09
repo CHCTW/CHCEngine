@@ -45,6 +45,7 @@ struct ContextCommand {
   std::weak_ptr<ContextPoolBase> owner_;
   ComPtr<CommandAllocator> allocator_;
   ComPtr<CommandList> list_;
+  std::vector<std::shared_ptr<Resource::Resource>> referenced_resources_;
   ContextCommand(unsigned long long id, ComPtr<CommandAllocator> allocator,
                  ComPtr<CommandList> list, std::weak_ptr<ContextPoolBase> owner)
       : id_(id), allocator_(allocator), list_(list),owner_(owner) {}

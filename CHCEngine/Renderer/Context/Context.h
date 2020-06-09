@@ -54,7 +54,6 @@ class Context : public std::enable_shared_from_this<Context> {
   void resetContextCommand();
   void closeContext();
   std::vector<Transition> transitions_;
-
  public:
   void waitRecordingDone();
   virtual ~Context();

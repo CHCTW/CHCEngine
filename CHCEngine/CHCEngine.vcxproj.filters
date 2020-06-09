@@ -80,6 +80,9 @@
     <ClInclude Include="Renderer\Utilities.hpp">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\RenderTargetSetup.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -153,6 +156,9 @@
       <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\Pipeline\BindLayout.cpp">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Pipeline\RenderTargetSetup.cpp">
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
   </ItemGroup>

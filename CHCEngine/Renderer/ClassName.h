@@ -418,5 +418,63 @@ enum class DataDimension {
   DATA_DIMENSION_BUFFEREX,
 };
 using BindSignature = ID3D12RootSignature;
+enum class Blend {
+  BLEND_ZERO,
+  BLEND_ONE,
+  BLEND_SRC_COLOR,
+  BLEND_INV_SRC_COLOR,
+  BLEND_SRC_ALPHA,
+  BLEND_INV_SRC_ALPHA,
+  BLEND_DEST_ALPHA,
+  BLEND_INV_DEST_ALPHA,
+  BLEND_DEST_COLOR,
+  BLEND_INV_DEST_COLOR,
+  BLEND_SRC_ALPHA_SAT,
+  BLEND_BLEND_FACTOR,
+  BLEND_INV_BLEND_FACTOR,
+  BLEND_SRC1_COLOR,
+  BLEND_INV_SRC1_COLOR,
+  BLEND_SRC1_ALPHA,
+  BLEND_INV_SRC1_ALPHA
+};
+enum class BlendOperation {
+  BLEND_OPERATION_ADD,
+  BLEND_OPERATION_SUBTRACT,
+  BLEND_OPERATION_REV_SUBTRACT,
+  BLEND_OPERATION_MIN,
+  BLEND_OPERATION_MAX
+};
+enum class LogicOperation {
+  LOGIC_OPERATION_CLEAR,
+  LOGIC_OPERATION_SET,
+  LOGIC_OPERATION_COPY,
+  LOGIC_OPERATION_COPY_INVERTED,
+  LOGIC_OPERATION_NOOP,
+  LOGIC_OPERATION_INVERT,
+  LOGIC_OPERATION_AND,
+  LOGIC_OPERATION_NAND,
+  LOGIC_OPERATION_OR,
+  LOGIC_OPERATION_NOR,
+  LOGIC_OPERATION_XOR,
+  LOGIC_OPERATION_EQUIV,
+  LOGIC_OPERATION_AND_REVERSE,
+  LOGIC_OPERATION_AND_INVERTED,
+  LOGIC_OPERATION_OR_REVERSE,
+  LOGIC_OPERATION_OR_INVERTED,
+};
+enum class ColorWriteMask : unsigned char {
+  COLOR_WRITE_MASK_RED = 0x1,
+  COLOR_WRITE_MASK_GREEN = 0x2,
+  COLOR_WRITE_MASK_BLUE = 0x4,
+  COLOR_WRITE_MASK_ALPHA = 0x8,
+  COLOR_WRITE_MASK_ALL = 0xf,
+};
+inline ColorWriteMask operator|(const ColorWriteMask &lhs,
+                                const ColorWriteMask &rhs) {
+  return static_cast<ColorWriteMask>(
+      static_cast<std::underlying_type<ColorWriteMask>::type>(lhs) |
+      static_cast<std::underlying_type<ColorWriteMask>::type>(rhs));
+}
+static const unsigned int render_targets_limits_ = 8;
 } // namespace Renderer
 } // namespace CHCEngine
