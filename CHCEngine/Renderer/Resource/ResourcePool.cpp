@@ -57,7 +57,7 @@ std::shared_ptr<Buffer> ResourcePool::getVertexBuffer(
   if (usage == ResourceUsage::RESOURCE_USAGE_DYNAMIC) {
     upload_buffer =
         createBuffer(device_, buffer_size, HeapType::HEAP_TYPE_UPLOAD,
-                     ResourceState::RESOURCE_STATE_COPY_SOURCE);
+                     ResourceState::RESOURCE_STATE_GENERIC_READ);
     std::string temp = name;
     temp += "_upload";
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);
@@ -112,7 +112,7 @@ std::shared_ptr<Buffer> ResourcePool::getIndexBuffer(
   if (usage == ResourceUsage::RESOURCE_USAGE_DYNAMIC) {
     upload_buffer =
         createBuffer(device_, buffer_size, HeapType::HEAP_TYPE_UPLOAD,
-                     ResourceState::RESOURCE_STATE_COPY_SOURCE);
+                     ResourceState::RESOURCE_STATE_GENERIC_READ);
     std::string temp = name;
     temp += "_upload";
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);

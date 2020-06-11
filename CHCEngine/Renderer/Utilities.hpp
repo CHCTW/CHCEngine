@@ -20,6 +20,15 @@ using Pipeline::ShaderSet;
 // other one in slot depends on the mode ,relax mode will keep all the
 // bind in root desc
 // return the <relax,pack> size, if pack is still over 64, it should a exception
+static const BindType unbuffer =
+    BindType::BIND_TYPE_SIT_TEXTURE | BindType::BIND_TYPE_SIT_SAMPLER;
+inline bool canUseDescriptor(BindType type) {
+  if (static_cast<unsigned int>(type & unbuffer)) {
+    return false;
+  }
+  return true;
+}
+
 std::pair<unsigned int, unsigned int>
 calRootSignatureSize(const std::vector<Pipeline::BindSlot> &bind_layout) {
   unsigned int relax = 0;
@@ -39,9 +48,14 @@ calRootSignatureSize(const std::vector<Pipeline::BindSlot> &bind_layout) {
         if (formats[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER) {
           relax += 2;
           pack += 2;
-        } else {
-          relax += 2;
-          pack += 1;
+        } else {// only buffer can use pure disc
+          if (canUseDescriptor(formats[0].type_)) {
+            relax += 2;
+            pack += 1;
+          } else {
+            ++relax;
+            ++pack;
+          }
         }
       } else {
         ++relax;
@@ -59,7 +73,8 @@ bool shouldUseTable(const Pipeline::BindSlot &slot, bool relax) {
   if (slot.formats_[0].type_ == BindType::BIND_TYPE_SIT_SAMPLER)
     return true;
   if (slot.formats_[0].resource_count_ == 1) {
-    if (slot.formats_[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER || relax) {
+    if (slot.formats_[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER ||
+        (canUseDescriptor(slot.formats_[0].type_) && relax)) {
       return false;
     }
   }
@@ -130,13 +145,18 @@ inline void fillShaderByteCodes(
     D3D12_GRAPHICS_PIPELINE_STATE_DESC &desc,
     const std::unordered_map<ShaderType, ComPtr<Blob>> &byte_codes) {
   if (byte_codes.count(ShaderType::SHADER_TYPE_VERTEX)) {
-    desc.VS = {
+    desc.VS = CD3DX12_SHADER_BYTECODE(
+        byte_codes.at(ShaderType::SHADER_TYPE_VERTEX).Get());
+
+    /*{
         byte_codes.at(ShaderType::SHADER_TYPE_VERTEX)->GetBufferPointer(),
-        byte_codes.at(ShaderType::SHADER_TYPE_VERTEX)->GetBufferSize()};
+        byte_codes.at(ShaderType::SHADER_TYPE_VERTEX)->GetBufferSize()};*/
   }
   if (byte_codes.count(ShaderType::SHADER_TYPE_PIXEL)) {
-    desc.PS = {byte_codes.at(ShaderType::SHADER_TYPE_PIXEL)->GetBufferPointer(),
-               byte_codes.at(ShaderType::SHADER_TYPE_PIXEL)->GetBufferSize()};
+    desc.PS = CD3DX12_SHADER_BYTECODE(
+        byte_codes.at(ShaderType::SHADER_TYPE_PIXEL).Get());
+    /*{byte_codes.at(ShaderType::SHADER_TYPE_PIXEL)->GetBufferPointer(),
+               byte_codes.at(ShaderType::SHADER_TYPE_PIXEL)->GetBufferSize()};*/
   }
   if (byte_codes.count(ShaderType::SHADER_TYPE_GEOMETRY)) {
     desc.GS = {
@@ -158,7 +178,9 @@ inline void
 fillInputLayout(std::vector<D3D12_INPUT_ELEMENT_DESC> &inputs,
                 const ShaderSet &shader_set,
                 const std::vector<Resource::Attributes> &attributes) {
-
+  // No input needed, probally gonna use in draw a large triangle for screen
+  if (attributes.size() == 0)
+    return;
   auto dummy = attributes[0].begin();
   std::unordered_map<std::string, std::pair<unsigned int, decltype(dummy)>>
       table;
@@ -245,7 +267,7 @@ void fillDepthStencilState(D3D12_DEPTH_STENCIL_DESC &desc,
   desc.StencilWriteMask = depth.getStencilWriteMask();
   const auto &front = depth.getFrontFaceOpeartion();
   desc.FrontFace.StencilFailOp =
-      convertToD3D12StencilOP( front.stencil_fail_operation_);
+      convertToD3D12StencilOP(front.stencil_fail_operation_);
   desc.FrontFace.StencilDepthFailOp =
       convertToD3D12StencilOP(front.stencil_depth_fail_operation_);
   desc.FrontFace.StencilPassOp =
@@ -268,6 +290,7 @@ void fillRastersizer(D3D12_RASTERIZER_DESC &desc,
   desc.CullMode = convertToD3D12CullMode(rasterizer.cull_mode_);
   desc.FrontCounterClockwise = rasterizer.front_counter_clock_wise_;
   desc.DepthBias = rasterizer.depth_bias_;
+  desc.DepthBiasClamp = rasterizer.depth_bias_clamp;
   desc.SlopeScaledDepthBias = rasterizer.slope_scaled_depth_bias_;
   desc.DepthClipEnable = rasterizer.depth_clip_enable_;
   desc.MultisampleEnable = rasterizer.multi_sample_enable_;

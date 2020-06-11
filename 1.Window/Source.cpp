@@ -92,24 +92,20 @@ int main() {
   });*/
   // auto pre_context = renderer.getGraphicsContext;
 
- /* std::string code = "struct PSInput\
+  std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
     float2 uv : TEXCOORD;\
   };\
   Texture2D MaterialTextures[] : register(t0,space0);\
-  Texture2D g_texture : register(t0,space1);\
-  SamplerState g_sampler : register(s0);\
-  PSInput VSMain(float2 position : POSITION, float2 uv : TEXCOORD) {\
+  PSInput VSMain(uint id : SV_InstanceID) {\
     PSInput result;\
-    result.position = float4(position, 1.0, 1.0);\
-    result.uv = uv;\
+    result.position = float4(0.0,0.0, 1.0, 1.0);\
+    result.uv = float2(0.0,0.0);\
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
-    float4 col = g_texture.Sample(g_sampler, input.uv);\
-    if (col.a == 0) discard;\
-    return MaterialTextures[0].Sample(g_sampler, input.uv);\
+    return float4(input.uv,0,0);\
   }";
 
   std::string compute = "struct Particle\
@@ -175,20 +171,27 @@ int main() {
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
 
-  Pipeline::BindSlot exsampleslot("resource slot", exsample);
-  Pipeline::BindSlot sampleslot(sample);
-  std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
-  auto bind_layout = renderer.getBindLayout(
-      {v, shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER)});
-      */
+ // Pipeline::BindSlot exsampleslot("resource slot", exsample);
+  //Pipeline::BindSlot sampleslot(sample);
+  //Pipeline::BindSlot dummyslot; 
+  //std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
+  auto bind_layout = renderer.getBindLayout({});
+      
+
+
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getVertexBuffer(
-          1, {{"POSITION", DataFormat::DATA_FORMAT_B8G8R8A8_UNORM},
-              {"NORMAL", DataFormat::DATA_FORMAT_B8G8R8X8_UNORM_SRGB}});
+          4, {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
+              {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},ResourceState::RESOURCE_STATE_COPY_DEST,Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC);
   buffer->setName("vertex test1");
 
+
+
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
-      renderer.getIndexBuffer(980);
+      renderer.getIndexBuffer(6);
+
+    auto pipeline = renderer.getGraphicsPipeline(
+      shset, {}, bind_layout);
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {

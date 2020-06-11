@@ -380,7 +380,7 @@ std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
     const Rasterizer &rasterizer, PrimitiveTopologyType primitive,
     const Pipeline::SampleSetup &sample) {
   // do the check here..
-  D3D12_GRAPHICS_PIPELINE_STATE_DESC desc;
+  D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
   std::vector<D3D12_INPUT_ELEMENT_DESC> inputs;
   std::unordered_map<ShaderType, ComPtr<Blob>> byte_codes;
   for (const auto &shader : shader_set.shader_set_) {
@@ -396,18 +396,25 @@ std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
   for (unsigned int i = 0; i < render_setup.getSize(); ++i) {
     desc.RTVFormats[i] = convertToDXGIFormat(render_formats[i]);
   }
+  desc.NumRenderTargets = static_cast<unsigned int>(render_setup.getSize());
   fillDepthStencilState(desc.DepthStencilState, depth);
   desc.DSVFormat = convertToDXGIFormat(depth.getFormat());
   fillRastersizer(desc.RasterizerState, rasterizer);
   desc.PrimitiveTopologyType = convertToD3D12PrimitiveTopologyType(primitive);
   desc.SampleDesc.Count = sample.count_;
-  desc.SampleDesc.Quality = sample.count_;
+  desc.SampleDesc.Quality = sample.quality_;
   desc.SampleMask = UINT_MAX;
   desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
   ComPtr<PipelineState> pipeline;
-  ThrowIfFailed(device_->CreateGraphicsPipelineState(&desc,
-                                                    IID_PPV_ARGS(&pipeline)));
-  return std::make_shared<Pipeline::Pipeline>(pipeline,Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
+  try {
+
+    ThrowIfFailed(
+        device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipeline)));
+  } catch (HrException hr) {
+    std::cout << hr.what() << std::endl;
+  }
+  return std::make_shared<Pipeline::Pipeline>(
+      pipeline, Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
 }
 } // namespace Renderer
 } // namespace CHCEngine
