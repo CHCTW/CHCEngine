@@ -406,13 +406,8 @@ std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
   desc.SampleMask = UINT_MAX;
   desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
   ComPtr<PipelineState> pipeline;
-  try {
-
     ThrowIfFailed(
         device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipeline)));
-  } catch (HrException hr) {
-    std::cout << hr.what() << std::endl;
-  }
   return std::make_shared<Pipeline::Pipeline>(
       pipeline, Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
 }
