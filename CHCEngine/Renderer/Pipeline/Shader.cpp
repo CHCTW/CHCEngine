@@ -73,31 +73,11 @@ Shader::Shader(std::string const &code, std::string const &entry_point,
     ++index;
     name = temp;
   }
-}
-std::vector<BindFormat> Shader::getBindFormats(BindType types) {
-  std::vector<BindFormat> res;
-  for (auto &format : resource_bind_table_) {
-    if (static_cast<unsigned int>(format.second.type_ & types) > 0) {
-      res.emplace_back(format.second);
-    }
-  }
-  return res;
-}
-std::vector<BindFormat> Shader::getBindFormatsExclude(BindType types) {
-  std::vector<BindFormat> res;
-  for (auto &format : resource_bind_table_) {
-    if (static_cast<unsigned int>(format.second.type_ & types) == 0) {
-      res.emplace_back(format.second);
-    }
-  }
-  return res;
-}
-bool Shader::hasFormat(const std::string &name) { return resource_bind_table_.count(name); }
-std::unordered_map<std::string, InputFormat> Shader::getInputTable() {
-  D3D12_SHADER_DESC desc;
+
+    D3D12_SHADER_DESC desc;
   shader_reflection_->GetDesc(&desc);
   D3D12_SIGNATURE_PARAMETER_DESC input_desc;
-  std::unordered_map<std::string, InputFormat> table;
+  // std::unordered_map<std::string, InputFormat> table;
   for (unsigned int i = 0; i < desc.InputParameters; i++) {
     InputFormat format;
     shader_reflection_->GetInputParameterDesc(i, &input_desc);
@@ -168,11 +148,32 @@ std::unordered_map<std::string, InputFormat> Shader::getInputTable() {
       break;
     }
     format.sematic_index_ = input_desc.SemanticIndex;
-    table[temp] = format;
+    input_table_[temp] = format;
   }
-  return table;
 }
-std::vector<OutputFormat> Shader::getOutputTable() {
+std::vector<BindFormat> Shader::getBindFormats(BindType types) const {
+  std::vector<BindFormat> res;
+  for (auto &format : resource_bind_table_) {
+    if (static_cast<unsigned int>(format.second.type_ & types) > 0) {
+      res.emplace_back(format.second);
+    }
+  }
+  return res;
+}
+std::vector<BindFormat> Shader::getBindFormatsExclude(BindType types) const {
+  std::vector<BindFormat> res;
+  for (auto &format : resource_bind_table_) {
+    if (static_cast<unsigned int>(format.second.type_ & types) == 0) {
+      res.emplace_back(format.second);
+    }
+  }
+  return res;
+}
+bool Shader::hasFormat(const std::string &name) { return resource_bind_table_.count(name); }
+const std::unordered_map<std::string, InputFormat> &Shader::getInputTable() const{
+  return input_table_;
+}
+std::vector<OutputFormat> Shader::getOutputTable() const {
   D3D12_SHADER_DESC desc;
   shader_reflection_->GetDesc(&desc);
   D3D12_SIGNATURE_PARAMETER_DESC output_desc;

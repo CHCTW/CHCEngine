@@ -6,7 +6,7 @@ namespace Renderer {
 namespace Pipeline {
 struct BlendState {
   bool enable_ = false;
-  bool logic_operation_ebale_ = false;
+  bool logic_operation_enable_ = false;
   Blend source_blend_ = Blend::BLEND_ONE;
   Blend destiny_blend_ = Blend::BLEND_ZERO;
   BlendOperation blend_operation_ = BlendOperation::BLEND_OPERATION_ADD;
@@ -24,7 +24,6 @@ private:
   BlendState blend_states_[render_targets_limits_];
   DataFormat render_formats_[render_targets_limits_] = {
       DataFormat::DATA_FORMAT_UNKNOWN};
-
 public:
   RenderTargetSetup(const std::vector<DataFormat> &formats);
   RenderTargetSetup(
@@ -39,7 +38,14 @@ public:
   }
   void setFormat(unsigned int index, const DataFormat &formats);
   void setBlendState(unsigned int index, const BlendState &state);
+  unsigned int getSize() const { return size_; }
+  bool isAlphaCoverage() const { return alpha_to_coverage_enable_; }
+  bool isIndependentBlend() const { return independent_blend_enable_; }
+  const BlendState *getBlendStates() const { return blend_states_; }
+  const DataFormat *getRenderFormats() const { return render_formats_; }
 };
+static const RenderTargetSetup
+    default_render_setup_({DataFormat::DATA_FORMAT_B8G8R8A8_UNORM});
 } // namespace Pipeline
 } // namespace Renderer
 } // namespace CHCEngine

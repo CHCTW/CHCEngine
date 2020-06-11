@@ -18,6 +18,7 @@
 #include "Context/GraphicsContext.h"
 #include "DescriptorHeap.h"
 #include "Pipeline/BindLayout.h"
+#include "Pipeline/Pipeline.h"
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"
 
@@ -38,6 +39,12 @@ using Context::ComputeContext;
 using Context::ContextFence;
 using Context::CopyContext;
 using Context::GraphicsContext;
+using Pipeline::RenderTargetSetup;
+using Pipeline::DepthStencilSetup;
+using Pipeline::BlendState;
+using Pipeline::Rasterizer;
+using Pipeline::BindLayout;
+using Pipeline::ShaderSet;
 class Renderer {
 private:
   Window::Window *window_;
@@ -158,6 +165,18 @@ public:
   // have the same visiblity
   std::shared_ptr<Pipeline::BindLayout>
   getBindLayout(const std::vector<Pipeline::BindSlot> &bind_layout);
+  std::shared_ptr<Pipeline::Pipeline>
+  getGraphicsPipeline(const ShaderSet &shader_set,
+                      const std::vector<Resource::Attributes> &attributes,
+                      std::shared_ptr<BindLayout> bind_layout,
+                      const RenderTargetSetup &render_setup =
+                          Pipeline::default_render_setup_,
+                      const DepthStencilSetup & depth =
+          Pipeline::default_depth_stencil_setup_,
+      const Rasterizer &rasterizer = Pipeline::default_rasterizer_,
+      PrimitiveTopologyType primitive =
+          PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+      const Pipeline::SampleSetup &sample = Pipeline::defualt_sample_setup);
 };
 
 } // namespace Renderer

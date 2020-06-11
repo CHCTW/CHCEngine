@@ -86,6 +86,9 @@
     <ClInclude Include="Renderer\Pipeline\DepthStencilSetup.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\Rasterizer.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />

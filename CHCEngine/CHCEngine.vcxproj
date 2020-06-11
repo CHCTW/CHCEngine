@@ -91,6 +91,7 @@
     <ClInclude Include="Renderer\Pipeline\BindLayout.h" />
     <ClInclude Include="Renderer\Pipeline\DepthStencilSetup.h" />
     <ClInclude Include="Renderer\Pipeline\Pipeline.h" />
+    <ClInclude Include="Renderer\Pipeline\Rasterizer.h" />
     <ClInclude Include="Renderer\Pipeline\RenderTargetSetup.h" />
     <ClInclude Include="Renderer\Pipeline\Shader.h" />
     <ClInclude Include="Renderer\Renderer.h" />
@@ -175,7 +176,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{18EF5515-CE9B-42A5-9F0B-932283AD2B8A}</ProjectGuid>
     <RootNamespace>CHCEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19613.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

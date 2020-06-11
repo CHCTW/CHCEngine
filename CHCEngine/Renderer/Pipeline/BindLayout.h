@@ -63,6 +63,8 @@ private:
   std::vector<std::shared_ptr<Resource::Resource>> prebind_resources_;
   std::unordered_map<std::string, unsigned int> name_table_;
   ComPtr<BindSignature> bind_signature_;
+  friend class Renderer;
+
 public:
   BindLayout(ComPtr<BindSignature> bind_signature,
              const std::vector<BindSlot>

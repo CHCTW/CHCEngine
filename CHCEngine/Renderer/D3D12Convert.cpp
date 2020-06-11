@@ -541,5 +541,42 @@ D3D12_STENCIL_OP convertToD3D12StencilOP(StencilOperation stencil_operation) {
   }
   return D3D12_STENCIL_OP_KEEP;
 }
+D3D12_FILL_MODE convertToD3D12FillMode(FillMode fill_mode) {
+  switch (fill_mode) {
+  case FillMode::FILL_MODE_SOLID:
+    return D3D12_FILL_MODE_SOLID;
+  case FillMode::FILL_MODE_WIREFRAME:
+    return D3D12_FILL_MODE_WIREFRAME;
+  }
+  return D3D12_FILL_MODE_SOLID;
+}
+D3D12_CULL_MODE convertToD3D12CullMode(CullMode cull_mode) {
+  switch (cull_mode) {
+  case CullMode::CULL_MODE_NONE:
+    return D3D12_CULL_MODE_NONE;
+  case CullMode::CULL_MODE_FRONT:
+    return D3D12_CULL_MODE_FRONT;
+  case CullMode::CULL_MODE_BACK:
+    return D3D12_CULL_MODE_BACK;
+  } // namespace Renderer
+  return D3D12_CULL_MODE_NONE;
+} // namespace CHCEngine
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE
+convertToD3D12PrimitiveTopologyType(PrimitiveTopologyType type) {
+  switch (type) {
+  case PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED:
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+  case PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_POINT:
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+  case PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_LINE:
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+  case PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE:
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+  case PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_PATCH:
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+  }
+  return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+}
 } // namespace Renderer
 } // namespace CHCEngine

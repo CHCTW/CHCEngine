@@ -340,6 +340,28 @@ inline unsigned int getDataFormatByteSize(DataFormat format) {
 inline unsigned int getDataFormatChannelSize(DataFormat format) {
   return getDataFormatByteChannelSize(format).second;
 }
+inline bool hasDepthFormat(DataFormat format) {
+  switch (format) {
+  case DataFormat::DATA_FORMAT_D16_UNORM:
+    return true;
+  case DataFormat::DATA_FORMAT_D24_UNORM_S8_UINT:
+    return true;
+  case DataFormat::DATA_FORMAT_D32_FLOAT:
+    return true;
+  case DataFormat::DATA_FORMAT_D32_FLOAT_S8X24_UINT:
+    return true;
+  }
+  return false;
+}
+inline bool hasStencilFormat(DataFormat format) {
+  switch (format) {
+  case DataFormat::DATA_FORMAT_D24_UNORM_S8_UINT:
+    return true;
+  case DataFormat::DATA_FORMAT_D32_FLOAT_S8X24_UINT:
+    return true;
+  }
+  return false;
+}
 enum class BindUsage {
   BIND_USAGE_CBV,
   BIND_USAGE_SRV,
@@ -378,7 +400,8 @@ enum class BindType : unsigned {
   BIND_TYPE_UAV_BOUND = 0x4000,
   BIND_TYPE_SIT_SAMPLER = 0x8000,
   BIND_TYPE_SIT_RTACCELERATIONSTRUCTURE = 0x10000,
-  BIND_TYPE_SIT_ROOT_CONSTANT = 0x20000, // will not get by the shader, should set manually
+  BIND_TYPE_SIT_ROOT_CONSTANT =
+      0x20000, // will not get by the shader, should set manually
   BIND_TYPE_SIT_ALL = 0xfffff, // only use for query from shader
 };
 inline BindType operator|(const BindType &lhs, const BindType &rhs) {
@@ -476,8 +499,7 @@ inline ColorWriteMask operator|(const ColorWriteMask &lhs,
       static_cast<std::underlying_type<ColorWriteMask>::type>(rhs));
 }
 static const unsigned int render_targets_limits_ = 8;
-enum class DepthWriteMask
-{
+enum class DepthWriteMask {
   DEPTH_WRITE_MASK_ZERO = 0,
   DEPTH_WRITE_MASK_ALL = 1
 };
@@ -501,5 +523,27 @@ enum class StencilOperation {
   STENCIL_OPERATION_INCR,
   STENCIL_OPERATION_DECR
 };
+static const unsigned char default_stencil_read_mask_ =
+    D3D12_DEFAULT_STENCIL_READ_MASK;
+static const unsigned char default_stencil_write_mask_ =
+    D3D12_DEFAULT_STENCIL_WRITE_MASK;
+enum class FillMode {
+  FILL_MODE_WIREFRAME,
+  FILL_MODE_SOLID,
+};
+enum class CullMode {
+  CULL_MODE_NONE,
+  CULL_MODE_FRONT,
+  CULL_MODE_BACK
+};
+enum class PrimitiveTopologyType {
+  PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED,
+  PRIMITIVE_TOPOLOGY_TYPE_POINT,
+  PRIMITIVE_TOPOLOGY_TYPE_LINE,
+  PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+  PRIMITIVE_TOPOLOGY_TYPE_PATCH,
+};
+
+using PipelineState = ID3D12PipelineState;
 } // namespace Renderer
 } // namespace CHCEngine

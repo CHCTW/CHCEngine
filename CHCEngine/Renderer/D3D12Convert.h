@@ -22,5 +22,9 @@ D3D12_COLOR_WRITE_ENABLE convertToD3D12ColorWriteEnbale(ColorWriteMask mask);
 D3D12_DEPTH_WRITE_MASK convertToD3D12DepthWriteMask(DepthWriteMask mask);
 D3D12_COMPARISON_FUNC convertToD3D12ComparisonFUNC(ComparisonFunction function);
 D3D12_STENCIL_OP convertToD3D12StencilOP(StencilOperation stencil_operation);
+D3D12_FILL_MODE convertToD3D12FillMode(FillMode fill_mode);
+D3D12_CULL_MODE convertToD3D12CullMode(CullMode cull_mode);
+D3D12_PRIMITIVE_TOPOLOGY_TYPE
+convertToD3D12PrimitiveTopologyType(PrimitiveTopologyType type);
 }  // namespace Renderer
 }  // namespace CHCEngine

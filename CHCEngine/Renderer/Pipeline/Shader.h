@@ -36,29 +36,30 @@ struct BindFormat {
 
 class Shader {
 private:
+  friend class Renderer;
   std::string code_;
   std::string entry_point_;
   ComPtr<Blob> byte_code_;
   ComPtr<ShaderReflection> shader_reflection_;
   ShaderType type_;
   std::unordered_map<std::string, BindFormat> resource_bind_table_;
-
+  std::unordered_map<std::string, InputFormat> input_table_;
 public:
   Shader(std::string const &code, std::string const &entry_point,
          ShaderType type);
   const std::unordered_map<std::string, BindFormat> &getBindTable() const {
     return resource_bind_table_;
   }
-  std::vector<BindFormat> getBindFormats(BindType types);
-  std::vector<BindFormat> getBindFormatsExclude(BindType types);
+  std::vector<BindFormat> getBindFormats(BindType types) const ;
+  std::vector<BindFormat> getBindFormatsExclude(BindType types) const;
   bool hasFormat(const std::string &name);
   const BindFormat &getBindFormat(std::string name) const {
     if (!resource_bind_table_.count(name))
       return BindFormat();
     return resource_bind_table_.at(name);
   }
-  std::unordered_map<std::string, InputFormat> getInputTable();
-  std::vector<OutputFormat> getOutputTable();
+  const std::unordered_map<std::string, InputFormat> & getInputTable() const;
+  std::vector<OutputFormat> getOutputTable() const;
   ShaderType getType() const { return type_; }
 };
 class ShaderSet {
@@ -68,7 +69,7 @@ private:
   std::unordered_map<std::string, BindFormat> resource_bind_table_;
   void updateResourceBindTable();
   void addAsVector(const std::vector<Shader> &shaders);
-
+  friend class Renderer;
 public:
   explicit ShaderSet(const std::unordered_map<ShaderType, Shader> &shader_set);
   template <class... ShaderClass>

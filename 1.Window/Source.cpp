@@ -92,7 +92,7 @@ int main() {
   });*/
   // auto pre_context = renderer.getGraphicsContext;
 
-  std::string code = "struct PSInput\
+ /* std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
     float2 uv : TEXCOORD;\
@@ -163,7 +163,6 @@ int main() {
   Shader computeshader(compute, "CSMain", ShaderType::SHADER_TYPE_COMPUTE);
   ShaderSet shset(sh, sh2);
 
-  
   const auto input = sh.getInputTable();
 
   auto compute_bind = computeshader.getBindFormats(BindType::BIND_TYPE_SIT_ALL);
@@ -171,7 +170,7 @@ int main() {
   auto compute_bind_layout =
       renderer.getBindLayout({{"compute point", compute_bind}});
 
-  //auto input = sh.getOutputTable();
+  // auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
@@ -181,7 +180,7 @@ int main() {
   std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
   auto bind_layout = renderer.getBindLayout(
       {v, shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER)});
-
+      */
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getVertexBuffer(
           1, {{"POSITION", DataFormat::DATA_FORMAT_B8G8R8A8_UNORM},

@@ -6,9 +6,9 @@
 #include <glfw/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <d3d12.h>
+#include <d3dx12.h>
 #include <glfw/glfw3native.h>
 #include <wrl/client.h>
-#include <d3dx12.h>
 
 #include <iostream>
 #include <magic_enum.hpp>
@@ -50,13 +50,13 @@ void Renderer::checkSupportFeatures() {
   //  https://developer.nvidia.com/directx
   // can download here
 
-  /*D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
-  if (FAILED(d3d12_device_->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7,
-                                                &features, sizeof(features))) ||
+  D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
+  if (FAILED(device_->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7,
+                                          &features, sizeof(features))) ||
       (features.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED)) {
     *output_stream_ << "ERROR: Mesh Shaders aren't supported!\n";
-     throw std::exception("Mesh Shaders aren't supported!");
-  }*/
+    throw std::exception("Mesh Shaders aren't supported!");
+  }
 
   D3D12_FEATURE_DATA_D3D12_OPTIONS5 featureSupportData = {};
   if (FAILED(device_->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5,
@@ -371,6 +371,43 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindSlot> &bind_slots) {
                                              signature->GetBufferSize(),
                                              IID_PPV_ARGS(&bind_signature)));
   return std::make_shared<Pipeline::BindLayout>(bind_signature, bind_slots);
+}
+std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
+    const ShaderSet &shader_set,
+    const std::vector<Resource::Attributes> &attributes,
+    std::shared_ptr<BindLayout> bind_layout,
+    const RenderTargetSetup &render_setup, const DepthStencilSetup &depth,
+    const Rasterizer &rasterizer, PrimitiveTopologyType primitive,
+    const Pipeline::SampleSetup &sample) {
+  // do the check here..
+  D3D12_GRAPHICS_PIPELINE_STATE_DESC desc;
+  std::vector<D3D12_INPUT_ELEMENT_DESC> inputs;
+  std::unordered_map<ShaderType, ComPtr<Blob>> byte_codes;
+  for (const auto &shader : shader_set.shader_set_) {
+    byte_codes[shader.first] = shader.second.byte_code_;
+  }
+  fillShaderByteCodes(desc, byte_codes);
+  fillInputLayout(inputs, shader_set, attributes);
+  desc.InputLayout.NumElements = static_cast<unsigned int>(inputs.size());
+  desc.InputLayout.pInputElementDescs = inputs.data();
+  desc.pRootSignature = bind_layout->bind_signature_.Get();
+  fillBlendState(desc.BlendState, render_setup);
+  auto render_formats = render_setup.getRenderFormats();
+  for (unsigned int i = 0; i < render_setup.getSize(); ++i) {
+    desc.RTVFormats[i] = convertToDXGIFormat(render_formats[i]);
+  }
+  fillDepthStencilState(desc.DepthStencilState, depth);
+  desc.DSVFormat = convertToDXGIFormat(depth.getFormat());
+  fillRastersizer(desc.RasterizerState, rasterizer);
+  desc.PrimitiveTopologyType = convertToD3D12PrimitiveTopologyType(primitive);
+  desc.SampleDesc.Count = sample.count_;
+  desc.SampleDesc.Quality = sample.count_;
+  desc.SampleMask = UINT_MAX;
+  desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+  ComPtr<PipelineState> pipeline;
+  ThrowIfFailed(device_->CreateGraphicsPipelineState(&desc,
+                                                    IID_PPV_ARGS(&pipeline)));
+  return std::make_shared<Pipeline::Pipeline>(pipeline,Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
 }
 } // namespace Renderer
 } // namespace CHCEngine
