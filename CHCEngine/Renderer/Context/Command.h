@@ -54,6 +54,7 @@ struct ContextCommand {
   void close();
   void resrourceTransition(std::vector<Transition>& transitions);
   void clearSwapChainBuffer(CPUDescriptorHandle handle, const float* color);
+  void setPipelineState(ComPtr<PipelineState> pipeline_state);
 };
 }  // namespace Context
 }  // namespace Renderer

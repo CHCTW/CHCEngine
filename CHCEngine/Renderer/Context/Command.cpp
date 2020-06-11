@@ -1,10 +1,10 @@
-#include "../ClassName.h"
 #include "Command.h"
+#include "../ClassName.h"
 
-#include "../D3D12Utilities.hpp"
-#include "ContextPool.h"
-#include "../Resource/Resource.h"
 #include "../D3D12Convert.h"
+#include "../D3D12Utilities.hpp"
+#include "../Resource/Resource.h"
+#include "ContextPool.h"
 
 namespace CHCEngine {
 namespace Renderer {
@@ -25,7 +25,7 @@ void ContextCommand::reset() {
 
 void ContextCommand::close() { ThrowIfFailed(list_->Close()); }
 
-void ContextCommand::resrourceTransition(std::vector<Transition>& transitions) {
+void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
   std::vector<D3D12_RESOURCE_BARRIER> barriers_(transitions.size());
   for (int i = 0; i < transitions.size(); ++i) {
     referenced_resources_.emplace_back(transitions[i].resource);
@@ -40,12 +40,16 @@ void ContextCommand::resrourceTransition(std::vector<Transition>& transitions) {
         convertToD3D12ResourceStates(transitions[i].after_state);
     barriers_[i].Transition.Subresource = transitions[i].subresource_index;
   }
-  list_->ResourceBarrier(static_cast<unsigned int>(transitions.size()), barriers_.data());
+  list_->ResourceBarrier(static_cast<unsigned int>(transitions.size()),
+                         barriers_.data());
 }
 void ContextCommand::clearSwapChainBuffer(CPUDescriptorHandle handle,
-                                          const float* color) {
-  list_->ClearRenderTargetView(handle, color,0,nullptr);
+                                          const float *color) {
+  list_->ClearRenderTargetView(handle, color, 0, nullptr);
 }
-}  // namespace Context
-}  // namespace Renderer
-}  // namespace CHCEngine
+void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
+  list_->SetPipelineState(pipeline_state.Get());
+}
+} // namespace Context
+} // namespace Renderer
+} // namespace CHCEngine

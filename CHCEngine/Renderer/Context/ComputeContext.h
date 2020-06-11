@@ -1,5 +1,7 @@
 #pragma once
 #include "CopyContext.h"
+#include "../Pipeline/Pipeline.h"
+
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
@@ -15,6 +17,7 @@ class ComputeContext : public CopyContext {
                  std::shared_ptr<ContextCommand> context_command,
               std::weak_ptr<ContextPoolBase> pool)
       : CopyContext(type, context_command, pool) {}
+  void setPipeline(std::shared_ptr<Pipeline::Pipeline> pipline);
 };
 }  // namespace Context
 }  // namespace Renderer

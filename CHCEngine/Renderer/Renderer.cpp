@@ -118,7 +118,7 @@ void Renderer::createContexts() {
           device_, CommandType::COMMAND_TYPE_COMPUTE);
   copy_pool_ = std::make_shared<Context::ContextPool<Context::CopyContext>>(
       device_, CommandType::COMMAND_TYPE_COMPUTE);
-  auto grpahics_context = graphics_pool_->getContext([](GraphicsContext *t) {
+  auto grpahics_context = graphics_pool_->getContext([](GraphicsContext const *t) {
     std::cout << "graphics wait" << std::endl;
     std::cout << "graphics wait end" << std::endl;
   });
@@ -314,8 +314,8 @@ void Renderer::removeLoopCallback(std::string name) {
     loop_remove_names_.emplace_back(name);
   }
 }
-std::shared_ptr<GraphicsContext>
-Renderer::getGraphicsContext(std::function<void(GraphicsContext *)> callback,
+std::shared_ptr<GraphicsContext> Renderer::getGraphicsContext(
+    std::function<void(GraphicsContext *)> callback,
                              bool async) {
   return graphics_pool_->getContext(callback, async);
 }

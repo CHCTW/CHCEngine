@@ -34,6 +34,11 @@ class Context : public std::enable_shared_from_this<Context> {
   // for command, when it pocessed, it can record, when it submiet it will
   // set command to nullptr, fence will handel return the comamnd to
   // pool
+
+    // why use raw point in the callback, cause shared ptr is not allowed in
+    // the desc, but when we wait we might still use in another thread,
+    // that is when we wait in the desc this will crashed
+    // another way is use reference probally can chagne in future
   enum class ContextState { CONTEXT_STATE_IDLE, CONTEXT_STATE_RECORDING };
 
  protected:

@@ -56,7 +56,7 @@ ContextPoolBase::ContextPoolBase(ComPtr<Device> device, CommandType type)
 }
 template <class ContextClass>
 std::shared_ptr<ContextClass> ContextPool<ContextClass>::getContext(
-    std::function<void(ContextClass*)> callback, bool async) {
+    std::function<void(ContextClass *)> callback, bool async) {
   auto context = std::make_shared<ContextClass>(type_, getContextCommand(),
                                                 weak_from_this());
   if (callback) {

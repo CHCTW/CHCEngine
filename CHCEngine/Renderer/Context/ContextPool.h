@@ -35,7 +35,7 @@ class ContextPool : public ContextPoolBase{
   ContextPool(ComPtr<Device> device, CommandType type)
       : ContextPoolBase(device,type) {}
   std::shared_ptr<ContextClass> getContext(
-      std::function<void (ContextClass*)> callback,bool async = true);
+      std::function<void (ContextClass *)> callback,bool async = true);
 };
 
 }  // namespace Context

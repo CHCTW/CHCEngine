@@ -171,53 +171,55 @@ int main() {
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
 
- // Pipeline::BindSlot exsampleslot("resource slot", exsample);
-  //Pipeline::BindSlot sampleslot(sample);
-  //Pipeline::BindSlot dummyslot; 
-  //std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
+  // Pipeline::BindSlot exsampleslot("resource slot", exsample);
+  // Pipeline::BindSlot sampleslot(sample);
+  // Pipeline::BindSlot dummyslot;
+  // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
   auto bind_layout = renderer.getBindLayout({});
-      
-
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getVertexBuffer(
-          4, {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
-              {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},ResourceState::RESOURCE_STATE_COPY_DEST,Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC);
+          4,
+          {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
+           {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},
+          ResourceState::RESOURCE_STATE_COPY_DEST,
+          Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC);
   buffer->setName("vertex test1");
-
-
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
       renderer.getIndexBuffer(6);
 
-    auto pipeline = renderer.getGraphicsPipeline(
-      shset, {}, bind_layout);
+  auto pipeline = renderer.getGraphicsPipeline(shset, {}, bind_layout);
+  pipeline->setName("simple pipeline");
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
     if (frame > 10000)
       renderer.removeLoopCallback("Render");
-    auto graphcis = renderer.getGraphicsContext(
-        [&](auto graph) {
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
-          graph->clearRenderTarget(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              {0.1f, 0.6f, 0.7f, 0.0f});
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT, true);
-        },
-        true);
+    std::shared_ptr<Context::GraphicsContext> graphcis =
+        renderer.getGraphicsContext(
+            [&](Context::GraphicsContext* graph) {
+              graph->setPipeline(pipeline);
+              graph->resourceTransition(
+                  buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+                  ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+              graph->resourceTransition(
+                  renderer.getSwapChainBuffer(swap_chain_index),
+                  ResourceState::RESOURCE_STATE_PRESENT,
+                  ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
+              graph->clearRenderTarget(
+                  renderer.getSwapChainBuffer(swap_chain_index),
+                  {0.1f, 0.6f, 0.7f, 0.0f});
+              graph->resourceTransition(
+                  buffer,
+                  ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+                  ResourceState::RESOURCE_STATE_COPY_DEST);
+              graph->resourceTransition(
+                  renderer.getSwapChainBuffer(swap_chain_index),
+                  ResourceState::RESOURCE_STATE_RENDER_TARGET,
+                  ResourceState::RESOURCE_STATE_PRESENT, true);
+            },
+            true);
     auto graphci3 = renderer.getGraphicsContext();
     auto graphcis4 = renderer.getGraphicsContext();
     renderer.submitContexts(nullptr, graphcis);
