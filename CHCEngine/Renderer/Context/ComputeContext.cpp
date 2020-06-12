@@ -1,6 +1,7 @@
 #include "../ClassName.h"
 
 #include "ComputeContext.h"
+#include "../Pipeline/Pipeline.h"
 
 namespace CHCEngine {
 namespace Renderer {

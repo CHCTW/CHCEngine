@@ -3,6 +3,11 @@
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
+namespace Pipeline {
+class Pipeline;
+struct Viewport;
+struct Scissor;
+} // namespace Pipeline
 namespace Resource {
 class SwapChainBuffer;
 }
@@ -22,6 +27,11 @@ public:
   void clearRenderTarget(
       std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer,
       Color color);
+  void drawInstanced(unsigned int vertex_count, unsigned int instance_count = 1,
+                     unsigned int start_vertex_location = 0,
+                     unsigned int start_instance_location = 0);
+  void setViewport(const Pipeline::Viewport &viewport);
+  void setViewScissor(const Pipeline::Scissor &scissor);
 };
 } // namespace Context
 } // namespace Renderer

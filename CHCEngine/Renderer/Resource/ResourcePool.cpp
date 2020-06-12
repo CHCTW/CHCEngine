@@ -47,7 +47,7 @@ std::shared_ptr<Buffer> ResourcePool::getVertexBuffer(
     vetex_attributes[p.first] = std::make_pair(stride_size, p.second);
     stride_size += byte_size;
   }
-  unsigned buffer_size = stride_size * vertex_count;
+  unsigned int buffer_size = stride_size * vertex_count;
   auto id = getNextBufferId(BufferType::BUFFER_TYPE_VERTEX);
   std::string name = "vertex_buffer_" + std::to_string(id);
   auto gpu_resource = createBuffer(device_, buffer_size,
@@ -104,7 +104,7 @@ std::shared_ptr<Buffer> ResourcePool::getIndexBuffer(
     index_size = 2;
   }
   vetex_attributes["INDEX"] = std::make_pair(0, format);
-  unsigned int buffer_size = 4 * index_count;
+  unsigned int buffer_size = index_size * index_count;
   auto gpu_resource = createBuffer(device_, buffer_size,
                                    HeapType::HEAP_TYPE_DEFAULT, initial_state);
   NAME_D3D12_OBJECT_STRING(gpu_resource, name);
@@ -112,7 +112,7 @@ std::shared_ptr<Buffer> ResourcePool::getIndexBuffer(
   if (usage == ResourceUsage::RESOURCE_USAGE_DYNAMIC) {
     upload_buffer =
         createBuffer(device_, buffer_size, HeapType::HEAP_TYPE_UPLOAD,
-                     ResourceState::RESOURCE_STATE_GENERIC_READ);
+                     ResourceState::RESOURCE_STATE_COPY_SOURCE);
     std::string temp = name;
     temp += "_upload";
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);

@@ -8,6 +8,8 @@
 #include "Rasterizer.h"
 #include "RenderTargetSetup.h"
 #include "Shader.h"
+#include "Scissor.h"
+#include "Viewport.h"
 
 using Microsoft::WRL::ComPtr;
 

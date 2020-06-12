@@ -1,10 +1,12 @@
 #pragma once
 #include "CopyContext.h"
-#include "../Pipeline/Pipeline.h"
 
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
+namespace Pipeline {
+class Pipeline;
+}
 namespace Context {
 class ComputeContext : public CopyContext {
  protected:

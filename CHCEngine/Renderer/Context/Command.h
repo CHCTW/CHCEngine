@@ -1,15 +1,21 @@
 #pragma once
-#include <wrl/client.h>
 #include <memory>
+#include <wrl/client.h>
 
 #include "../ClassName.h"
 using Microsoft::WRL::ComPtr;
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
+namespace Pipeline {
+class Pipeline;
+struct Viewport;
+struct Scissor;
+} // namespace Pipeline
 namespace Resource {
 class Resource;
-}
+class Buffer;
+} // namespace Resource
 namespace Context {
 class ContextPoolBase;
 class BaseFence;
@@ -35,10 +41,11 @@ struct ContextCommandList {
   ComPtr<CommandList> list_;
 
   ContextCommandList(unsigned long long id, ComPtr<CommandList> list)
-      : state_(CommandListState::COMMAND_LIST_STATE_RECORD),
-        list_(list) {}
+      : state_(CommandListState::COMMAND_LIST_STATE_RECORD), list_(list) {}
   ContextCommandList() = delete;
 };
+// thinking move all implementation to h file inline callback,
+// since the call usually is a one line code
 struct ContextCommand {
   unsigned long long id_;
   friend class BaseFence;
@@ -48,14 +55,22 @@ struct ContextCommand {
   std::vector<std::shared_ptr<Resource::Resource>> referenced_resources_;
   ContextCommand(unsigned long long id, ComPtr<CommandAllocator> allocator,
                  ComPtr<CommandList> list, std::weak_ptr<ContextPoolBase> owner)
-      : id_(id), allocator_(allocator), list_(list),owner_(owner) {}
+      : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
   void free();
   void reset();
   void close();
-  void resrourceTransition(std::vector<Transition>& transitions);
-  void clearSwapChainBuffer(CPUDescriptorHandle handle, const float* color);
+  void resrourceTransition(std::vector<Transition> &transitions);
+  void clearSwapChainBuffer(CPUDescriptorHandle handle, const float *color);
   void setPipelineState(ComPtr<PipelineState> pipeline_state);
+  void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void *const data,
+                          unsigned long long data_byte_size,
+                          unsigned long long offset);
+  void drawInstanced(unsigned int vertex_count, unsigned int instance_count,
+                     unsigned int start_vertex_location,
+                     unsigned int start_instance_location);
+  void setViewport(const Pipeline::Viewport &viewport);
+  void setScissor(const Pipeline::Scissor &scissor);
 };
-}  // namespace Context
-}  // namespace Renderer
-}  // namespace CHCEngine
+} // namespace Context
+} // namespace Renderer
+} // namespace CHCEngine

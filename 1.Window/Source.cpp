@@ -97,11 +97,10 @@ int main() {
     float4 position : SV_POSITION;\
     float2 uv : TEXCOORD;\
   };\
-  Texture2D MaterialTextures[] : register(t0,space0);\
-  PSInput VSMain(uint id : SV_InstanceID) {\
+  PSInput VSMain(float2 position : POSITION, float2 uv : TEXCOORD) {\
     PSInput result;\
-    result.position = float4(0.0,0.0, 1.0, 1.0);\
-    result.uv = float2(0.0,0.0);\
+    result.position = float4(position, 1.0, 1.0);\
+    result.uv = uv;\
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
@@ -179,49 +178,59 @@ int main() {
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getVertexBuffer(
-          4,
+          3,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
            {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},
           ResourceState::RESOURCE_STATE_COPY_DEST,
           Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC);
-  buffer->setName("vertex test1");
+  buffer->setName("vertex buffer");
+
+  float tridata[] = {0.0f, 0.25f, 0.5f,   0.0f,   0.25f, -0.25f,
+                     1.0f, 1.0f,  -0.25f, -0.25f, 0.0f,  1.0f};
+
+  auto copycontext = renderer.getGraphicsContext();
+
+  copycontext->updateBuffer(buffer, tridata,
+                            buffer->getBufferInformation().size_);
+  copycontext->resourceTransition(
+      buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
+  renderer.submitContexts(nullptr, copycontext)->waitFenceComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
       renderer.getIndexBuffer(6);
 
-  auto pipeline = renderer.getGraphicsPipeline(shset, {}, bind_layout);
+  auto pipeline = renderer.getGraphicsPipeline(
+      shset, {buffer->getBufferInformation().vetex_attributes_}, bind_layout);
   pipeline->setName("simple pipeline");
+
+  auto graphcis = renderer.getGraphicsContext();
+
+  Pipeline::Viewport view_port(window.getFrameSize().X,
+                               window.getFrameSize().Y);
+  Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    if (frame > 10000)
-      renderer.removeLoopCallback("Render");
-    std::shared_ptr<Context::GraphicsContext> graphcis =
-        renderer.getGraphicsContext(
-            [&](Context::GraphicsContext* graph) {
-              graph->setPipeline(pipeline);
-              graph->resourceTransition(
-                  buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-                  ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-              graph->resourceTransition(
-                  renderer.getSwapChainBuffer(swap_chain_index),
-                  ResourceState::RESOURCE_STATE_PRESENT,
-                  ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
-              graph->clearRenderTarget(
-                  renderer.getSwapChainBuffer(swap_chain_index),
-                  {0.1f, 0.6f, 0.7f, 0.0f});
-              graph->resourceTransition(
-                  buffer,
-                  ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-                  ResourceState::RESOURCE_STATE_COPY_DEST);
-              graph->resourceTransition(
-                  renderer.getSwapChainBuffer(swap_chain_index),
-                  ResourceState::RESOURCE_STATE_RENDER_TARGET,
-                  ResourceState::RESOURCE_STATE_PRESENT, true);
-            },
-            true);
-    auto graphci3 = renderer.getGraphicsContext();
-    auto graphcis4 = renderer.getGraphicsContext();
+    graphcis->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
+        [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
+          graph->setPipeline(pipeline);
+          graph->resourceTransition(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              ResourceState::RESOURCE_STATE_PRESENT,
+              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
+          graph->clearRenderTarget(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              {0.1f, 0.6f, 0.7f, 0.0f});
+          graph->resourceTransition(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              ResourceState::RESOURCE_STATE_RENDER_TARGET,
+              ResourceState::RESOURCE_STATE_PRESENT, true);
+        },
+        false);
+
+    graphcis->setViewport(view_port);
+    graphcis->setViewScissor(scissor);
     renderer.submitContexts(nullptr, graphcis);
     renderer.presentSwapChain();
   });

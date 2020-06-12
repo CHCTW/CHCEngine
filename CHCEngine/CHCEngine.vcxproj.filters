@@ -89,6 +89,12 @@
     <ClInclude Include="Renderer\Pipeline\Rasterizer.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\Scissor.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Pipeline\Viewport.h">
+      <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />

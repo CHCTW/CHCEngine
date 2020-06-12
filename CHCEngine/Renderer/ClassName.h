@@ -34,11 +34,12 @@ inline void SetNameString(ID3D12Object *pObject, std::string name) {
 #else
 inline void SetName(ID3D12Object *, LPCWSTR) {}
 inline void Set6NameIndexed(ID3D12Object *, LPCWSTR, UINT) {}
+inline void SetNameString(ID3D12Object *pObject, std::string name) {}
 #endif
 namespace CHCEngine {
 namespace Renderer {
 #define NAME_D3D12_OBJECT(x) SetName((x).Get(), L#x);
-#define NAME_D3D12_OBJECT_STRING(x, name)                                      \
+#define NAME_D3D12_OBJECT_STRING(x, name)\
   SetNameString((x).Get(), name.c_str());
 using Device = ID3D12Device;
 using Factory = IDXGIFactory4;
@@ -545,5 +546,9 @@ enum class PrimitiveTopologyType {
 };
 
 using PipelineState = ID3D12PipelineState;
+const static float default_max_depth_ = D3D12_MAX_DEPTH;
+const static float default_min_depth_ = D3D12_MIN_DEPTH;
+using ViewportBase = D3D12_VIEWPORT;
+using ScissorBase = D3D12_RECT;
 } // namespace Renderer
 } // namespace CHCEngine

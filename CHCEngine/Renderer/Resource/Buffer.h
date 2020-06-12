@@ -7,6 +7,9 @@
 
 namespace CHCEngine {
 namespace Renderer {
+namespace Context {
+struct ContextCommand;
+} // namespace Context
 class DescriptorRange;
 namespace Resource {
 enum class BufferType {
@@ -30,7 +33,7 @@ using Attributes =
 struct BufferInformation {
   BufferType type_ = BufferType::BUFFER_TYPE_NONE;
   BufferUsage usage_ = BufferUsage::BUFFER_USAGE_NONE;
-  unsigned int size_ = 0;
+  unsigned long long size_ = 0;
   unsigned int strdie_size_ = 0;
   // use sematic name as key to get the offset and format
   // the sematic name should always be the same as in the hlsl shader
@@ -41,6 +44,7 @@ struct BufferInformation {
 // goint to have more different type here, vertex,index,counter.....
 class Buffer : public Resource {
 protected:
+  friend struct Context::ContextCommand;
   BufferInformation buffer_information_;
   // for different view possible; like counter buffer, will have read and write
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>

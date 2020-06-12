@@ -41,22 +41,17 @@ class Resource {
   // used by dynamic resource, all static resource will use dynmaic upload
   // buffer to update
   ComPtr<GPUResource> upload_buffer_;
+  void *upload_buffer_map_pointer_ = nullptr;
   ComPtr<GPUResource> getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-           const std::string& name, ResourceType type, ResourceUsage usage)
-      : gpu_resource_(gpu_resource),
-        upload_buffer_(upload_buffer),
-        information_{name, type, usage} {}
+           const std::string &name, ResourceType type, ResourceUsage usage);
   Resource(ComPtr<GPUResource> gpu_resource, const std::string& name,
            ResourceType type, ResourceUsage usage)
       : gpu_resource_(gpu_resource), information_{name, type, usage} {}
   Resource(ComPtr<GPUResource> gpu_resource, ResourceInformation information)
       : gpu_resource_(gpu_resource), information_{information} {}
-  Resource(ComPtr<GPUResource> gpu_resource,
-           ComPtr<GPUResource> upload_buffer,ResourceInformation information)
-      : gpu_resource_(gpu_resource),
-        upload_buffer_(upload_buffer),
-        information_{information} {}
+  Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+           ResourceInformation information);
  public:
   Resource& operator=(Resource& ref) = delete;
   Resource() = delete;
