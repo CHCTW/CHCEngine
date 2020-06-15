@@ -21,6 +21,8 @@
 #include "Pipeline/Pipeline.h"
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"
+#include "Pipeline/DynamicBuffer.h"
+
 
 using Microsoft::WRL::ComPtr;
 
@@ -39,11 +41,11 @@ using Context::ComputeContext;
 using Context::ContextFence;
 using Context::CopyContext;
 using Context::GraphicsContext;
-using Pipeline::RenderTargetSetup;
-using Pipeline::DepthStencilSetup;
-using Pipeline::BlendState;
-using Pipeline::Rasterizer;
 using Pipeline::BindLayout;
+using Pipeline::BlendState;
+using Pipeline::DepthStencilSetup;
+using Pipeline::Rasterizer;
+using Pipeline::RenderTargetSetup;
 using Pipeline::ShaderSet;
 class Renderer {
 private:
@@ -80,10 +82,6 @@ private:
       graphics_pool_;
   std::shared_ptr<Context::ContextPool<Context::ComputeContext>> compute_pool_;
   std::shared_ptr<Context::ContextPool<Context::CopyContext>> copy_pool_;
-  // fence pool should be at the bottom of this class, in desc, this will
-  // wait all the fence thus no resouce will be release while looping
-  // however, fence may still need to record the using resource
-  std::shared_ptr<Context::FencePool> fence_pool_;
 
   std::vector<std::shared_ptr<Context::ContextFence>> swap_chain_present_fence_;
 
@@ -109,6 +107,14 @@ private:
   void addLoopCallbackFromQueue();
   void removeLoopCallbackFromNames();
   void loopCalls();
+
+  std::shared_ptr<Pipeline::DynamicBuffer> dynamic_upload_buffer_;
+
+
+    // fence pool should be at the bottom of this class, in desc, this will
+  // wait all the fence thus no resouce will be release while looping
+  // however, fence may still need to record the using resource
+  std::shared_ptr<Context::FencePool> fence_pool_;
 
 public:
   Renderer();
@@ -165,14 +171,12 @@ public:
   // have the same visiblity
   std::shared_ptr<Pipeline::BindLayout>
   getBindLayout(const std::vector<Pipeline::BindSlot> &bind_layout);
-  std::shared_ptr<Pipeline::Pipeline>
-  getGraphicsPipeline(const ShaderSet &shader_set,
-                      const std::vector<Resource::Attributes> &attributes,
-                      std::shared_ptr<BindLayout> bind_layout,
-                      const RenderTargetSetup &render_setup =
-                          Pipeline::default_render_setup_,
-                      const DepthStencilSetup & depth =
-          Pipeline::default_depth_stencil_setup_,
+  std::shared_ptr<Pipeline::Pipeline> getGraphicsPipeline(
+      const ShaderSet &shader_set,
+      const std::vector<Resource::Attributes> &attributes,
+      std::shared_ptr<BindLayout> bind_layout,
+      const RenderTargetSetup &render_setup = Pipeline::default_render_setup_,
+      const DepthStencilSetup &depth = Pipeline::default_depth_stencil_setup_,
       const Rasterizer &rasterizer = Pipeline::default_rasterizer_,
       PrimitiveTopologyType primitive =
           PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,

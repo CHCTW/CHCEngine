@@ -28,7 +28,7 @@ void GraphicsContext::drawInstanced(unsigned int vertex_count,
 void GraphicsContext::setViewport(const Pipeline::Viewport &viewport) {
   context_command_->setViewport(viewport);
 }
-void GraphicsContext::setViewScissor(const Pipeline::Scissor &scissor) {
+void GraphicsContext::setScissor(const Pipeline::Scissor &scissor) {
   context_command_->setScissor(scissor);
 }
 } // namespace Context

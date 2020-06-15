@@ -195,7 +195,7 @@ int main() {
   copycontext->resourceTransition(
       buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
-  renderer.submitContexts(nullptr, copycontext)->waitFenceComplete();
+  renderer.submitContexts(nullptr, copycontext)->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
       renderer.getIndexBuffer(6);
@@ -227,10 +227,10 @@ int main() {
               ResourceState::RESOURCE_STATE_RENDER_TARGET,
               ResourceState::RESOURCE_STATE_PRESENT, true);
         },
-        false);
+        true);
 
     graphcis->setViewport(view_port);
-    graphcis->setViewScissor(scissor);
+    graphcis->setScissor(scissor);
     renderer.submitContexts(nullptr, graphcis);
     renderer.presentSwapChain();
   });

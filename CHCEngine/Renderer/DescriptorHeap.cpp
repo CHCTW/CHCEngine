@@ -2,7 +2,6 @@
 
 #include "DescriptorHeap.h"
 
-
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -44,7 +43,7 @@ DescriptorHeap::allocateRange(unsigned int size) {
   // range_size_table_[std::make_pair(0, 1)] = unused_range_.end();
   auto find = range_size_table_.lower_bound(std::make_pair(size, 0));
   if (find == range_size_table_.end()) {
-    throw std::runtime_error(name_ + " Out of descriptor heap space");
+    throw std::exception((name_ + " Out of descriptor heap space").c_str());
   }
   unsigned int start = find->second->first;
   unsigned int length = find->second->second;
@@ -79,7 +78,7 @@ DescriptorHeap::allocateRange(unsigned int size) {
   ++id_counter_;
   allocalted_range_.emplace(range.id_, range);
   return ret; // namespace*/
-  // Renderer
+              // Renderer
 }
 void DescriptorHeap::freeRange(const unsigned long long id) {
   std::lock_guard<std::mutex> lock(descritpr_mutex_);
@@ -110,8 +109,8 @@ void DescriptorHeap::freeRange(const unsigned long long id) {
         combine_front = true;
       }
       if (combine_front) { // update index and length
-        std::cout << "front free : " << front_unused->second->first << ","
-                  << front_unused->second->second << std::endl;
+        //std::cout << "front free : " << front_unused->second->first << ","
+        //          << front_unused->second->second << std::endl;
         start = front_unused->second->first;
         length += front_unused->second->second;
         range_size_table_.erase(std::make_pair(front_unused->second->second,
@@ -120,8 +119,8 @@ void DescriptorHeap::freeRange(const unsigned long long id) {
         start_index_table_.erase(front_unused);
       }
       if (combine_back) { // update length
-        std::cout << "back free : " << back_unused->second->first << ","
-                  << back_unused->second->second << std::endl;
+        //std::cout << "back free : " << back_unused->second->first << ","
+        //          << back_unused->second->second << std::endl;
         length += back_unused->second->second;
         range_size_table_.erase(std::make_pair(back_unused->second->second,
                                                back_unused->second->first));

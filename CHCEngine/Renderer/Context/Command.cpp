@@ -60,8 +60,8 @@ void ContextCommand::updateBufferRegion(
   if (buffer->getInformation().usage_ ==
       Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC) {
     memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
-    list_->CopyBufferRegion(buffer->gpu_resource_.Get(), 0,
-                            buffer->upload_buffer_.Get(), offset,
+    list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
+                            buffer->upload_buffer_.Get(), 0,
                             data_byte_size);
   } else {
     throw std::exception(

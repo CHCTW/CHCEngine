@@ -65,7 +65,7 @@ class ContextFence {
  public:
   ContextFence(std::shared_ptr<BaseFence> base_fence)
       : base_fence_(base_fence) {}
-  void waitFenceComplete() { base_fence_->waitFenceComplete(); }
+  void waitComplete() { base_fence_->waitFenceComplete(); }
   ~ContextFence() {
       base_fence_->free(); }
   FenceState getState() { base_fence_->getState(); };

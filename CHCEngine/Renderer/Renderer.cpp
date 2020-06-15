@@ -110,6 +110,8 @@ void Renderer::createResourcePool() {
       static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]);
 }
 void Renderer::createContexts() {
+  dynamic_upload_buffer_ = std::make_shared<Pipeline::DynamicBuffer>(device_);
+
   graphics_pool_ =
       std::make_shared<Context::ContextPool<Context::GraphicsContext>>(
           device_, CommandType::COMMAND_TYPE_GRAPHICS);

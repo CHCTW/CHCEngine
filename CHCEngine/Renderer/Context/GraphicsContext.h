@@ -31,7 +31,7 @@ public:
                      unsigned int start_vertex_location = 0,
                      unsigned int start_instance_location = 0);
   void setViewport(const Pipeline::Viewport &viewport);
-  void setViewScissor(const Pipeline::Scissor &scissor);
+  void setScissor(const Pipeline::Scissor &scissor);
 };
 } // namespace Context
 } // namespace Renderer
