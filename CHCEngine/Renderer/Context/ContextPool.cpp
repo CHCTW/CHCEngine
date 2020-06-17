@@ -3,6 +3,7 @@
 
 #include "../D3D12Convert.h"
 #include "../D3D12Utilities.hpp"
+#include "../Resource/DynamicBuffer.h"
 
 using CHCEngine::Renderer::convertToD3D12CommandType;
 namespace CHCEngine {
@@ -41,6 +42,7 @@ void ContextPoolBase::freeContextCommand(unsigned long long id) {
 ContextPoolBase::ContextPoolBase(ComPtr<Device> device, CommandType type)
     : device_(device), type_(type) {
   auto d3d12type = convertToD3D12CommandType(type_);
+  dynamic_upload_buffer_ = std::make_shared<Resource::DynamicBuffer>(device_);
  /* std::lock_guard<std::mutex> lock(pool_mutex_);
   for (unsigned int i = 0; i < allocator_begin_size; ++i) {
     ComPtr<CommandAllocator> allocator;

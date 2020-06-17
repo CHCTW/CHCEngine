@@ -21,7 +21,7 @@
 #include "Pipeline/Pipeline.h"
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"
-#include "Pipeline/DynamicBuffer.h"
+#include "Resource/DynamicBuffer.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -108,7 +108,7 @@ private:
   void removeLoopCallbackFromNames();
   void loopCalls();
 
-  std::shared_ptr<Pipeline::DynamicBuffer> dynamic_upload_buffer_;
+  std::shared_ptr<Resource::DynamicBuffer> dynamic_upload_buffer_;
 
 
     // fence pool should be at the bottom of this class, in desc, this will

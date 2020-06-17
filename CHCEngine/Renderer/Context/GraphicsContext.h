@@ -10,6 +10,7 @@ struct Scissor;
 } // namespace Pipeline
 namespace Resource {
 class SwapChainBuffer;
+class DynamicBuffer;
 }
 namespace Context {
 class GraphicsContext : public ComputeContext {

@@ -15,6 +15,7 @@ struct Scissor;
 namespace Resource {
 class Resource;
 class Buffer;
+struct AllocateSpace;
 } // namespace Resource
 namespace Context {
 class ContextPoolBase;
@@ -53,6 +54,7 @@ struct ContextCommand {
   ComPtr<CommandAllocator> allocator_;
   ComPtr<CommandList> list_;
   std::vector<std::shared_ptr<Resource::Resource>> referenced_resources_;
+  std::vector<std::shared_ptr<Resource::AllocateSpace>> allocated_spaces_;
   ContextCommand(unsigned long long id, ComPtr<CommandAllocator> allocator,
                  ComPtr<CommandList> list, std::weak_ptr<ContextPoolBase> owner)
       : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
@@ -62,9 +64,13 @@ struct ContextCommand {
   void resrourceTransition(std::vector<Transition> &transitions);
   void clearSwapChainBuffer(CPUDescriptorHandle handle, const float *color);
   void setPipelineState(ComPtr<PipelineState> pipeline_state);
-  void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void *const data,
+  void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
                           unsigned long long data_byte_size,
                           unsigned long long offset);
+  void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
+                          unsigned long long data_byte_size,
+                          unsigned long long offset,
+                     std::shared_ptr<Resource::AllocateSpace> allocate_space);
   void drawInstanced(unsigned int vertex_count, unsigned int instance_count,
                      unsigned int start_vertex_location,
                      unsigned int start_instance_location);

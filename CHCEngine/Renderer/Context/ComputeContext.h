@@ -4,6 +4,9 @@
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
+namespace Resource {
+class DynamicBuffer;
+} // namespace Resource
 namespace Pipeline {
 class Pipeline;
 }

@@ -8,6 +8,7 @@ namespace Renderer {
 class Renderer;
 namespace Resource {
 class Buffer;
+class DynamicBuffer;
 }
 namespace Context {
 class CopyContext : public Context {
@@ -20,7 +21,7 @@ public:
   CopyContext(CommandType type, std::shared_ptr<ContextCommand> context_command,
               std::weak_ptr<ContextPoolBase> pool)
       : Context(type, context_command, pool) {}
-  void updateBuffer(std::shared_ptr<Resource::Buffer> buffer, void *const data,
+  void updateBuffer(std::shared_ptr<Resource::Buffer> buffer, const void * data,
                     unsigned long long data_byte_size,
                     unsigned long long offset = 0);
 };

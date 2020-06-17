@@ -100,7 +100,6 @@
     <ClInclude Include="Renderer\DescriptorHeap.h" />
     <ClInclude Include="Renderer\Pipeline\BindLayout.h" />
     <ClInclude Include="Renderer\Pipeline\DepthStencilSetup.h" />
-    <ClInclude Include="Renderer\Pipeline\DynamicBuffer.h" />
     <ClInclude Include="Renderer\Pipeline\Pipeline.h" />
     <ClInclude Include="Renderer\Pipeline\Rasterizer.h" />
     <ClInclude Include="Renderer\Pipeline\RenderTargetSetup.h" />
@@ -109,6 +108,7 @@
     <ClInclude Include="Renderer\Pipeline\Viewport.h" />
     <ClInclude Include="Renderer\Renderer.h" />
     <ClInclude Include="Renderer\Resource\Buffer.h" />
+    <ClInclude Include="Renderer\Resource\DynamicBuffer.h" />
     <ClInclude Include="Renderer\Resource\Resource.h" />
     <ClInclude Include="Renderer\Resource\ResourcePool.h" />
     <ClInclude Include="Renderer\Resource\SwapChainBuffer.h" />
@@ -133,12 +133,6 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Renderer\Pipeline\DepthStencilSetup.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Renderer\Pipeline\DynamicBuffer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
@@ -169,6 +163,12 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Renderer\Resource\Buffer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\DynamicBuffer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>

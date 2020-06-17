@@ -71,9 +71,6 @@
     <ClInclude Include="Renderer\Pipeline\Shader.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\Pipeline\Pipeline.h">
-      <Filter>Renderer\Pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\Pipeline\BindLayout.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
@@ -95,8 +92,11 @@
     <ClInclude Include="Renderer\Pipeline\Viewport.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\Pipeline\DynamicBuffer.h">
+    <ClInclude Include="Renderer\Pipeline\Pipeline.h">
       <Filter>Renderer\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\DynamicBuffer.h">
+      <Filter>Renderer\Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -164,9 +164,6 @@
     <ClCompile Include="Renderer\Pipeline\Shader.cpp">
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\Pipeline\Pipeline.cpp">
-      <Filter>Renderer\Pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer\ClassName.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -179,8 +176,11 @@
     <ClCompile Include="Renderer\Pipeline\DepthStencilSetup.cpp">
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\Pipeline\DynamicBuffer.cpp">
+    <ClCompile Include="Renderer\Pipeline\Pipeline.cpp">
       <Filter>Renderer\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\DynamicBuffer.cpp">
+      <Filter>Renderer\Resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

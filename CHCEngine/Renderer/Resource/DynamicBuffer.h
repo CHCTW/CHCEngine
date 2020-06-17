@@ -10,7 +10,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace CHCEngine {
 namespace Renderer {
-namespace Pipeline {
+namespace Resource {
 // an internal use buffer, help for uploading data to buffer and texture, also
 // this can be help on constant buffer, for binding that use pure desc, recycle
 // the memeory whe fence complete, so it's a thread safe structure
@@ -67,6 +67,7 @@ private:
   friend struct AllocateSpace;
   ComPtr<Device> device_;
   unsigned long long alignment_ = 0;
+  unsigned long long default_size_ = 0;
   std::shared_ptr<RingBuffer> createRingBuffer(unsigned long long size);
   std::queue<std::shared_ptr<RingBuffer>> ring_buffers_;
   std::mutex dynamic_buffer_mutex_;
@@ -74,7 +75,7 @@ private:
 
 public:
   DynamicBuffer(ComPtr<Device> device_, unsigned long long alignment_ = 0,
-                unsigned long long default_size = 2048);
+                unsigned long long default_size = 48);
   std::shared_ptr<AllocateSpace> reqeustSpace(unsigned long long size);
 };
 } // namespace Pipeline

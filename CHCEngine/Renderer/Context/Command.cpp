@@ -3,16 +3,18 @@
 
 #include "../D3D12Convert.h"
 #include "../D3D12Utilities.hpp"
+#include "../Pipeline/Pipeline.h"
 #include "../Resource/Buffer.h"
+#include "../Resource/DynamicBuffer.h"
 #include "../Resource/Resource.h"
 #include "ContextPool.h"
-#include "../Pipeline/Pipeline.h"
 
 namespace CHCEngine {
 namespace Renderer {
 
 namespace Context {
 void ContextCommand::free() {
+  allocated_spaces_.clear();
   referenced_resources_.clear();
   if (auto use_owner = owner_.lock()) {
     reset();
@@ -53,20 +55,24 @@ void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
   list_->SetPipelineState(pipeline_state.Get());
 }
 void ContextCommand::updateBufferRegion(
-    std::shared_ptr<Resource::Buffer> buffer, void *const data,
+    std::shared_ptr<Resource::Buffer> buffer, void const * data,
     unsigned long long data_byte_size, unsigned long long offset) {
   // current only for dynamic data, will have dynamic updload data for stataic
   // data later
-  if (buffer->getInformation().usage_ ==
-      Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC) {
-    memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
-    list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
-                            buffer->upload_buffer_.Get(), 0,
-                            data_byte_size);
-  } else {
-    throw std::exception(
-        "Doesn't support static data upload yet, will add it really soon");
-  }
+  memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
+  list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
+                          buffer->upload_buffer_.Get(), 0, data_byte_size);
+}
+void ContextCommand::updateBufferRegion(
+    std::shared_ptr<Resource::Buffer> buffer, void const * data,
+    unsigned long long data_byte_size, unsigned long long offset,
+    std::shared_ptr<Resource::AllocateSpace> allocate_space) {
+
+  memcpy(allocate_space->copy_point_, data, data_byte_size);
+  list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
+                          allocate_space->buffer_.Get(),
+                          allocate_space->gpu_offset_, data_byte_size);
+  allocated_spaces_.push_back(allocate_space);
 }
 void ContextCommand::drawInstanced(unsigned int vertex_count,
                                    unsigned int instance_count,

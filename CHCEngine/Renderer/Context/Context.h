@@ -19,6 +19,7 @@ class Renderer;
 class BaseFence;
 namespace Resource {
 class Resource;
+class DynamicBuffer;
 }
 namespace Context {
 class ContextPoolBase;

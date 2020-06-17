@@ -182,8 +182,18 @@ int main() {
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
            {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},
           ResourceState::RESOURCE_STATE_COPY_DEST,
-          Resource::ResourceUsage::RESOURCE_USAGE_DYNAMIC);
+          Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
   buffer->setName("vertex buffer");
+
+
+    std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
+      renderer.getVertexBuffer(
+          1,
+          {{"POSITION", DataFormat::DATA_FORMAT_R32_UINT}},
+          ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+          Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
+  frame_count_buffer->setName("frame count buffer");
+
 
   float tridata[] = {0.0f, 0.25f, 0.5f,   0.0f,   0.25f, -0.25f,
                      1.0f, 1.0f,  -0.25f, -0.25f, 0.0f,  1.0f};
@@ -192,9 +202,9 @@ int main() {
 
   copycontext->updateBuffer(buffer, tridata,
                             buffer->getBufferInformation().size_);
-  copycontext->resourceTransition(
+ /* copycontext->resourceTransition(
       buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
+      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);*/
   renderer.submitContexts(nullptr, copycontext)->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
@@ -216,18 +226,29 @@ int main() {
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->setPipeline(pipeline);
           graph->resourceTransition(
+              frame_count_buffer,
+              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+              ResourceState::RESOURCE_STATE_COPY_DEST);
+          graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
               ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
+          graph->updateBuffer(frame_count_buffer, &swap_chain_index,
+                              sizeof(swap_chain_index));
+          graph->updateBuffer(buffer, tridata,
+                                    buffer->getBufferInformation().size_);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
+          graph->resourceTransition(
+              frame_count_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_RENDER_TARGET,
               ResourceState::RESOURCE_STATE_PRESENT, true);
         },
-        true);
+        false);
 
     graphcis->setViewport(view_port);
     graphcis->setScissor(scissor);
