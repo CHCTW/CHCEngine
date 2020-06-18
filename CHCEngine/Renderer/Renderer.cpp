@@ -238,7 +238,7 @@ void Renderer::setSwapChain(Window::Window &window,
   swap_chain_desc.BufferCount = swap_chain_count_;
   swap_chain_desc.Width = size.X;
   swap_chain_desc.Height = size.Y;
-  swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  swap_chain_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
   swap_chain_desc.SampleDesc.Count = 1;
@@ -261,7 +261,11 @@ void Renderer::setSwapChain(Window::Window &window,
     ThrowIfFailed(swap_chain_->GetBuffer(i, IID_PPV_ARGS(&buffer)));
     auto swap_chain_range =
         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]->allocateRange(1);
-    device_->CreateRenderTargetView(buffer.Get(), nullptr,
+   // D3D_RednerTarget
+    D3D12_RENDER_TARGET_VIEW_DESC rtv = {};
+    rtv.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+    device_->CreateRenderTargetView(buffer.Get(), &rtv,
                                     swap_chain_range->getNextAvailableHandle());
     std::string n = "swap_chain_" + std::to_string(i);
     struct tempSwapChain : public Resource::SwapChainBuffer {

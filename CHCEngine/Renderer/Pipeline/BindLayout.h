@@ -1,8 +1,9 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <mutex>
+#include <vector>
+#include <string_view>
 
 #include "../Resource/Resource.h"
 #include "Shader.h"
@@ -11,6 +12,9 @@ using Microsoft::WRL::ComPtr;
 
 namespace CHCEngine {
 namespace Renderer {
+namespace Context {
+class GraphicsContext;
+}
 namespace Pipeline {
 // blind slot will have 1~many bind format, and will have
 // a name to get by bindlayout to get the index,
@@ -30,8 +34,8 @@ struct BindSlot {
       : formats_(formats) {
     if (!checkAndMoveUnbound(formats_)) {
       formats_.clear();
-      throw std::exception(
-          "Samper with other resrouces/Root Constant with others/More than one unbound binding");
+      throw std::exception("Samper with other resrouces/Root Constant with "
+                           "others/More than one unbound binding");
     }
     if (formats.empty()) {
       throw std::exception("Need at least one BindFormat in vector");
@@ -42,8 +46,8 @@ struct BindSlot {
   BindSlot(const std::vector<BindFormat> &formats) : formats_(formats) {
     if (!checkAndMoveUnbound(formats_)) {
       formats_.clear();
-      throw std::exception(
-          "Samper with other resrouces/Root Constant with others/More than one unbound binding");
+      throw std::exception("Samper with other resrouces/Root Constant with "
+                           "others/More than one unbound binding");
     }
     if (formats.empty()) {
       throw std::exception("Need at least one Bindformat in vector");
@@ -55,26 +59,26 @@ struct BindSlot {
 // only have query and bind for user, setting is done once generate
 // can consider update in future, but this might also effect created pipeline
 
-// not a thread safe object for now!!! need to consider more 
+// not a thread safe object for now!!! need to consider more
 class BindLayout {
 private:
-  std::vector<BindSlot>
-      bind_layout_;
+  std::vector<BindSlot> bind_layout_;
   std::vector<std::shared_ptr<Resource::Resource>> prebind_resources_;
   std::unordered_map<std::string, unsigned int> name_table_;
   ComPtr<BindSignature> bind_signature_;
+  std::string name_;
   friend class Renderer;
-
+  friend class Context::GraphicsContext;
 public:
   BindLayout(ComPtr<BindSignature> bind_signature,
-             const std::vector<BindSlot>
-                 bind_layout);
+             const std::vector<BindSlot> bind_layout);
   void setBindResource(unsigned int layout_index,
                        std::shared_ptr<Resource::Resource> resource);
   void setBindResource(const std::string &slot_name,
-                    std::shared_ptr<Resource::Resource> resource);
-  //retrun a unsigned int  max if didn't find the name
+                       std::shared_ptr<Resource::Resource> resource);
+  // retrun a unsigned int  max if didn't find the name
   unsigned int getBindIndex(const std::string &slot_name);
+  void setName(std::string_view name);
 };
 
 } // namespace Pipeline

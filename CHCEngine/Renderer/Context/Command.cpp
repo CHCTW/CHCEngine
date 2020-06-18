@@ -16,6 +16,8 @@ namespace Context {
 void ContextCommand::free() {
   allocated_spaces_.clear();
   referenced_resources_.clear();
+  pipeline_state_ = nullptr;
+  graphics_bind_signature_ = nullptr;
   if (auto use_owner = owner_.lock()) {
     reset();
     use_owner->freeContextCommand(id_);
@@ -53,6 +55,7 @@ void ContextCommand::clearSwapChainBuffer(CPUDescriptorHandle handle,
 }
 void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
   list_->SetPipelineState(pipeline_state.Get());
+  pipeline_state_ = pipeline_state;
 }
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const * data,
@@ -86,6 +89,26 @@ void ContextCommand::setViewport(const Pipeline::Viewport &viewport) {
 }
 void ContextCommand::setScissor(const Pipeline::Scissor &scissor) {
   list_->RSSetScissorRects(1, &scissor);
+}
+void ContextCommand::setVertexBuffers(
+    const std::vector<std::shared_ptr<Resource::Buffer>> &buffers) {
+  D3D12_VERTEX_BUFFER_VIEW vbs[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+  for (unsigned int i = 0 ; i < buffers.size() ; ++i) {
+    referenced_resources_.emplace_back(buffers[i]);
+    vbs[i] = *buffers[i]->vertex_buffer_view_;
+  }
+  list_->IASetVertexBuffers(0,static_cast<unsigned int>(buffers.size()), vbs);
+}
+void ContextCommand::setTopology(PrimitiveTopology topology) {
+  list_->IASetPrimitiveTopology(convertToD3DPrimitiveTopology(topology));
+}
+void ContextCommand::setRenderTarget(CPUDescriptorHandle handle) {
+  list_->OMSetRenderTargets(1, &handle, false, nullptr);
+}
+void ContextCommand::setGraphicsBindSignature(
+    ComPtr<BindSignature> bind_signature) {
+  list_->SetGraphicsRootSignature(bind_signature.Get());
+  graphics_bind_signature_ = bind_signature;
 }
 } // namespace Context
 } // namespace Renderer

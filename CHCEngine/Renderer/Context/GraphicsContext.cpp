@@ -31,6 +31,22 @@ void GraphicsContext::setViewport(const Pipeline::Viewport &viewport) {
 void GraphicsContext::setScissor(const Pipeline::Scissor &scissor) {
   context_command_->setScissor(scissor);
 }
+void GraphicsContext::setVertexBuffers(
+    const std::vector<std::shared_ptr<Resource::Buffer>> & buffers) {
+  context_command_->setVertexBuffers(buffers);
+}
+void GraphicsContext::setPrimitiveTopology(PrimitiveTopology topology) {
+  context_command_->setTopology(topology);
+}
+void GraphicsContext::setRenderTarget(
+    std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer) {
+  context_command_->setRenderTarget(swap_chain_buffer->getDescriptor());
+}
+void GraphicsContext::setGraphicsBindLayout(
+    std::shared_ptr<Pipeline::BindLayout> bind_layout) {
+  graphics_layout_ = bind_layout;
+  context_command_->setGraphicsBindSignature(bind_layout->bind_signature_);
+}
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

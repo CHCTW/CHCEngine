@@ -16,6 +16,7 @@ namespace Resource {
 class Resource;
 class Buffer;
 struct AllocateSpace;
+class Buffer;
 } // namespace Resource
 namespace Context {
 class ContextPoolBase;
@@ -55,6 +56,8 @@ struct ContextCommand {
   ComPtr<CommandList> list_;
   std::vector<std::shared_ptr<Resource::Resource>> referenced_resources_;
   std::vector<std::shared_ptr<Resource::AllocateSpace>> allocated_spaces_;
+  ComPtr<BindSignature> graphics_bind_signature_;
+  ComPtr<PipelineState> pipeline_state_;
   ContextCommand(unsigned long long id, ComPtr<CommandAllocator> allocator,
                  ComPtr<CommandList> list, std::weak_ptr<ContextPoolBase> owner)
       : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
@@ -76,6 +79,11 @@ struct ContextCommand {
                      unsigned int start_instance_location);
   void setViewport(const Pipeline::Viewport &viewport);
   void setScissor(const Pipeline::Scissor &scissor);
+  void setVertexBuffers(
+      const std::vector<std::shared_ptr<Resource::Buffer>> &buffers);
+  void setTopology(PrimitiveTopology topology);
+  void setRenderTarget(CPUDescriptorHandle handle);
+  void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
 };
 } // namespace Context
 } // namespace Renderer

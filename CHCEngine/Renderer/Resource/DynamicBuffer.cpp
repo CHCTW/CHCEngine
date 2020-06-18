@@ -100,7 +100,6 @@ bool RingBuffer::FreeSpace(unsigned long long start, unsigned long long size) {
     // free if already in the table
     while (free_table_.count(start_)) {
       auto it = free_table_.find(start_);
-    std::cout << start_ << "  " << it->second << std::endl;
       start_ += it->second;
       remain_space_ += it->second;
       free_table_.erase(it);
@@ -170,13 +169,12 @@ DynamicBuffer::reqeustSpace(unsigned long long size) {
   auto allocate = std::make_shared<AllocateSpace>();
   std::lock_guard<std::mutex> lock(dynamic_buffer_mutex_);
   if (ring_buffers_.empty()) {
-    ring_buffers_.push(
-        createRingBuffer((std::max)(default_size_, default_size_)));
+    ring_buffers_.push(createRingBuffer((std::max)(default_size_, size*2)));
   }
   if (!ring_buffers_.back()->RequestSpace(size, allocate)) {
     //std::cout << "create new queue" << std::endl;
     ring_buffers_.push(
-        createRingBuffer((std::max)(ring_buffers_.back()->size_, size) * 3));
+        createRingBuffer((std::max)(ring_buffers_.back()->size_, size) * 2));
     ring_buffers_.back()->RequestSpace(size, allocate);
   }
   return allocate;

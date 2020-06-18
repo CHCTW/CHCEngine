@@ -26,5 +26,7 @@ D3D12_FILL_MODE convertToD3D12FillMode(FillMode fill_mode);
 D3D12_CULL_MODE convertToD3D12CullMode(CullMode cull_mode);
 D3D12_PRIMITIVE_TOPOLOGY_TYPE
 convertToD3D12PrimitiveTopologyType(PrimitiveTopologyType type);
+D3D_PRIMITIVE_TOPOLOGY
+convertToD3DPrimitiveTopology(PrimitiveTopology topology);
 }  // namespace Renderer
 }  // namespace CHCEngine

@@ -1,13 +1,12 @@
 #include "../ClassName.h"
 
 #include "BindLayout.h"
-#include <limits>
 #include <algorithm>
+#include <limits>
 namespace CHCEngine {
 namespace Renderer {
 namespace Pipeline {
-bool BindSlot::checkAndMoveUnbound(
-    std::vector<BindFormat> &formats) {
+bool BindSlot::checkAndMoveUnbound(std::vector<BindFormat> &formats) {
   bool findsample = false;
   bool findother = false;
   bool findunbound = false;
@@ -30,7 +29,7 @@ bool BindSlot::checkAndMoveUnbound(
       }
       findother = true;
     }
-    if (format.resource_count_==0) {
+    if (format.resource_count_ == 0) {
       if (findunbound) {
         return false;
       }
@@ -41,7 +40,7 @@ bool BindSlot::checkAndMoveUnbound(
   }
   // keep unbound at the end
   if (findunbound) {
-    std::swap(formats[unbound_index], formats[formats.size()-1]);
+    std::swap(formats[unbound_index], formats[formats.size() - 1]);
   }
   return true;
 }
@@ -77,6 +76,11 @@ unsigned int BindLayout::getBindIndex(const std::string &slot_name) {
   if (name_table_.count(slot_name))
     return name_table_[slot_name];
   return (std::numeric_limits<unsigned int>::max)();
+}
+void BindLayout::setName(std::string_view name) {
+  std::string temp(name);
+  NAME_D3D12_OBJECT_STRING(bind_signature_, temp);
+  name_ = name;
 }
 } // namespace Pipeline
 } // namespace Renderer

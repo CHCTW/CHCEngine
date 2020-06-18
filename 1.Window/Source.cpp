@@ -175,37 +175,35 @@ int main() {
   // Pipeline::BindSlot dummyslot;
   // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
   auto bind_layout = renderer.getBindLayout({});
+  bind_layout->setName("Empty layout");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getVertexBuffer(
           3,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
            {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},
-          ResourceState::RESOURCE_STATE_COPY_DEST,
+          ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
           Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
   buffer->setName("vertex buffer");
 
-
-    std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
+  std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
       renderer.getVertexBuffer(
-          1,
-          {{"POSITION", DataFormat::DATA_FORMAT_R32_UINT}},
+          1, {{"POSITION", DataFormat::DATA_FORMAT_R32_UINT}},
           ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
           Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
   frame_count_buffer->setName("frame count buffer");
 
-
   float tridata[] = {0.0f, 0.25f, 0.5f,   0.0f,   0.25f, -0.25f,
                      1.0f, 1.0f,  -0.25f, -0.25f, 0.0f,  1.0f};
 
-  auto copycontext = renderer.getGraphicsContext();
+  /*auto copycontext = renderer.getGraphicsContext();
 
   copycontext->updateBuffer(buffer, tridata,
                             buffer->getBufferInformation().size_);
- /* copycontext->resourceTransition(
+  copycontext->resourceTransition(
       buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);*/
-  renderer.submitContexts(nullptr, copycontext)->waitComplete();
+      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
+  renderer.submitContexts(nullptr, copycontext)->waitComplete();*/
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
       renderer.getIndexBuffer(6);
@@ -214,7 +212,7 @@ int main() {
       shset, {buffer->getBufferInformation().vetex_attributes_}, bind_layout);
   pipeline->setName("simple pipeline");
 
-  auto graphcis = renderer.getGraphicsContext();
+  auto graphics = renderer.getGraphicsContext();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,
                                window.getFrameSize().Y);
@@ -222,37 +220,41 @@ int main() {
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    graphcis->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
+    graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
-          graph->setPipeline(pipeline);
           graph->resourceTransition(
-              frame_count_buffer,
+              buffer,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
               ResourceState::RESOURCE_STATE_COPY_DEST);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
-          graph->updateBuffer(frame_count_buffer, &swap_chain_index,
-                              sizeof(swap_chain_index));
+              ResourceState::RESOURCE_STATE_RENDER_TARGET,true);
+         // srand(frame);
+          tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
           graph->updateBuffer(buffer, tridata,
                                     buffer->getBufferInformation().size_);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
           graph->resourceTransition(
-              frame_count_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT, true);
+              buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,true);
         },
         false);
-
-    graphcis->setViewport(view_port);
-    graphcis->setScissor(scissor);
-    renderer.submitContexts(nullptr, graphcis);
+    graphics->setPipeline(pipeline);
+    graphics->setGraphicsBindLayout(bind_layout);
+    graphics->setVertexBuffers(buffer);
+    graphics->setViewport(view_port);
+    graphics->setScissor(scissor);
+    graphics->setPrimitiveTopology(
+        PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    graphics->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
+    graphics->drawInstanced(3);
+    graphics->resourceTransition(renderer.getSwapChainBuffer(swap_chain_index),
+                                 ResourceState::RESOURCE_STATE_RENDER_TARGET,
+                                 ResourceState::RESOURCE_STATE_PRESENT, true);
+    renderer.submitContexts(nullptr, graphics);
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

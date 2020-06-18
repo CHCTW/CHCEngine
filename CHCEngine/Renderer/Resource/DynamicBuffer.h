@@ -75,7 +75,7 @@ private:
 
 public:
   DynamicBuffer(ComPtr<Device> device_, unsigned long long alignment_ = 0,
-                unsigned long long default_size = 48);
+                unsigned long long default_size = 2048);
   std::shared_ptr<AllocateSpace> reqeustSpace(unsigned long long size);
 };
 } // namespace Pipeline
