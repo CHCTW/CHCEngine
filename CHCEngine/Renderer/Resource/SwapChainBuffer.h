@@ -19,7 +19,7 @@ class SwapChainBuffer : public Resource {
                   const std::string& name, unsigned int width,
                   unsigned int height)
       : Resource(gpu_resource, name, ResourceType::RESOURCE_TYPE_SWAP_CHAIN,
-                 ResourceUsage::RESOURCE_USAGE_NONE),
+                 ResourceUpdateType::RESOURCE_UPDATE_TYPE_NONE),
         descriptors_(descriptors),
         width_(width),
         height_(height) {}

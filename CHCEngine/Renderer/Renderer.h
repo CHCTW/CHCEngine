@@ -151,8 +151,8 @@ public:
       unsigned int vertex_count,
       const std::vector<std::pair<std::string, DataFormat>> &attributes,
       ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
-      Resource::ResourceUsage usage =
-          Resource::ResourceUsage::RESOURCE_USAGE_STATIC) {
+      Resource::ResourceUpdateType usage =
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getVertexBuffer(vertex_count, attributes,
                                            initial_state, usage);
   }
@@ -161,8 +161,8 @@ public:
       unsigned int index_count,
       IndexFormat index_format = IndexFormat::INDEX_FORMAT_32_UINT,
       ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
-      Resource::ResourceUsage usage =
-          Resource::ResourceUsage::RESOURCE_USAGE_STATIC) {
+      Resource::ResourceUpdateType usage =
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getIndexBuffer(index_count, index_format,
                                           initial_state, usage);
   }

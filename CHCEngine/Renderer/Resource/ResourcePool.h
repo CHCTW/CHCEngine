@@ -2,10 +2,10 @@
 
 #include <wrl/client.h>
 
-#include <unordered_map>
-#include <mutex>
 #include "../DescriptorHeap.h"
 #include "Buffer.h"
+#include <mutex>
+#include <unordered_map>
 
 using Microsoft::WRL::ComPtr;
 
@@ -15,7 +15,7 @@ namespace Resource {
 // the part really create the buffe and texture
 // these give the free if I want to make some memeory management here
 class ResourcePool {
- private:
+private:
   ComPtr<Device> device_;
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorHeap>>
       static_heaps_;
@@ -25,7 +25,7 @@ class ResourcePool {
   std::mutex pool_mutex_;
   unsigned long long getNextBufferId(BufferType type);
 
- public:
+public:
   ResourcePool(ComPtr<Device> device,
                std::shared_ptr<DescriptorHeap> srv_uav_cbv,
                std::shared_ptr<DescriptorHeap> rtv,
@@ -33,14 +33,20 @@ class ResourcePool {
   // we assume the vertex buffer is wait for upload
   std::shared_ptr<Buffer> getVertexBuffer(
       unsigned int vertex_count,
-      const std::vector<std::pair<std::string, DataFormat>>& attributes,
-      ResourceState initial_state, ResourceUsage usage);
+      const std::vector<std::pair<std::string, DataFormat>> &attributes,
+      ResourceState initial_state, ResourceUpdateType usage);
   std::shared_ptr<Buffer> getIndexBuffer(unsigned int index_count,
                                          IndexFormat index_format,
                                          ResourceState initial_state,
-                                         ResourceUsage usage);
+                                         ResourceUpdateType usage);
+  std::shared_ptr<Buffer>
+  getBuffer(unsigned int element_count, unsigned int element_byte_size,
+            const std::vector<BufferUsage> &usages,
+            const std::vector<std::pair<std::string, DataFormat>> &attributes,
+            IndexFormat index_format, ResourceState initial_state,
+            ResourceUpdateType update_type);
 };
 
-}  // namespace Resource
-}  // namespace Renderer
-}  // namespace CHCEngine
+} // namespace Resource
+} // namespace Renderer
+} // namespace CHCEngine

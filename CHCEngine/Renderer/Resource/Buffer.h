@@ -13,26 +13,26 @@ struct ContextCommand;
 class DescriptorRange;
 namespace Resource {
 enum class BufferType {
-  BUFFER_TYPE_NONE,
-  BUFFER_TYPE_VERTEX,
-  BUFFER_TYPE_INDEX,
-  BUFFER_TYPE_CONSTANT,
-  BUFFER_TYPE_STRUCTERED,
-  BUFFER_TYPE_COUNTER,
-  BUFFER_TYPE_RAW,
-  BUFFER_TYPE_CUSTOM
+  BUFFER_TYPE_NONE = 0x0,
+  BUFFER_TYPE_VERTEX = 0x1,
+  BUFFER_TYPE_INDEX = 0x2,
+  BUFFER_TYPE_CONSTANT = 0x4,
+  BUFFER_TYPE_STRUCTERED = 0x8,
+  BUFFER_TYPE_COUNTER = 0x10,
+  BUFFER_TYPE_RAW = 0x20,
+  BUFFER_TYPE_CUSTOM = 0xff,
 };
-// basiclly for construct buffer,
-enum class BufferUsage {
-  BUFFER_USAGE_NONE = 0,
-  BUFFER_USAGE_READ = 1,
+// basiclly for struct buffer,
+enum class BufferReadWrite {
+  BUFFER_READ_WRITE_NONE = 0,
+  BUFFER_READ_WRITE_READ = 1,
   BUFFER_USAGE_WRITE = 2,
 };
 using Attributes =
     std::unordered_map<std::string, std::pair<unsigned int, DataFormat>>;
 struct BufferInformation {
   BufferType type_ = BufferType::BUFFER_TYPE_NONE;
-  BufferUsage usage_ = BufferUsage::BUFFER_USAGE_NONE;
+  BufferReadWrite usage_ = BufferReadWrite::BUFFER_READ_WRITE_NONE;
   unsigned long long size_ = 0;
   unsigned int strdie_size_ = 0;
   // use sematic name as key to get the offset and format
@@ -47,8 +47,6 @@ protected:
   friend struct Context::ContextCommand;
   BufferInformation buffer_information_;
   // for different view possible; like counter buffer, will have read and write
-  std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-      descriptors_;
   std::shared_ptr<VertexBufferView> vertex_buffer_view_;
   std::shared_ptr<IndexBufferView> index_buffer_view_;
 
@@ -58,9 +56,20 @@ public:
   Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
          ResourceInformation information, BufferInformation buffer_information,
          std::shared_ptr<VertexBufferView> vertex_buffer_view_);
+  // index Buffer initialize
   Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
          ResourceInformation information, BufferInformation buffer_information,
          std::shared_ptr<IndexBufferView> index_buffer_view);
+
+  Buffer(
+      ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+      ResourceInformation information, BufferInformation buffer_information,
+      const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+          &descriptor_ranges,
+      const std::vector<std::pair<DescriptorType, unsigned int>>& descriptor_indices,
+      std::shared_ptr<VertexBufferView> vertex_buffer_view,
+      std::shared_ptr<IndexBufferView> index_buffer_view);
+
   const BufferInformation &getBufferInformation();
   BufferType getBufferType();
 };

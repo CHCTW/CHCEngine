@@ -95,16 +95,16 @@ int main() {
   std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
-    float2 uv : TEXCOORD;\
+    float3 color : COLOR;\
   };\
-  PSInput VSMain(float2 position : POSITION, float2 uv : TEXCOORD) {\
+  PSInput VSMain(float2 position : POSITION, float3 color : COLOR) {\
     PSInput result;\
     result.position = float4(position, 1.0, 1.0);\
-    result.uv = uv;\
+    result.color = color;\
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
-    return float4(input.uv,0,0);\
+    return float4(input.color,0);\
   }";
 
   std::string compute = "struct Particle\
@@ -181,20 +181,20 @@ int main() {
       renderer.getVertexBuffer(
           3,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
-           {"TEXCOORD", DataFormat::DATA_FORMAT_R32G32_FLOAT}},
+           {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}},
           ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-          Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
   buffer->setName("vertex buffer");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
       renderer.getVertexBuffer(
           1, {{"POSITION", DataFormat::DATA_FORMAT_R32_UINT}},
           ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-          Resource::ResourceUsage::RESOURCE_USAGE_STATIC);
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
   frame_count_buffer->setName("frame count buffer");
 
-  float tridata[] = {0.0f, 0.25f, 0.5f,   0.0f,   0.25f, -0.25f,
-                     1.0f, 1.0f,  -0.25f, -0.25f, 0.0f,  1.0f};
+  float tridata[] = {0.0f, 0.25f, 1.0f,   0.0f,   0.0f, 0.25f, -0.25f, 0.0f,
+                     1.0f, 0.0f,  -0.25f, -0.25f, 0.0f, 0.0f,  1.0f};
 
   /*auto copycontext = renderer.getGraphicsContext();
 
@@ -223,23 +223,24 @@ int main() {
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->resourceTransition(
-              buffer,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
               ResourceState::RESOURCE_STATE_COPY_DEST);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,true);
-         // srand(frame);
-          tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
+              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
+         // tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
+          tridata[7] = ((float)(rand() % 1000)) / 1000.0f;
+          tridata[8] = ((float)(rand() % 1000)) / 1000.0f;
+          tridata[9] = ((float)(rand() % 1000)) / 1000.0f;
           graph->updateBuffer(buffer, tridata,
-                                    buffer->getBufferInformation().size_);
+                              buffer->getBufferInformation().size_);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
           graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,true);
+              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
         },
         false);
     graphics->setPipeline(pipeline);

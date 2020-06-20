@@ -39,7 +39,7 @@ inline void SetNameString(ID3D12Object *pObject, std::string name) {}
 namespace CHCEngine {
 namespace Renderer {
 #define NAME_D3D12_OBJECT(x) SetName((x).Get(), L#x);
-#define NAME_D3D12_OBJECT_STRING(x, name)\
+#define NAME_D3D12_OBJECT_STRING(x, name)                                      \
   SetNameString((x).Get(), name.c_str());
 using Device = ID3D12Device;
 using Factory = IDXGIFactory4;
@@ -83,6 +83,7 @@ enum class DescriptorType {
   DESCRIPTOR_TYPE_DSV,
   DESCRIPTOR_TYPE_COUNT,
 };
+
 using CommandQueue = ID3D12CommandQueue;
 using CommandAllocator = ID3D12CommandAllocator;
 using CommandList = ID3D12GraphicsCommandList6;
@@ -370,7 +371,32 @@ enum class BindUsage {
   BIND_USAGE_SAMPLER,
   BIND_USAGE_UNKNOWN,
 };
-
+enum class ResourceUsage {
+  RESOURCE_USAGE_CBV,
+  RESOURCE_USAGE_SRV,
+  RESOURCE_USAGE_UAV,
+  RESOURCE_USAGE_RTV,
+  RESOURCE_USAGE_DSV,
+  RESOURCE_USAGE_SAMPLER,
+  RESOURCE_USAGE_UNKNOWN,
+};
+inline DescriptorType getDescriptorType(ResourceUsage usage) {
+  switch (usage) {
+  case ResourceUsage::RESOURCE_USAGE_CBV:
+    return DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV;
+  case ResourceUsage::RESOURCE_USAGE_SRV:
+    return DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV;
+  case ResourceUsage::RESOURCE_USAGE_UAV:
+    return DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV;
+  case ResourceUsage::RESOURCE_USAGE_RTV:
+    return DescriptorType::DESCRIPTOR_TYPE_RTV;
+  case ResourceUsage::RESOURCE_USAGE_DSV:
+    return DescriptorType::DESCRIPTOR_TYPE_DSV;
+  case ResourceUsage::RESOURCE_USAGE_SAMPLER:
+    return DescriptorType::DESCRIPTOR_TYPE_SAMPLER;
+  }
+  return DescriptorType::DESCRIPTOR_TYPE_COUNT;
+}
 enum class ShaderType {
   SHADER_TYPE_NONE,
   SHADER_TYPE_VERTEX,
@@ -532,11 +558,7 @@ enum class FillMode {
   FILL_MODE_WIREFRAME,
   FILL_MODE_SOLID,
 };
-enum class CullMode {
-  CULL_MODE_NONE,
-  CULL_MODE_FRONT,
-  CULL_MODE_BACK
-};
+enum class CullMode { CULL_MODE_NONE, CULL_MODE_FRONT, CULL_MODE_BACK };
 enum class PrimitiveTopologyType {
   PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED,
   PRIMITIVE_TOPOLOGY_TYPE_POINT,
@@ -593,6 +615,48 @@ enum class PrimitiveTopology {
   PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST,
   PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST,
   PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST,
+};
+static unsigned int counter_buffer_alignment_ =
+    D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
+static unsigned int constant_buffer_alignment_ = 256;
+static unsigned int count_size_ = sizeof(unsigned int);
+// should have buffer usage and texture usage
+// will have a siimple check whether it is right dimension
+// buffer, the element size and element szie should be
+// provided when create buffer
+struct BufferUsage {
+  ResourceUsage usage_ = ResourceUsage::RESOURCE_USAGE_UNKNOWN;
+  unsigned long long start_index_ = 0;
+  bool is_writable_  = false;
+  bool uav_use_counter_ = false;
+  bool is_raw_buffer_ = false;
+};
+using MipSlice = unsigned int;
+struct MipRange {
+  unsigned int mips_start_level_ = 0;
+  unsigned int mips_count_ = 1;
+  float lod_lower_bound_ = 0.0f;
+};
+// count_ will be have a min(depth,count) when create
+// desc, -1 is good for 3d, for cube, this is first
+// face start and cube counts will become min((depth-array_index)/6,count)
+struct SubTexturesRange {
+  unsigned int array_index_ = 0;
+  unsigned int count_ = -1;
+};
+// take a look at d3d12 array and mip slice
+// https://docs.microsoft.com/en-us/windows/win32/direct3d12/subresources
+// this is just a srv/dsv/rtv combined descriptor
+struct TextureUsage {
+  ResourceUsage usage_ = ResourceUsage::RESOURCE_USAGE_UNKNOWN;
+  DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
+  DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
+  union {
+    MipSlice mip_slice = 0;
+    MipRange mip_range;
+  };
+  SubTexturesRange sub_texture_ranges_;
+  unsigned int plane_slice_ = 0;
 };
 } // namespace Renderer
 } // namespace CHCEngine

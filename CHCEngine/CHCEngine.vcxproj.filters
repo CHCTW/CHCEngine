@@ -65,9 +65,6 @@
     <ClInclude Include="Renderer\Resource\ResourcePool.h">
       <Filter>Renderer\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\Resource\Utility.hpp">
-      <Filter>Renderer\Resource</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\Pipeline\Shader.h">
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
@@ -96,6 +93,9 @@
       <Filter>Renderer\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Renderer\Resource\DynamicBuffer.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\Resource\Utilities.hpp">
       <Filter>Renderer\Resource</Filter>
     </ClInclude>
   </ItemGroup>

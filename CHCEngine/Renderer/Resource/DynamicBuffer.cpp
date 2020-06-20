@@ -116,7 +116,7 @@ bool RingBuffer::FreeSpace(unsigned long long start, unsigned long long size) {
 std::shared_ptr<RingBuffer>
 DynamicBuffer::createRingBuffer(unsigned long long size) {
 
-  size = (size + alignment_) & ~alignment_;
+  size = (size + (alignment_-1)) & ~(alignment_-1);
   ComPtr<GPUResource> buffer;
   ComPtr<GPUResource> res;
   D3D12_HEAP_PROPERTIES heap_property;

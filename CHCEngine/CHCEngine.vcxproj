@@ -112,7 +112,7 @@
     <ClInclude Include="Renderer\Resource\Resource.h" />
     <ClInclude Include="Renderer\Resource\ResourcePool.h" />
     <ClInclude Include="Renderer\Resource\SwapChainBuffer.h" />
-    <ClInclude Include="Renderer\Resource\Utility.hpp" />
+    <ClInclude Include="Renderer\Resource\Utilities.hpp" />
     <ClInclude Include="Window\GLFWInputConvert.h" />
     <ClInclude Include="Window\InputTable.h" />
     <ClInclude Include="Window\Window.h" />
