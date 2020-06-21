@@ -19,10 +19,9 @@
 #include "DescriptorHeap.h"
 #include "Pipeline/BindLayout.h"
 #include "Pipeline/Pipeline.h"
+#include "Resource/DynamicBuffer.h"
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"
-#include "Resource/DynamicBuffer.h"
-
 
 using Microsoft::WRL::ComPtr;
 
@@ -110,8 +109,7 @@ private:
 
   std::shared_ptr<Resource::DynamicBuffer> dynamic_upload_buffer_;
 
-
-    // fence pool should be at the bottom of this class, in desc, this will
+  // fence pool should be at the bottom of this class, in desc, this will
   // wait all the fence thus no resouce will be release while looping
   // however, fence may still need to record the using resource
   std::shared_ptr<Context::FencePool> fence_pool_;
@@ -151,21 +149,36 @@ public:
       unsigned int vertex_count,
       const std::vector<std::pair<std::string, DataFormat>> &attributes,
       ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
-      Resource::ResourceUpdateType usage =
+      Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getVertexBuffer(vertex_count, attributes,
-                                           initial_state, usage);
+                                           initial_state, update_type);
   }
 
   std::shared_ptr<Resource::Buffer> getIndexBuffer(
       unsigned int index_count,
       IndexFormat index_format = IndexFormat::INDEX_FORMAT_32_UINT,
       ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
-      Resource::ResourceUpdateType usage =
+      Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getIndexBuffer(index_count, index_format,
-                                          initial_state, usage);
+                                          initial_state, update_type);
   }
+
+  std::shared_ptr<Resource::Buffer> getBuffer(
+      unsigned int element_count, unsigned int element_byte_size,
+      const std::vector<BufferUsage> &usages,
+      ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+      Resource::ResourceUpdateType update_type =
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
+      const std::vector<std::pair<std::string, DataFormat>> &attributes = {},
+      IndexFormat index_format = IndexFormat::INDEX_FORMAT_NONE) {
+
+    return resource_pool_->getBuffer(element_count, element_byte_size, usages,
+                                     attributes, index_format, initial_state,
+                                     update_type);
+  }
+
   // shader visiblity should be the same in the same slot, but it's find.
   // just going to set as all vis in rootsignature, but it's probally be nice to
   // have the same visiblity

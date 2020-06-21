@@ -15,7 +15,7 @@ DescriptorHeap::DescriptorHeap(ComPtr<Device> device, DescriptorType type,
                                unsigned int size, const std::string &name,
                                bool shader_visible)
     : type_(type), size_(size), descriptor_size_(0), device_(device),
-      name_(name), id_counter_(0), shader_visible_(shader_visible) {
+      name_(name), id_counter_(0), shader_visible_(false) {
   if (size == 0) {
     throw std::runtime_error(name_ + " Can't set 0 size descriptor heap");
   }
@@ -24,6 +24,7 @@ DescriptorHeap::DescriptorHeap(ComPtr<Device> device, DescriptorType type,
   if (shader_visible && (type == DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV ||
                          type == DescriptorType::DESCRIPTOR_TYPE_SAMPLER)) {
     flag = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    shader_visible_ = true;
   }
   D3D12_DESCRIPTOR_HEAP_DESC desc_heap_desc = {
       convertToD3DDescriptorHeapType(type), size, flag};
@@ -61,6 +62,11 @@ DescriptorHeap::allocateRange(unsigned int size) {
   CPUDescriptorHandle handle =
       descriptors_->GetCPUDescriptorHandleForHeapStart();
   handle.offset(start, descriptor_size_);
+  GPUDescriptorHandle gpu_handle;
+  if (shader_visible_) {
+    gpu_handle = descriptors_->GetGPUDescriptorHandleForHeapStart();
+    gpu_handle.offset(start, descriptor_size_);
+  }
   struct tempDescriptorRange : public DescriptorRange {
     tempDescriptorRange(unsigned long long id, unsigned int start_index,
                         unsigned int size, CPUDescriptorHandle first_handle,
@@ -70,11 +76,35 @@ DescriptorHeap::allocateRange(unsigned int size) {
         : DescriptorRange(id, start_index, size, first_handle, descriptor_size,
                           range_owner, auto_free) {}
   };
-  auto ret = std::make_shared<tempDescriptorRange>(id_counter_, start, size,
-                                                   handle, descriptor_size_,
-                                                   weak_from_this(), true);
+
+  struct tempSahderVizDescriptorRange : public DescriptorRange {
+    tempSahderVizDescriptorRange(unsigned long long id,
+                                 unsigned int start_index, unsigned int size,
+                                 CPUDescriptorHandle first_handle,
+                                 GPUDescriptorHandle first_gpu_handle,
+                                 unsigned int descriptor_size,
+                                 std::weak_ptr<DescriptorHeap> range_owner,
+                                 bool auto_free)
+        : DescriptorRange(id, start_index, size, first_handle, first_gpu_handle,
+                          descriptor_size, range_owner, auto_free) {}
+  };
+
+  std::shared_ptr<DescriptorRange> ret;
+  if (!shader_visible_) {
+    ret = std::make_shared<tempDescriptorRange>(id_counter_, start, size,
+                                                handle, descriptor_size_,
+                                                weak_from_this(), true);
+  } else {
+    ret = std::make_shared<tempSahderVizDescriptorRange>(
+        id_counter_, start, size, handle, gpu_handle, descriptor_size_,
+        weak_from_this(),
+        true);
+  }
+
   DescriptorRange range(id_counter_, start, size, handle, descriptor_size_,
                         weak_from_this());
+  if (shader_visible_)
+    range.shader_visible = true;
   ++id_counter_;
   allocalted_range_.emplace(range.id_, range);
   return ret; // namespace*/
@@ -109,7 +139,7 @@ void DescriptorHeap::freeRange(const unsigned long long id) {
         combine_front = true;
       }
       if (combine_front) { // update index and length
-        //std::cout << "front free : " << front_unused->second->first << ","
+        // std::cout << "front free : " << front_unused->second->first << ","
         //          << front_unused->second->second << std::endl;
         start = front_unused->second->first;
         length += front_unused->second->second;
@@ -119,7 +149,7 @@ void DescriptorHeap::freeRange(const unsigned long long id) {
         start_index_table_.erase(front_unused);
       }
       if (combine_back) { // update length
-        //std::cout << "back free : " << back_unused->second->first << ","
+        // std::cout << "back free : " << back_unused->second->first << ","
         //          << back_unused->second->second << std::endl;
         length += back_unused->second->second;
         range_size_table_.erase(std::make_pair(back_unused->second->second,

@@ -45,7 +45,8 @@ bool BindSlot::checkAndMoveUnbound(std::vector<BindFormat> &formats) {
   return true;
 }
 BindLayout::BindLayout(ComPtr<BindSignature> bind_signature,
-                       const std::vector<BindSlot> bind_layout) {
+                       const std::vector<BindSlot> &bind_layout,
+                       const std::vector<bool> &direct_bind) {
   for (int i = 0; i < bind_layout.size(); ++i) {
     if (name_table_.count(bind_layout[i].bind_slot_name_)) {
       name_table_.clear();
@@ -56,6 +57,7 @@ BindLayout::BindLayout(ComPtr<BindSignature> bind_signature,
   prebind_resources_.resize(bind_layout.size());
   bind_signature_ = bind_signature;
   bind_layout_ = bind_layout;
+  direct_bind_ = direct_bind;
 }
 void BindLayout::setBindResource(unsigned int layout_index,
                                  std::shared_ptr<Resource::Resource> resource) {
@@ -72,7 +74,7 @@ void BindLayout::setBindResource(const std::string &slot_name,
     throw std::exception("Can't find slot name in bind layout");
   }
 }
-unsigned int BindLayout::getBindIndex(const std::string &slot_name) {
+unsigned int BindLayout::getSlotIndex(const std::string &slot_name) {
   if (name_table_.count(slot_name))
     return name_table_[slot_name];
   return (std::numeric_limits<unsigned int>::max)();

@@ -32,6 +32,7 @@ Buffer::Buffer(
     : Resource(gpu_resource, upload_buffer, information, descriptor_ranges,
                descriptor_indices),
       buffer_information_(buffer_information),
+      vertex_buffer_view_(vertex_buffer_view),
       index_buffer_view_(index_buffer_view) {}
 const BufferInformation &Buffer::getBufferInformation() {
   return buffer_information_;

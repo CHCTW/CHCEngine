@@ -14,6 +14,8 @@ void Context::resetContextCommand() {
   }
   auto used_pool = pool_.lock();
   // should be reset after free at pool, just simply get here
+  graphics_layout_.reset();
+  compute_layout_.reset();
   context_command_ = used_pool->getContextCommand();
 }
 

@@ -23,7 +23,7 @@ void CopyContext::updateBuffer(std::shared_ptr<Resource::Buffer> buffer,
   if (data_byte_size + offset > buffer->getBufferInformation().size_) {
     throw std::exception("Update data + offset is out of buffer range");
   }
-  if (buffer->getInformation().usage_ ==
+  if (buffer->getInformation().update_type_ ==
       Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     context_command_->updateBufferRegion(buffer, data, data_byte_size, offset);
   } else {

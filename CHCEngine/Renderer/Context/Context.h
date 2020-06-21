@@ -20,6 +20,9 @@ class BaseFence;
 namespace Resource {
 class Resource;
 class DynamicBuffer;
+} // namespace Resource
+namespace Pipeline {
+class BindLayout;
 }
 namespace Context {
 class ContextPoolBase;
@@ -47,6 +50,8 @@ class Context : public std::enable_shared_from_this<Context> {
   friend class Renderer;
   CommandType type_;
   std::shared_ptr<ContextCommand> context_command_;
+  std::shared_ptr<Pipeline::BindLayout> graphics_layout_;
+  std::shared_ptr<Pipeline::BindLayout> compute_layout_;
   std::thread context_thread_;
   std::mutex wait_mutex_;
   std::atomic<ContextState> state_;

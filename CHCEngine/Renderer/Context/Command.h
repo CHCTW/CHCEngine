@@ -84,6 +84,10 @@ struct ContextCommand {
   void setTopology(PrimitiveTopology topology);
   void setRenderTarget(CPUDescriptorHandle handle);
   void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
+  void bindGraphcisResource(std::shared_ptr<Resource::Resource> resource,
+                            unsigned int usage_index,
+                            unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
 };
 } // namespace Context
 } // namespace Renderer

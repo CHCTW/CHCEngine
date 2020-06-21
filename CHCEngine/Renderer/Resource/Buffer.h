@@ -26,7 +26,7 @@ enum class BufferType {
 enum class BufferReadWrite {
   BUFFER_READ_WRITE_NONE = 0,
   BUFFER_READ_WRITE_READ = 1,
-  BUFFER_USAGE_WRITE = 2,
+  BUFFER_READ_WRITE_READ_WRITE = 2,
 };
 using Attributes =
     std::unordered_map<std::string, std::pair<unsigned int, DataFormat>>;

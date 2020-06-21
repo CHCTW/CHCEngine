@@ -86,7 +86,9 @@ bool shouldUseTable(const Pipeline::BindSlot &slot, bool relax) {
 void generateRootParameters(
     const std::vector<Pipeline::BindSlot> &bind_slots,
     std::vector<D3D12_ROOT_PARAMETER1> &RootParameters,
-    std::vector<std::vector<D3D12_DESCRIPTOR_RANGE1>> &ranges, bool relax) {
+    std::vector<std::vector<D3D12_DESCRIPTOR_RANGE1>> &ranges,
+    std::vector<bool> &direct_binds,
+    bool relax) {
   RootParameters.resize(bind_slots.size());
   ranges.resize(bind_slots.size());
   for (int i = 0; i < bind_slots.size(); ++i) {
@@ -100,6 +102,7 @@ void generateRootParameters(
           bind_slots[i].formats_[0].resource_count_;
       parameter.Constants.ShaderRegister = bind_slots[i].formats_[0].point_;
       parameter.Constants.RegisterSpace = bind_slots[i].formats_[0].space_;
+      direct_binds.push_back(true);
       continue;
     }
     if (!shouldUseTable(bind_slots[i], relax)) {
@@ -111,6 +114,7 @@ void generateRootParameters(
       parameter.Descriptor.RegisterSpace = bind_slots[i].formats_[0].space_;
       // use default setting
       parameter.Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE;
+      direct_binds.push_back(true);
       continue;
     } else {
       // use one format as one range , probally can have more better way
@@ -138,6 +142,7 @@ void generateRootParameters(
       parameter.DescriptorTable.NumDescriptorRanges =
           static_cast<unsigned int>(bind_slots[i].formats_.size());
       parameter.DescriptorTable.pDescriptorRanges = ranges[i].data();
+      direct_binds.push_back(false);
     }
   }
 }

@@ -110,6 +110,29 @@ void ContextCommand::setGraphicsBindSignature(
   list_->SetGraphicsRootSignature(bind_signature.Get());
   graphics_bind_signature_ = bind_signature;
 }
+void ContextCommand::bindGraphcisResource(
+    std::shared_ptr<Resource::Resource> resource, 
+    unsigned int usage_index, unsigned int slot_index,
+    BindType bind_type,
+    bool direct_bind) {
+  referenced_resources_.push_back(resource);
+  if (!direct_bind) {
+    list_->SetGraphicsRootDescriptorTable(
+        slot_index, resource->getGPUHandleByUsageIndex(usage_index));
+  }else {
+      switch (getUsage(bind_type)) {
+    case BindUsage::BIND_USAGE_CBV:
+        list_->SetGraphicsRootConstantBufferView(
+            slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+    case BindUsage::BIND_USAGE_SRV:
+      list_->SetGraphicsRootShaderResourceView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+    case BindUsage::BIND_USAGE_UAV:
+      list_->SetGraphicsRootUnorderedAccessView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+    }
+  }
+}
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

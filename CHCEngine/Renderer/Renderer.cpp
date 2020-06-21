@@ -354,8 +354,9 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindSlot> &bind_slots) {
   }
   std::vector<D3D12_ROOT_PARAMETER1> RootParameters;
   std::vector<std::vector<D3D12_DESCRIPTOR_RANGE1>> ranges;
-  generateRootParameters(bind_slots, RootParameters, ranges, relax);
-
+  std::vector<bool> direct_binds;
+  generateRootParameters(bind_slots, RootParameters, ranges, direct_binds,
+                         relax);
   D3D12_VERSIONED_ROOT_SIGNATURE_DESC version_sig_desc;
   version_sig_desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
   version_sig_desc.Desc_1_1.Flags =
@@ -376,7 +377,8 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindSlot> &bind_slots) {
   ThrowIfFailed(device_->CreateRootSignature(0, signature->GetBufferPointer(),
                                              signature->GetBufferSize(),
                                              IID_PPV_ARGS(&bind_signature)));
-  return std::make_shared<Pipeline::BindLayout>(bind_signature, bind_slots);
+  return std::make_shared<Pipeline::BindLayout>(bind_signature, bind_slots,
+                                                direct_binds);
 }
 std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
     const ShaderSet &shader_set,

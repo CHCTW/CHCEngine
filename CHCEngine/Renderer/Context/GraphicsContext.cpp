@@ -1,8 +1,8 @@
 #include "../ClassName.h"
 
+#include "../Pipeline/Pipeline.h"
 #include "../Resource/SwapChainBuffer.h"
 #include "GraphicsContext.h"
-#include "../Pipeline/Pipeline.h"
 
 namespace CHCEngine {
 namespace Renderer {
@@ -32,7 +32,7 @@ void GraphicsContext::setScissor(const Pipeline::Scissor &scissor) {
   context_command_->setScissor(scissor);
 }
 void GraphicsContext::setVertexBuffers(
-    const std::vector<std::shared_ptr<Resource::Buffer>> & buffers) {
+    const std::vector<std::shared_ptr<Resource::Buffer>> &buffers) {
   context_command_->setVertexBuffers(buffers);
 }
 void GraphicsContext::setPrimitiveTopology(PrimitiveTopology topology) {
@@ -47,6 +47,34 @@ void GraphicsContext::setGraphicsBindLayout(
   graphics_layout_ = bind_layout;
   context_command_->setGraphicsBindSignature(bind_layout->bind_signature_);
 }
+void GraphicsContext::bindGraphicsResource(
+    std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
+    unsigned int slot_index, BindType bind_type, bool direct_bind) {
+  context_command_->bindGraphcisResource(resource, usage_index, slot_index,
+                                         bind_type, direct_bind);
+}
+void GraphicsContext::bindGraphicsResource(
+    std::shared_ptr<Resource::Resource> resource, unsigned int slot_index,
+    unsigned int usage_index) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  bool direct_bind = graphics_layout_->isDirectBind(slot_index);
+  auto type = graphics_layout_->getFirstBindType(slot_index);
+  bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
+}
+void GraphicsContext::bindGraphicsResource(
+    std::shared_ptr<Resource::Resource> resource, const std::string &slot_name,
+    unsigned int usage_index) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
+  bindGraphicsResource(resource, slot_index, usage_index);
+}
+
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

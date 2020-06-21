@@ -163,7 +163,7 @@ int main() {
   auto compute_bind = computeshader.getBindFormats(BindType::BIND_TYPE_SIT_ALL);
 
   auto compute_bind_layout =
-      renderer.getBindLayout({{"compute point", compute_bind}});
+      renderer.getBindLayout({{ compute_bind}});
 
   // auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
@@ -178,13 +178,18 @@ int main() {
   bind_layout->setName("Empty layout");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
-      renderer.getVertexBuffer(
-          3,
-          {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
-           {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}},
+      renderer.getBuffer(
+          3, 20,
+          {
+           {.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+            .is_raw_buffer_ = true}
+            },
           ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
-  buffer->setName("vertex buffer");
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
+          {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
+           {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}}
+          );
+  buffer->setName("custom vertex buffer");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
       renderer.getVertexBuffer(
@@ -218,6 +223,9 @@ int main() {
                                window.getFrameSize().Y);
   Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
+  int sign[3] = {1, 1, 1};
+
+
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
@@ -229,10 +237,22 @@ int main() {
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
               ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
-         // tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
-          tridata[7] = ((float)(rand() % 1000)) / 1000.0f;
-          tridata[8] = ((float)(rand() % 1000)) / 1000.0f;
-          tridata[9] = ((float)(rand() % 1000)) / 1000.0f;
+          tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
+          tridata[7] +=sign[0]*0.001f;
+          if (tridata[7] >= 1.0)
+            sign[0] = -1;
+          if (tridata[7] <= 0.0)
+            sign[0] = 1;
+          tridata[8] +=sign[1] * 0.001f;
+          if (tridata[8] >= 1.0)
+            sign[1] = -1;
+          if (tridata[8] <= 0.0)
+            sign[1] = 1;
+          tridata[9] += sign[2] * 0.001f;
+          if (tridata[9] >= 1.0)
+            sign[2] = -1;
+          if (tridata[9] <= 0.0)
+            sign[2] = 1;
           graph->updateBuffer(buffer, tridata,
                               buffer->getBufferInformation().size_);
           graph->clearRenderTarget(

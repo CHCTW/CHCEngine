@@ -12,6 +12,7 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Context {
 struct ContextCommand;
+class GraphicsContext;
 } // namespace Context
 namespace Pipeline {
 class BindLayout;
@@ -33,7 +34,7 @@ enum class ResourceUpdateType {
 struct ResourceInformation {
   std::string name_;
   ResourceType type_;
-  ResourceUpdateType usage_;
+  ResourceUpdateType update_type_;
 };
 class Resource {
   friend class Renderer;
@@ -50,7 +51,7 @@ protected:
   void *upload_buffer_map_pointer_ = nullptr;
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges_;
-  std::vector<std::pair<DescriptorType, unsigned int>> descriptor_indices_;
+  std::vector<std::pair<DescriptorType, unsigned int>> usage_indices_;
   ComPtr<GPUResource> getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            const std::string &name, ResourceType type,
@@ -67,8 +68,9 @@ protected:
       const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges,
       const std::vector<std::pair<DescriptorType, unsigned int>>
-          &descriptor_indices);
-
+          &usage_indices);
+  CPUDescriptorHandle getCPUHandleByUsageIndex(unsigned int index);
+  GPUDescriptorHandle getGPUHandleByUsageIndex(unsigned int index);
 public:
   Resource &operator=(Resource &ref) = delete;
   Resource() = delete;

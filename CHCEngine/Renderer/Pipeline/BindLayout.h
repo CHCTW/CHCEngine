@@ -2,8 +2,8 @@
 
 #include <memory>
 #include <mutex>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 #include "../Resource/Resource.h"
 #include "Shader.h"
@@ -65,19 +65,35 @@ private:
   std::vector<BindSlot> bind_layout_;
   std::vector<std::shared_ptr<Resource::Resource>> prebind_resources_;
   std::unordered_map<std::string, unsigned int> name_table_;
+  std::vector<bool> direct_bind_;
   ComPtr<BindSignature> bind_signature_;
   std::string name_;
   friend class Renderer;
   friend class Context::GraphicsContext;
+
 public:
   BindLayout(ComPtr<BindSignature> bind_signature,
-             const std::vector<BindSlot> bind_layout);
+             const std::vector<BindSlot> &bind_layout,
+             const std::vector<bool> &direct_bind);
   void setBindResource(unsigned int layout_index,
                        std::shared_ptr<Resource::Resource> resource);
   void setBindResource(const std::string &slot_name,
                        std::shared_ptr<Resource::Resource> resource);
   // retrun a unsigned int  max if didn't find the name
-  unsigned int getBindIndex(const std::string &slot_name);
+  unsigned int getSlotIndex(const std::string &slot_name);
+  bool isDirectBind(unsigned int slot_index) {
+    if (slot_index>=bind_layout_.size()) {
+      throw std::exception(
+          "Slot_index is out of bind_layout size");
+    }
+    return direct_bind_[slot_index];
+  }
+  BindType getFirstBindType(unsigned int slot_index) {
+    if (slot_index >= bind_layout_.size()) {
+      throw std::exception("Slot_index is out of bind_layout size");
+    }
+    return bind_layout_[slot_index].formats_[0].type_;
+  }
   void setName(std::string_view name);
 };
 

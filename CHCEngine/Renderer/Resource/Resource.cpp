@@ -36,16 +36,30 @@ Resource::Resource(
     const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
         &descriptor_ranges,
     const std::vector<std::pair<DescriptorType, unsigned int>>
-        &descriptor_indices)
+        &usage_indices)
     : gpu_resource_(gpu_resource),
       upload_buffer_(upload_buffer), information_{information},
-      descriptor_ranges_(descriptor_ranges),
-      descriptor_indices_(descriptor_indices) {
+      descriptor_ranges_(descriptor_ranges), usage_indices_(usage_indices) {
   if (upload_buffer_) {
     D3D12_RANGE readRange{0, 0};
     ThrowIfFailed(
         upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
   }
+}
+CPUDescriptorHandle Resource::getCPUHandleByUsageIndex(unsigned int index) {
+  if (index>=usage_indices_.size()) {
+      throw std::exception(
+          "Invalid usage index, out of usage indices size");
+  }
+  const auto &p = usage_indices_[index];
+  return descriptor_ranges_[p.first]->getHandle(p.second);
+}
+GPUDescriptorHandle Resource::getGPUHandleByUsageIndex(unsigned int index) {
+  if (index >= usage_indices_.size()) {
+    throw std::exception("Invalid usage index, out of usage indices size");
+  }
+  const auto &p = usage_indices_[index];
+  return descriptor_ranges_[p.first]->getGPUHandle(p.second);
 }
 void Resource::setName(std::string_view name) {
   std::string temp(name);

@@ -6,6 +6,7 @@
 //#include "../Re"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <wrl/client.h>
 
 using Microsoft::WRL::ComPtr;
@@ -15,7 +16,8 @@ namespace Renderer {
 namespace Resource {
 ComPtr<GPUResource> createBuffer(ComPtr<Device> device, UINT64 size,
                                  HeapType heap_type,
-                                 ResourceState initial_state) {
+             ResourceState initial_state,
+             D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE) {
   ComPtr<GPUResource> res;
   D3D12_HEAP_PROPERTIES heap_property;
   heap_property.Type = convertToD3D12HeapType(heap_type);
@@ -29,7 +31,7 @@ ComPtr<GPUResource> createBuffer(ComPtr<Device> device, UINT64 size,
   desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
   desc.Width = size;
   desc.Alignment = 0;
-  desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+  desc.Flags = flags;
   desc.Height = 1;
   desc.DepthOrArraySize = 1;
   desc.MipLevels = 1;
@@ -51,7 +53,7 @@ std::shared_ptr<DescriptorRange> getBufferDesciptorRanges(
   for (auto &usage : usages) {
     DescriptorType type = getDescriptorType(usage.usage_);
     if (type != DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV) {
-      throw std::exception("Buffer and only be uav,srv and csv desriptor");
+      throw std::exception("Buffer and only be uav,srv and csv usage");
     }
   }
   std::shared_ptr<DescriptorRange> range =
@@ -74,6 +76,11 @@ std::shared_ptr<DescriptorRange> getBufferDesciptorRanges(
       srv_desc.Buffer.FirstElement = usages[i].start_index_;
       srv_desc.Buffer.NumElements = element_count;
       srv_desc.Buffer.StructureByteStride = element_byte_size;
+      if (usages[i].is_raw_buffer_) {
+        srv_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+        srv_desc.Buffer.StructureByteStride = 0;
+        srv_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+      }
       device->CreateShaderResourceView(gpu_resource.Get(), &srv_desc,
                                        range->getHandle(i));
       break;
@@ -89,6 +96,8 @@ std::shared_ptr<DescriptorRange> getBufferDesciptorRanges(
         counter_res = gpu_resource;
       }
       if (usages[i].is_raw_buffer_) {
+        uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+        uav_desc.Buffer.StructureByteStride = 0;
         uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
       }
       device->CreateUnorderedAccessView(gpu_resource.Get(), counter_res.Get(),
@@ -98,6 +107,31 @@ std::shared_ptr<DescriptorRange> getBufferDesciptorRanges(
   }
   return range;
 }
+unsigned int getStrideSize(
+    const std::vector<std::pair<std::string, DataFormat>> &attributes,
+    std::unordered_map<std::string, std::pair<unsigned int, DataFormat>>
+        &vetex_attributes) {
+  unsigned int stride_size = 0;
+  unsigned int byte_size = 0;
+  std::unordered_set<std::string> sematics;
+  for (auto &p : attributes) {
+    byte_size = getDataFormatByteSize(p.second);
+    if (byte_size == 0) {
+      throw std::exception((std::string(magic_enum::enum_name(p.second)) +
+                            "  is not a valid format for vertex attributes")
+                               .c_str());
+    }
+    if (vetex_attributes.count(p.first)) {
+      throw std::exception(
+          (p.first + "have the same sematic name in one vertex attributes")
+              .c_str());
+    }
+    vetex_attributes[p.first] = std::make_pair(stride_size, p.second);
+    stride_size += byte_size;
+  }
+  return stride_size;
+}
+
 unsigned long long getVertexBufferAttributes(
     unsigned int vertex_count,
     unsigned int &stride_size,

@@ -34,11 +34,11 @@ public:
   std::shared_ptr<Buffer> getVertexBuffer(
       unsigned int vertex_count,
       const std::vector<std::pair<std::string, DataFormat>> &attributes,
-      ResourceState initial_state, ResourceUpdateType usage);
+      ResourceState initial_state, ResourceUpdateType update_type);
   std::shared_ptr<Buffer> getIndexBuffer(unsigned int index_count,
                                          IndexFormat index_format,
                                          ResourceState initial_state,
-                                         ResourceUpdateType usage);
+                                         ResourceUpdateType update_type);
   std::shared_ptr<Buffer>
   getBuffer(unsigned int element_count, unsigned int element_byte_size,
             const std::vector<BufferUsage> &usages,
