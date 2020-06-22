@@ -34,26 +34,15 @@ std::shared_ptr<Buffer> ResourcePool::getVertexBuffer(
   unsigned int byte_size = 0;
   std::unordered_map<std::string, std::pair<unsigned int, DataFormat>>
       vertex_attributes;
-  /*for (auto &p : attributes) {
-    byte_size = getDataFormatByteSize(p.second);
-    if (byte_size == 0) {
-      throw std::exception((std::string(magic_enum::enum_name(p.second)) +
-                            "  is not a valid format for vertex attributes")
-                               .c_str());
-    }
-    if (vetex_attributes.count(p.first)) {
-      throw std::exception(
-          (p.first + "have the same sematic name in one vertex attributes")
-              .c_str());
-    }
-    vetex_attributes[p.first] = std::make_pair(stride_size, p.second);
-    stride_size += byte_size;
-  }*/
+
   unsigned long long buffer_size = getVertexBufferAttributes(
       vertex_count, stride_size, attributes, vertex_attributes);
 
   auto id = getNextBufferId(BufferType::BUFFER_TYPE_VERTEX);
-  std::string name = "vertex_buffer_" + std::to_string(id);
+  std::string name =
+      std::string(magic_enum::enum_name<
+                  BufferType::BUFFER_TYPE_VERTEX>()) +'_'+
+                     std::to_string(id);
   auto gpu_resource = createBuffer(device_, buffer_size,
                                    HeapType::HEAP_TYPE_DEFAULT, initial_state);
   NAME_D3D12_OBJECT_STRING(gpu_resource, name);
@@ -74,21 +63,9 @@ std::shared_ptr<Buffer> ResourcePool::getVertexBuffer(
   auto vertex_view = getVertrexBufferView(
       gpu_resource, static_cast<unsigned int>(buffer_size), stride_size);
 
-  /*vertex_view->BufferLocation = gpu_resource->GetGPUVirtualAddress();
-  vertex_view->SizeInBytes = buffer_size;
-  vertex_view->StrideInBytes = stride_size;*/
-
   return std::make_shared<Buffer>(gpu_resource, upload_buffer, res_info,
                                   buffer_information, vertex_view);
 
-  /*
-    struct tempSwapChain : public Resource::SwapChainBuffer {
-  tempSwapChain(ComPtr<GPUResource> buf,
-                std::shared_ptr<DescriptorRange> range, std::string name,
-                int x, int y)
-      : SwapChainBuffer(buf, range, name, x, y) {}
-};
-  */
 }
 
 std::shared_ptr<Buffer>
@@ -96,7 +73,10 @@ ResourcePool::getIndexBuffer(unsigned int index_count, IndexFormat index_format,
                              ResourceState initial_state,
                              ResourceUpdateType update_type) {
   auto id = getNextBufferId(BufferType::BUFFER_TYPE_INDEX);
-  std::string name = "index_buffer_" + std::to_string(id);
+  std::string name =
+      std::string(magic_enum::enum_name<
+                  BufferType::BUFFER_TYPE_INDEX>()) +'_'+
+      std::to_string(id);
   std::unordered_map<std::string, std::pair<unsigned int, DataFormat>>
       vertex_attributes;
   DataFormat format = DataFormat::DATA_FORMAT_R32_UINT;
@@ -186,9 +166,13 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
   if (append_counter)
     size += count_size_;
   auto id = getNextBufferId(BufferType::BUFFER_TYPE_CUSTOM);
-  std::string name = "custom_buffer_" + std::to_string(id);
+  std::string name =
+      std::string(magic_enum::enum_name<
+                  BufferType::BUFFER_TYPE_CUSTOM>()) +'_'+
+      std::to_string(id);
   auto gpu_resource = createBuffer(device_, size, HeapType::HEAP_TYPE_DEFAULT,
                                    initial_state, flags);
+  NAME_D3D12_OBJECT_STRING(gpu_resource, name);
   ComPtr<GPUResource> upload_buffer;
   if (update_type == ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     upload_buffer = createBuffer(device_, size, HeapType::HEAP_TYPE_UPLOAD,

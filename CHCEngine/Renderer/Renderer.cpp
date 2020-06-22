@@ -114,12 +114,18 @@ void Renderer::createContexts() {
 
   graphics_pool_ =
       std::make_shared<Context::ContextPool<Context::GraphicsContext>>(
-          device_, CommandType::COMMAND_TYPE_GRAPHICS);
+         device_, CommandType::COMMAND_TYPE_GRAPHICS,
+         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
+         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
   compute_pool_ =
       std::make_shared<Context::ContextPool<Context::ComputeContext>>(
-          device_, CommandType::COMMAND_TYPE_COMPUTE);
+          device_, CommandType::COMMAND_TYPE_COMPUTE,
+          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
+          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
   copy_pool_ = std::make_shared<Context::ContextPool<Context::CopyContext>>(
-      device_, CommandType::COMMAND_TYPE_COMPUTE);
+      device_, CommandType::COMMAND_TYPE_COPY,
+      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
+      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
   auto grpahics_context = graphics_pool_->getContext([](GraphicsContext const *t) {
     std::cout << "graphics wait" << std::endl;
     std::cout << "graphics wait end" << std::endl;
@@ -259,6 +265,7 @@ void Renderer::setSwapChain(Window::Window &window,
   for (unsigned int i = 0; i < swap_chain_count_; ++i) {
     ComPtr<GPUResource> buffer;
     ThrowIfFailed(swap_chain_->GetBuffer(i, IID_PPV_ARGS(&buffer)));
+    NAME_D3D12_OBJECT_STRING(buffer, std::string("swap chain buffer_")+std::to_string(i));
     auto swap_chain_range =
         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]->allocateRange(1);
    // D3D_RednerTarget

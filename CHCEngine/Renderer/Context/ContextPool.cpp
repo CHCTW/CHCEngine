@@ -39,8 +39,12 @@ void ContextPoolBase::freeContextCommand(unsigned long long id) {
   std::lock_guard<std::mutex> lock(pool_mutex_);
   available_list_.push_back(id);
 }
-ContextPoolBase::ContextPoolBase(ComPtr<Device> device, CommandType type)
-    : device_(device), type_(type) {
+ContextPoolBase::ContextPoolBase(
+    ComPtr<Device> device, CommandType type,
+    std::shared_ptr<DescriptorHeap> cbv_uav_srv_heap,
+    std::shared_ptr<DescriptorHeap> sampler_heap)
+    : device_(device), type_(type), cbv_uav_srv_heap_(cbv_uav_srv_heap),
+      sampler_heap_(sampler_heap) {
   auto d3d12type = convertToD3D12CommandType(type_);
   dynamic_upload_buffer_ = std::make_shared<Resource::DynamicBuffer>(device_);
  /* std::lock_guard<std::mutex> lock(pool_mutex_);

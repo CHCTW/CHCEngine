@@ -14,6 +14,9 @@ void ComputeContext::setPipeline(std::shared_ptr<Pipeline::Pipeline> pipeline) {
   }
   context_command_->setPipelineState(pipeline->pipeline_state_);
 }
+void ComputeContext::setStaticUsageHeap() {
+  context_command_->setStaticDescriptorHeap();
+}
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

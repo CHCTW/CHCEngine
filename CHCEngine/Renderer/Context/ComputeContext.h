@@ -23,6 +23,7 @@ class ComputeContext : public CopyContext {
               std::weak_ptr<ContextPoolBase> pool)
       : CopyContext(type, context_command, pool) {}
   void setPipeline(std::shared_ptr<Pipeline::Pipeline> pipline);
+  void setStaticUsageHeap();
 };
 }  // namespace Context
 }  // namespace Renderer

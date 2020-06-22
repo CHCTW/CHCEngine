@@ -88,6 +88,7 @@ struct ContextCommand {
                             unsigned int usage_index,
                             unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void setStaticDescriptorHeap();
 };
 } // namespace Context
 } // namespace Renderer

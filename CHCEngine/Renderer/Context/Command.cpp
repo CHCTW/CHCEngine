@@ -58,7 +58,7 @@ void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
   pipeline_state_ = pipeline_state;
 }
 void ContextCommand::updateBufferRegion(
-    std::shared_ptr<Resource::Buffer> buffer, void const * data,
+    std::shared_ptr<Resource::Buffer> buffer, void const *data,
     unsigned long long data_byte_size, unsigned long long offset) {
   // current only for dynamic data, will have dynamic updload data for stataic
   // data later
@@ -67,7 +67,7 @@ void ContextCommand::updateBufferRegion(
                           buffer->upload_buffer_.Get(), 0, data_byte_size);
 }
 void ContextCommand::updateBufferRegion(
-    std::shared_ptr<Resource::Buffer> buffer, void const * data,
+    std::shared_ptr<Resource::Buffer> buffer, void const *data,
     unsigned long long data_byte_size, unsigned long long offset,
     std::shared_ptr<Resource::AllocateSpace> allocate_space) {
 
@@ -93,11 +93,11 @@ void ContextCommand::setScissor(const Pipeline::Scissor &scissor) {
 void ContextCommand::setVertexBuffers(
     const std::vector<std::shared_ptr<Resource::Buffer>> &buffers) {
   D3D12_VERTEX_BUFFER_VIEW vbs[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-  for (unsigned int i = 0 ; i < buffers.size() ; ++i) {
+  for (unsigned int i = 0; i < buffers.size(); ++i) {
     referenced_resources_.emplace_back(buffers[i]);
     vbs[i] = *buffers[i]->vertex_buffer_view_;
   }
-  list_->IASetVertexBuffers(0,static_cast<unsigned int>(buffers.size()), vbs);
+  list_->IASetVertexBuffers(0, static_cast<unsigned int>(buffers.size()), vbs);
 }
 void ContextCommand::setTopology(PrimitiveTopology topology) {
   list_->IASetPrimitiveTopology(convertToD3DPrimitiveTopology(topology));
@@ -111,27 +111,40 @@ void ContextCommand::setGraphicsBindSignature(
   graphics_bind_signature_ = bind_signature;
 }
 void ContextCommand::bindGraphcisResource(
-    std::shared_ptr<Resource::Resource> resource, 
-    unsigned int usage_index, unsigned int slot_index,
-    BindType bind_type,
-    bool direct_bind) {
+    std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
+    unsigned int slot_index, BindType bind_type, bool direct_bind) {
   referenced_resources_.push_back(resource);
   if (!direct_bind) {
     list_->SetGraphicsRootDescriptorTable(
         slot_index, resource->getGPUHandleByUsageIndex(usage_index));
-  }else {
-      switch (getUsage(bind_type)) {
+  } else {
+    switch (getUsage(bind_type)) {
     case BindUsage::BIND_USAGE_CBV:
-        list_->SetGraphicsRootConstantBufferView(
-            slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      list_->SetGraphicsRootConstantBufferView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
     case BindUsage::BIND_USAGE_SRV:
       list_->SetGraphicsRootShaderResourceView(
           slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
     case BindUsage::BIND_USAGE_UAV:
       list_->SetGraphicsRootUnorderedAccessView(
           slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
     }
   }
+}
+void ContextCommand::setStaticDescriptorHeap() {
+  auto pool = owner_.lock();
+  if (!pool) {
+    throw std::exception("Can't set static descriptorheap when context pool is already released");
+  }
+  auto srv_cbv_uav = pool->getCBVUAVSRVHeap();
+  auto sampler_heap = pool->getSamplerHeap();
+  ID3D12DescriptorHeap *heaps[2];
+  heaps[0] = srv_cbv_uav->descriptors_.Get();
+  heaps[1] = sampler_heap->descriptors_.Get();
+  list_->SetDescriptorHeaps(2, heaps);
 }
 } // namespace Context
 } // namespace Renderer

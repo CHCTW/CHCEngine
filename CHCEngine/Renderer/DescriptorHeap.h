@@ -11,6 +11,9 @@
 using Microsoft::WRL::ComPtr;
 namespace CHCEngine {
 namespace Renderer {
+namespace Context {
+struct ContextCommand;
+}
 // descritpor table is not goint to dispose for user,
 // there is going to be a stataic descriptor heap to
 // store all descriptors but not going to use for binding
@@ -25,7 +28,7 @@ class SwapChainBuffer;
 class DescriptorHeap;
 
 class DescriptorRange {
- private:
+private:
   friend class DescriptorHeap;
   unsigned long long id_;
   unsigned int start_index_;
@@ -43,13 +46,9 @@ class DescriptorRange {
                   unsigned int descriptor_size,
                   std::weak_ptr<DescriptorHeap> range_owner,
                   bool auto_free = false)
-      : id_(id),
-        start_index_(start_index),
-        size_(size),
-        first_handle_(first_handle),
-        descriptor_size_(descriptor_size),
-        current_handle_(first_handle_),
-        range_owner_(range_owner),
+      : id_(id), start_index_(start_index), size_(size),
+        first_handle_(first_handle), descriptor_size_(descriptor_size),
+        current_handle_(first_handle_), range_owner_(range_owner),
         auto_free_(auto_free) {}
   DescriptorRange(unsigned long long id, unsigned int start_index,
                   unsigned int size, CPUDescriptorHandle first_handle,
@@ -63,7 +62,7 @@ class DescriptorRange {
     shader_visible = true;
   }
 
- public:
+public:
   DescriptorRange() = delete;
   ~DescriptorRange();
 
@@ -85,7 +84,8 @@ class DescriptorRange {
     return ret;
   }
   GPUDescriptorHandle getGPUHandle(unsigned int index) {
-    if (!shader_visible) return GPUDescriptorHandle();
+    if (!shader_visible)
+      return GPUDescriptorHandle();
     GPUDescriptorHandle ret = first_gpu_handle_;
     ret.offset(index, descriptor_size_);
     return ret;
@@ -95,7 +95,8 @@ class DescriptorRange {
 // a thread safe class, probaly going to store all of them in Renender.
 
 class DescriptorHeap : public std::enable_shared_from_this<DescriptorHeap> {
- private:
+  friend struct Context::ContextCommand;
+private:
   std::string name_;
   unsigned long long id_counter_;
   // recorded used range, need id when needs to free it
@@ -122,12 +123,12 @@ class DescriptorHeap : public std::enable_shared_from_this<DescriptorHeap> {
   // just add a note, although afer adding auto_free_, I think is fine
   std::mutex descritpr_mutex_;
 
- public:
+public:
   DescriptorHeap() = delete;
   DescriptorHeap(ComPtr<Device> device, DescriptorType type, unsigned int size,
                  const std::string &name, bool shader_visible);
   std::shared_ptr<DescriptorRange> allocateRange(unsigned int size);
   void freeRange(const unsigned long long id);
 };
-}  // namespace Renderer
-}  // namespace CHCEngine
+} // namespace Renderer
+} // namespace CHCEngine
