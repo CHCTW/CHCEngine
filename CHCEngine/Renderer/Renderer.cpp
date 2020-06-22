@@ -387,6 +387,14 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindSlot> &bind_slots) {
   return std::make_shared<Pipeline::BindLayout>(bind_signature, bind_slots,
                                                 direct_binds);
 }
+std::shared_ptr<Pipeline::BindLayout>
+Renderer::getBindLayout(const std::vector<Pipeline::BindFormat> &bind_layout) {
+  std::vector<Pipeline::BindSlot> slots;
+  for (unsigned int i = 0; i < bind_layout.size(); ++i) {
+    slots.emplace_back(Pipeline::BindSlot({bind_layout[i]}));
+  }
+  return getBindLayout(slots);
+}
 std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
     const ShaderSet &shader_set,
     const std::vector<Resource::Attributes> &attributes,

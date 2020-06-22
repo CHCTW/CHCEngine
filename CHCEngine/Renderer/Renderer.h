@@ -179,11 +179,18 @@ public:
                                      update_type);
   }
 
+
   // shader visiblity should be the same in the same slot, but it's find.
   // just going to set as all vis in rootsignature, but it's probally be nice to
   // have the same visiblity
   std::shared_ptr<Pipeline::BindLayout>
   getBindLayout(const std::vector<Pipeline::BindSlot> &bind_layout);
+
+  // a simple version for binding formatn, this one means every bind resrouce
+  // takes it's own slot, except unbound or array resources
+  std::shared_ptr<Pipeline::BindLayout>
+  getBindLayout(const std::vector<Pipeline::BindFormat> &bind_layout);
+
   std::shared_ptr<Pipeline::Pipeline> getGraphicsPipeline(
       const ShaderSet &shader_set,
       const std::vector<Resource::Attributes> &attributes,

@@ -100,7 +100,8 @@ int main() {
 
   auto compute_bind = computeshader.getBindFormats(BindType::BIND_TYPE_SIT_ALL);
 
-  auto compute_bind_layout = renderer.getBindLayout({{compute_bind}});
+  auto compute_bind_layout =
+      renderer.getBindLayout({Pipeline::BindSlot({compute_bind})});
 
   // auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
@@ -115,7 +116,7 @@ int main() {
   std::vector<Pipeline::BindSlot> slots = {
       Pipeline::BindSlot({shset.getBindFormat("Color")}),
       Pipeline::BindSlot({shset.getBindFormat("SceneConstBuffer")})};
-  auto bind_layout = renderer.getBindLayout(slots);
+  auto bind_layout = renderer.getBindLayout(exsample);
   bind_layout->setName("simple layout");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
@@ -223,8 +224,7 @@ int main() {
         false);
     graphics->setPipeline(pipeline);
     graphics->setGraphicsBindLayout(bind_layout);
-    graphics->bindGraphicsResource(color_buffer, 0, 0,
-                                   BindType::BIND_TYPE_SIT_STRUCTURED, true);
+    graphics->bindGraphicsResource(color_buffer, "Color");
     graphics->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
     graphics->setVertexBuffers(buffer);
     graphics->setViewport(view_port);
