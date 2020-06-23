@@ -10,7 +10,7 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Context {
 void BaseFence::insertFenceSignal(
-    ComPtr<CommandQueue> command_queue,
+    const ComPtr<CommandQueue> &command_queue,
     std::vector<std::shared_ptr<ContextCommand>>& execute_commands) {
   std::lock_guard<std::mutex> lock(submit_mutex_);
   waitFenceComplete();
@@ -59,7 +59,7 @@ void BaseFence::waitFenceComplete() {
 }
 BaseFence::BaseFence(ComPtr<Fence> fence, unsigned long long id,
                      std::weak_ptr<FencePool> owner)
-    : fence_(fence), expected_value_(1), state_(FenceState::FENCE_STATE_IDLE),id_(id),owner_(owner) {
+    : fence_(std::move(fence)), expected_value_(1), state_(FenceState::FENCE_STATE_IDLE),id_(id),owner_(owner) {
   fence_event_ = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   if (fence_event_ == nullptr) {
     ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));

@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{4642CD42-8DA2-4B2E-8B5E-93C8314AF5FA}</ProjectGuid>
     <RootNamespace>My2Triangle</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19613.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

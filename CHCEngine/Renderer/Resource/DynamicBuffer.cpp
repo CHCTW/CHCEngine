@@ -25,7 +25,7 @@ RingBuffer::RingBuffer(unsigned long long size, ComPtr<GPUResource> buffer,
       cpu_map_buffer_(map_point),
       alignment_(alignment), owner_(owner) {}
 bool RingBuffer::RequestSpace(unsigned long long request_size,
-                              std::shared_ptr<AllocateSpace> space) {
+                              std::shared_ptr<AllocateSpace> &space) {
   std::lock_guard<std::mutex> lock(buffer_mutex_);
   request_size = (request_size + alignment_) & ~alignment_;
   /*std::cout << "request size : " << request_size

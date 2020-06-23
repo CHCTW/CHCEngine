@@ -58,8 +58,8 @@ struct ContextCommand {
   std::vector<std::shared_ptr<Resource::AllocateSpace>> allocated_spaces_;
   ComPtr<BindSignature> graphics_bind_signature_;
   ComPtr<PipelineState> pipeline_state_;
-  ContextCommand(unsigned long long id, ComPtr<CommandAllocator> allocator,
-                 ComPtr<CommandList> list, std::weak_ptr<ContextPoolBase> owner)
+  ContextCommand(unsigned long long id, const ComPtr<CommandAllocator> &allocator,
+                const  ComPtr<CommandList> & list, std::weak_ptr<ContextPoolBase> owner)
       : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
   void free();
   void reset();

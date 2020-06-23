@@ -180,7 +180,7 @@ public:
   }
 
 
-  // shader visiblity should be the same in the same slot, but it's find.
+  // shader visiblity should be the same in the same slot, but it's fine.
   // just going to set as all vis in rootsignature, but it's probally be nice to
   // have the same visiblity
   std::shared_ptr<Pipeline::BindLayout>
@@ -194,7 +194,7 @@ public:
   std::shared_ptr<Pipeline::Pipeline> getGraphicsPipeline(
       const ShaderSet &shader_set,
       const std::vector<Resource::Attributes> &attributes,
-      std::shared_ptr<BindLayout> bind_layout,
+      const std::shared_ptr<BindLayout> &bind_layout,
       const RenderTargetSetup &render_setup = Pipeline::default_render_setup_,
       const DepthStencilSetup &depth = Pipeline::default_depth_stencil_setup_,
       const Rasterizer &rasterizer = Pipeline::default_rasterizer_,

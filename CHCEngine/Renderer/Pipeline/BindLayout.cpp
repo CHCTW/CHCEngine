@@ -55,7 +55,7 @@ BindLayout::BindLayout(ComPtr<BindSignature> bind_signature,
     name_table_[bind_layout[i].bind_slot_name_] = i;
   }
   prebind_resources_.resize(bind_layout.size());
-  bind_signature_ = bind_signature;
+  bind_signature_ = std::move(bind_signature);
   bind_layout_ = bind_layout;
   direct_bind_ = direct_bind;
 }
@@ -64,12 +64,12 @@ void BindLayout::setBindResource(unsigned int layout_index,
   if (layout_index >= bind_layout_.size()) {
     throw std::exception("Index is out of bind_layout_ size ");
   }
-  prebind_resources_[layout_index] = resource;
+  prebind_resources_[layout_index] = std::move(resource);
 }
 void BindLayout::setBindResource(const std::string &slot_name,
                                  std::shared_ptr<Resource::Resource> resource) {
   if (name_table_.count(slot_name)) {
-    prebind_resources_[name_table_[slot_name]] = resource;
+    prebind_resources_[name_table_[slot_name]] = std::move(resource);
   } else {
     throw std::exception("Can't find slot name in bind layout");
   }

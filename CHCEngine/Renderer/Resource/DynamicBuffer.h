@@ -58,7 +58,7 @@ struct RingBuffer : public std::enable_shared_from_this<RingBuffer> {
              unsigned long long alignment = 0);
   // return true and fill the space table if have enough space
   bool RequestSpace(unsigned long long request_size,
-                    std::shared_ptr<AllocateSpace> space);
+                    std::shared_ptr<AllocateSpace> &space);
   // used by the allocate space, return true if the space is totaly free
   bool FreeSpace(unsigned long long start, unsigned long long size);
 };

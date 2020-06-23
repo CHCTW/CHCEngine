@@ -40,10 +40,10 @@ public:
   std::shared_ptr<Resource::DynamicBuffer> getDynamicUploadBuffer() {
     return dynamic_upload_buffer_;
   }
-  std::shared_ptr<DescriptorHeap> getCBVUAVSRVHeap() {
+  std::shared_ptr<DescriptorHeap> &getCBVUAVSRVHeap() {
     return cbv_uav_srv_heap_;
   }
-  std::shared_ptr<DescriptorHeap> getSamplerHeap() { return sampler_heap_; }
+  std::shared_ptr<DescriptorHeap> &getSamplerHeap() { return sampler_heap_; }
 };
 template <class ContextClass> class ContextPool : public ContextPoolBase {
   friend ContextClass;

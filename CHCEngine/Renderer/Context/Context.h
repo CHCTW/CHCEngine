@@ -71,7 +71,7 @@ class Context : public std::enable_shared_from_this<Context> {
   Context(CommandType type, std::shared_ptr<ContextCommand> context_command,
           std::weak_ptr<ContextPoolBase> pool)
       : type_(type),
-        context_command_(context_command),
+        context_command_(std::move(context_command)),
         pool_(pool),
         state_(ContextState::CONTEXT_STATE_IDLE) {}
   template <class ContextClass>
@@ -97,7 +97,7 @@ class Context : public std::enable_shared_from_this<Context> {
       this->running<ContextClass>(funcs);
   }
   void resourceTransition(
-      std::shared_ptr<Resource::Resource> resource, ResourceState before_state,
+      const std::shared_ptr<Resource::Resource> &resource, ResourceState before_state,
       ResourceState after_state, bool set_barrier = false,
       ResourceTransitionFlag flag =
           ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE,

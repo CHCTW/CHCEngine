@@ -64,6 +64,7 @@ public:
 };
 class ShaderSet {
 private:
+    // probally going to modify to pointer style
   std::unordered_map<ShaderType, Shader> shader_set_;
   // with the mix result, that is shader visiblity will change
   std::unordered_map<std::string, BindFormat> resource_bind_table_;

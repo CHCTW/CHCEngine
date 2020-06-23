@@ -7,7 +7,7 @@ namespace Context {
 
 ContextQueue::ContextQueue(ComPtr<CommandQueue> command_queue,
                                          CommandType type)
-    : command_queue_(command_queue), type_(type) {}
+    : command_queue_(std::move(command_queue)), type_(type) {}
 ComPtr<CommandQueue> ContextQueue::getCommandQueue() {
   return command_queue_; }
 //submit context with a fence, the fence and context will 

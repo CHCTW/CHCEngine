@@ -34,7 +34,6 @@ void ContextCommand::close() { ThrowIfFailed(list_->Close()); }
 void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
   std::vector<D3D12_RESOURCE_BARRIER> barriers_(transitions.size());
   for (int i = 0; i < transitions.size(); ++i) {
-    referenced_resources_.emplace_back(transitions[i].resource);
     barriers_[i].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barriers_[i].Flags =
         convertToD3D12ResourceBarrierFlags(transitions[i].flag);
@@ -45,6 +44,7 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
     barriers_[i].Transition.StateAfter =
         convertToD3D12ResourceStates(transitions[i].after_state);
     barriers_[i].Transition.Subresource = transitions[i].subresource_index;
+    referenced_resources_.emplace_back(std::move(transitions[i].resource));
   }
   list_->ResourceBarrier(static_cast<unsigned int>(transitions.size()),
                          barriers_.data());
@@ -55,7 +55,7 @@ void ContextCommand::clearSwapChainBuffer(CPUDescriptorHandle handle,
 }
 void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
   list_->SetPipelineState(pipeline_state.Get());
-  pipeline_state_ = pipeline_state;
+  pipeline_state_ = std::move(pipeline_state);
 }
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const *data,
@@ -65,6 +65,7 @@ void ContextCommand::updateBufferRegion(
   memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
                           buffer->upload_buffer_.Get(), 0, data_byte_size);
+  referenced_resources_.emplace_back(std::move(buffer));
 }
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const *data,
@@ -75,7 +76,7 @@ void ContextCommand::updateBufferRegion(
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
                           allocate_space->buffer_.Get(),
                           allocate_space->gpu_offset_, data_byte_size);
-  allocated_spaces_.push_back(allocate_space);
+  allocated_spaces_.emplace_back(std::move(allocate_space));
 }
 void ContextCommand::drawInstanced(unsigned int vertex_count,
                                    unsigned int instance_count,
@@ -94,8 +95,8 @@ void ContextCommand::setVertexBuffers(
     const std::vector<std::shared_ptr<Resource::Buffer>> &buffers) {
   D3D12_VERTEX_BUFFER_VIEW vbs[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
   for (unsigned int i = 0; i < buffers.size(); ++i) {
-    referenced_resources_.emplace_back(buffers[i]);
     vbs[i] = *buffers[i]->vertex_buffer_view_;
+    referenced_resources_.emplace_back(buffers[i]);
   }
   list_->IASetVertexBuffers(0, static_cast<unsigned int>(buffers.size()), vbs);
 }
@@ -108,12 +109,11 @@ void ContextCommand::setRenderTarget(CPUDescriptorHandle handle) {
 void ContextCommand::setGraphicsBindSignature(
     ComPtr<BindSignature> bind_signature) {
   list_->SetGraphicsRootSignature(bind_signature.Get());
-  graphics_bind_signature_ = bind_signature;
+  graphics_bind_signature_ = std::move(bind_signature);
 }
 void ContextCommand::bindGraphcisResource(
     std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
-  referenced_resources_.push_back(resource);
   if (!direct_bind) {
     list_->SetGraphicsRootDescriptorTable(
         slot_index, resource->getGPUHandleByUsageIndex(usage_index));
@@ -133,6 +133,7 @@ void ContextCommand::bindGraphcisResource(
       break;
     }
   }
+  referenced_resources_.emplace_back(std::move(resource));
 }
 void ContextCommand::setStaticDescriptorHeap() {
   auto pool = owner_.lock();

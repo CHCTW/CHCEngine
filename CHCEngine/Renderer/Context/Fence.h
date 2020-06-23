@@ -42,7 +42,7 @@ class BaseFence {
   FenceState getState();
   void waitFenceComplete();
   void insertFenceSignal(
-      ComPtr<CommandQueue> command_queue,
+      const ComPtr<CommandQueue> & command_queue,
       std::vector<std::shared_ptr<ContextCommand>>& execute_commands);
   void completeCallback();
   void free();
@@ -64,7 +64,7 @@ class ContextFence {
 
  public:
   ContextFence(std::shared_ptr<BaseFence> base_fence)
-      : base_fence_(base_fence) {}
+      : base_fence_(std::move(base_fence)) {}
   void waitComplete() { base_fence_->waitFenceComplete(); }
   ~ContextFence() {
       base_fence_->free(); }

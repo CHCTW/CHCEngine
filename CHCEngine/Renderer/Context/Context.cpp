@@ -53,7 +53,7 @@ Context::~Context() {
     }
   }
 }
-void Context::resourceTransition(std::shared_ptr<Resource::Resource> resource,
+void Context::resourceTransition(const std::shared_ptr<Resource::Resource> &resource,
                                  ResourceState before_state,
                                  ResourceState after_state, bool set_barrier,
                                  ResourceTransitionFlag flag,

@@ -44,18 +44,18 @@ public:
   }
   void setPrimitiveTopology(PrimitiveTopology topology);
   void
-  setRenderTarget(std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer);
+  setRenderTarget(const std::shared_ptr<Resource::SwapChainBuffer>& swap_chain_buffer);
   // unfinished, should also  bind the resrouce in the bind layout ,will add it
   // later
-  void setGraphicsBindLayout(std::shared_ptr<Pipeline::BindLayout> bind_layout);
-  void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
+  void setGraphicsBindLayout(const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             unsigned int usage_index,
                             unsigned int slot_index, BindType bind_type,
                             bool direct_bind);
-  void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource>& resource,
                             unsigned int slot_index,
                             unsigned int usage_index = 0);
-  void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> & resource,
                             const std::string &slot_name,
                             unsigned int usage_index = 0);
   };

@@ -398,7 +398,7 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindFormat> &bind_layout) {
 std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
     const ShaderSet &shader_set,
     const std::vector<Resource::Attributes> &attributes,
-    std::shared_ptr<BindLayout> bind_layout,
+    const std::shared_ptr<BindLayout> &bind_layout,
     const RenderTargetSetup &render_setup, const DepthStencilSetup &depth,
     const Rasterizer &rasterizer, PrimitiveTopologyType primitive,
     const Pipeline::SampleSetup &sample) {

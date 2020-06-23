@@ -39,22 +39,22 @@ void GraphicsContext::setPrimitiveTopology(PrimitiveTopology topology) {
   context_command_->setTopology(topology);
 }
 void GraphicsContext::setRenderTarget(
-    std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer) {
+    const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer) {
   context_command_->setRenderTarget(swap_chain_buffer->getDescriptor());
 }
 void GraphicsContext::setGraphicsBindLayout(
-    std::shared_ptr<Pipeline::BindLayout> bind_layout) {
+    const std::shared_ptr<Pipeline::BindLayout> &bind_layout) {
   graphics_layout_ = bind_layout;
   context_command_->setGraphicsBindSignature(bind_layout->bind_signature_);
 }
 void GraphicsContext::bindGraphicsResource(
-    std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
+    const std::shared_ptr<Resource::Resource> &resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
   context_command_->bindGraphcisResource(resource, usage_index, slot_index,
                                          bind_type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(
-    std::shared_ptr<Resource::Resource> resource, unsigned int slot_index,
+    const std::shared_ptr<Resource::Resource> &resource, unsigned int slot_index,
     unsigned int usage_index) {
   if (!graphics_layout_) {
     throw std::exception(
@@ -65,7 +65,7 @@ void GraphicsContext::bindGraphicsResource(
   bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(
-    std::shared_ptr<Resource::Resource> resource, const std::string &slot_name,
+    const std::shared_ptr<Resource::Resource> &resource, const std::string &slot_name,
     unsigned int usage_index) {
   if (!graphics_layout_) {
     throw std::exception(
