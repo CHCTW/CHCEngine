@@ -44,6 +44,8 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
     barriers_[i].Transition.StateAfter =
         convertToD3D12ResourceStates(transitions[i].after_state);
     barriers_[i].Transition.Subresource = transitions[i].subresource_index;
+    std::shared_ptr<Resource::Resource> temp =
+        std::move(transitions[i].resource);
     referenced_resources_.emplace_back(std::move(transitions[i].resource));
   }
   list_->ResourceBarrier(static_cast<unsigned int>(transitions.size()),
@@ -60,8 +62,6 @@ void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const *data,
     unsigned long long data_byte_size, unsigned long long offset) {
-  // current only for dynamic data, will have dynamic updload data for stataic
-  // data later
   memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
                           buffer->upload_buffer_.Get(), 0, data_byte_size);

@@ -4,6 +4,7 @@
 
 #include "../DescriptorHeap.h"
 #include "Buffer.h"
+#include "Texture.h"
 #include <mutex>
 #include <unordered_map>
 
@@ -22,8 +23,10 @@ private:
   /*ComPtr<GPUResource> createBuffer(UINT64 size, HeapType heap_type,
                                    ResourceState initial_state);*/
   std::unordered_map<BufferType, unsigned long long> buffer_id_count_;
+  std::unordered_map<TextureType, unsigned long long> texture_id_count_;
   std::mutex pool_mutex_;
   unsigned long long getNextBufferId(BufferType type);
+  unsigned long long getNextTextureId(TextureType type);
 
 public:
   ResourcePool(ComPtr<Device> device,
@@ -45,6 +48,11 @@ public:
             const std::vector<std::pair<std::string, DataFormat>> &attributes,
             IndexFormat index_format, ResourceState initial_state,
             ResourceUpdateType update_type);
+  std::shared_ptr<Texture>
+  getTexture(TextureType texture_type, DataFormat data_format,
+             unsigned long long width, unsigned int height, unsigned int depth,
+             unsigned int mip_levels, const std::vector<TextureUsage> &usages,
+             ResourceState initial_state, ResourceUpdateType update_type);
 };
 
 } // namespace Resource

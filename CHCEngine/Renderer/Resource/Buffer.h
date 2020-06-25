@@ -12,16 +12,6 @@ struct ContextCommand;
 } // namespace Context
 class DescriptorRange;
 namespace Resource {
-enum class BufferType {
-  BUFFER_TYPE_NONE = 0x0,
-  BUFFER_TYPE_VERTEX = 0x1,
-  BUFFER_TYPE_INDEX = 0x2,
-  BUFFER_TYPE_CONSTANT = 0x4,
-  BUFFER_TYPE_STRUCTERED = 0x8,
-  BUFFER_TYPE_COUNTER = 0x10,
-  BUFFER_TYPE_RAW = 0x20,
-  BUFFER_TYPE_CUSTOM = 0xff,
-};
 // basiclly for struct buffer,
 enum class BufferReadWrite {
   BUFFER_READ_WRITE_NONE = 0,
@@ -64,9 +54,9 @@ public:
   Buffer(
       ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
       ResourceInformation information, BufferInformation buffer_information,
-      const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+      std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges,
-      const std::vector<std::pair<DescriptorType, unsigned int>>& descriptor_indices,
+      std::vector<std::pair<DescriptorType, unsigned int>>& descriptor_indices,
       std::shared_ptr<VertexBufferView> vertex_buffer_view,
       std::shared_ptr<IndexBufferView> index_buffer_view);
 

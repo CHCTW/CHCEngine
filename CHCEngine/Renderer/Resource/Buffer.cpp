@@ -23,9 +23,9 @@ Buffer::Buffer(ComPtr<GPUResource> gpu_resource,
 Buffer::Buffer(
     ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
     ResourceInformation information, BufferInformation buffer_information,
-    const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+    std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
         &descriptor_ranges,
-    const std::vector<std::pair<DescriptorType, unsigned int>>
+    std::vector<std::pair<DescriptorType, unsigned int>>
         &descriptor_indices,
     std::shared_ptr<VertexBufferView> vertex_buffer_view,
     std::shared_ptr<IndexBufferView> index_buffer_view)

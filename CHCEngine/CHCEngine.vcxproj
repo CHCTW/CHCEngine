@@ -112,6 +112,7 @@
     <ClInclude Include="Renderer\Resource\Resource.h" />
     <ClInclude Include="Renderer\Resource\ResourcePool.h" />
     <ClInclude Include="Renderer\Resource\SwapChainBuffer.h" />
+    <ClInclude Include="Renderer\Resource\Texture.h" />
     <ClInclude Include="Renderer\Resource\Utilities.hpp" />
     <ClInclude Include="Window\GLFWInputConvert.h" />
     <ClInclude Include="Window\InputTable.h" />
@@ -193,6 +194,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClInclude Include="Renderer\Utilities.hpp" />
+    <ClCompile Include="Renderer\Resource\Texture.cpp" />
     <ClCompile Include="Window\GLFWInputConvert.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>

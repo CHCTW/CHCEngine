@@ -33,13 +33,13 @@ Resource::Resource(ComPtr<GPUResource> gpu_resource,
 Resource::Resource(
     ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
     ResourceInformation information,
-    const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+    std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
         &descriptor_ranges,
-    const std::vector<std::pair<DescriptorType, unsigned int>>
+    std::vector<std::pair<DescriptorType, unsigned int>>
         &usage_indices)
     : gpu_resource_(gpu_resource),
       upload_buffer_(upload_buffer), information_{information},
-      descriptor_ranges_(descriptor_ranges), usage_indices_(usage_indices) {
+      descriptor_ranges_(std::move(descriptor_ranges)), usage_indices_(std::move(usage_indices)) {
   if (upload_buffer_) {
     D3D12_RANGE readRange{0, 0};
     ThrowIfFailed(

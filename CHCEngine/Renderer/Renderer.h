@@ -178,7 +178,19 @@ public:
                                      attributes, index_format, initial_state,
                                      update_type);
   }
-
+  // going to replace data foramt to rawdataformat later, for better support
+  // difference usages
+  std::shared_ptr<Resource::Texture>
+      getTexture(TextureType texture_type, DataFormat data_format,
+          unsigned long long width, unsigned int height, unsigned int depth,
+          unsigned int mip_levels, const std::vector<TextureUsage>& usages,
+          ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+          Resource::ResourceUpdateType update_type =
+          Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
+    return resource_pool_->getTexture(texture_type, data_format, width, height,
+                                      depth, mip_levels, usages, initial_state,
+                                      update_type);
+  }
 
   // shader visiblity should be the same in the same slot, but it's fine.
   // just going to set as all vis in rootsignature, but it's probally be nice to

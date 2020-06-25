@@ -5,6 +5,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <limits>
 
 // Assign a name to the object to aid with debugging.
 #if defined(_DEBUG) || defined(DBG)
@@ -621,6 +622,28 @@ static unsigned int counter_buffer_alignment_ =
     D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
 static unsigned int constant_buffer_alignment_ = 256;
 static unsigned int count_size_ = sizeof(unsigned int);
+
+enum class BufferType {
+  BUFFER_TYPE_NONE = 0x0,
+  BUFFER_TYPE_VERTEX = 0x1,
+  BUFFER_TYPE_INDEX = 0x2,
+  BUFFER_TYPE_CONSTANT = 0x4,
+  BUFFER_TYPE_STRUCTERED = 0x8,
+  BUFFER_TYPE_COUNTER = 0x10,
+  BUFFER_TYPE_RAW = 0x20,
+  BUFFER_TYPE_CUSTOM = 0xff,
+};
+enum class TextureType {
+  TEXTURE_TYPE_1D,
+  TEXTURE_TYPE_2D,
+  TEXTURE_TYPE_3D
+};
+enum class DepthStencilFlags {
+  DEPTH_SENCIL_FLAG_NONE = 0x0,
+  DEPTH_SENCIL_FLAG_READ_ONLY_DEPTH = 0x1,
+  DEPTH_SENCIL_FLAG_READ_ONLY_STENCIL = 0x2,
+  DEPTH_SENCIL_FLAG_READ_ONLY = 0x3,
+};
 // should have buffer usage and texture usage
 // will have a siimple check whether it is right dimension
 // buffer, the element size and element szie should be
@@ -628,22 +651,22 @@ static unsigned int count_size_ = sizeof(unsigned int);
 struct BufferUsage {
   ResourceUsage usage_ = ResourceUsage::RESOURCE_USAGE_UNKNOWN;
   unsigned long long start_index_ = 0;
-  bool is_writable_  = false;
+  bool is_writable_ = false;
   bool uav_use_counter_ = false;
   bool is_raw_buffer_ = false;
 };
 using MipSlice = unsigned int;
 struct MipRange {
   unsigned int mips_start_level_ = 0;
-  unsigned int mips_count_ = 1;
   float lod_lower_bound_ = 0.0f;
+  unsigned int mips_count_ = (std::numeric_limits<unsigned int>::max)();
 };
 // count_ will be have a min(depth,count) when create
 // desc, -1 is good for 3d, for cube, this is first
 // face start and cube counts will become min((depth-array_index)/6,count)
 struct SubTexturesRange {
-  unsigned int array_index_ = 0;
-  unsigned int count_ = -1;
+  unsigned int array_start_index_ = 0;
+  unsigned int count_ = (std::numeric_limits<unsigned int>::max)();
 };
 // take a look at d3d12 array and mip slice
 // https://docs.microsoft.com/en-us/windows/win32/direct3d12/subresources
@@ -652,12 +675,13 @@ struct TextureUsage {
   ResourceUsage usage_ = ResourceUsage::RESOURCE_USAGE_UNKNOWN;
   DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
   DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
-  union {
-    MipSlice mip_slice = 0;
-    MipRange mip_range;
-  };
+  MipRange mip_range_;
+  MipSlice mip_slice_ = 0;
   SubTexturesRange sub_texture_ranges_;
   unsigned int plane_slice_ = 0;
+  DepthStencilFlags depth_stencil_flag_ =
+      DepthStencilFlags::DEPTH_SENCIL_FLAG_NONE;
 };
+
 } // namespace Renderer
 } // namespace CHCEngine

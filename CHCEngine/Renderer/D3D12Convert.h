@@ -28,5 +28,7 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE
 convertToD3D12PrimitiveTopologyType(PrimitiveTopologyType type);
 D3D_PRIMITIVE_TOPOLOGY
 convertToD3DPrimitiveTopology(PrimitiveTopology topology);
+D3D12_DSV_FLAGS convertToD3D12DSVFlags(DepthStencilFlags flag);
+D3D12_RESOURCE_DIMENSION convertToD3D12ResourceDimension(TextureType type);
 }  // namespace Renderer
 }  // namespace CHCEngine

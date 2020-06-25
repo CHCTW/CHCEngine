@@ -148,6 +148,54 @@ int main() {
   auto constant_buffer = renderer.getBuffer(
       1, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_CBV}});
   constant_buffer->setName("constant buffer");
+  MipRange mips;
+  mips.mips_start_level_ = 2;
+  SubTexturesRange textue_range;
+
+  auto texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, DataFormat::DATA_FORMAT_B8G8R8A8_TYPELESS,
+      256, 256, 1, 5,
+      {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+        .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2D,
+        .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_range_ = mips},
+       {.usage_ = ResourceUsage::RESOURCE_USAGE_RTV,
+        .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2D,
+        .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_slice_ = 3}});
+
+  auto cube_textures = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, DataFormat::DATA_FORMAT_R32_TYPELESS, 512,
+      512, 12, 5,
+      {{
+           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURECUBEARRAY,
+           .data_format_ = DataFormat::DATA_FORMAT_R32_FLOAT,
+       },
+       {
+           .usage_ = ResourceUsage::RESOURCE_USAGE_DSV,
+           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2DARRAY,
+           .data_format_ = DataFormat::DATA_FORMAT_D32_FLOAT,
+       }});
+  auto sterio_texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_3D,
+      DataFormat::DATA_FORMAT_R32G32B32A32_TYPELESS, 32, 32, 32, 5,
+      {{
+           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
+           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+       },
+       {
+           .usage_ = ResourceUsage::RESOURCE_USAGE_RTV,
+           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
+           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+       },
+       {
+           .usage_ = ResourceUsage::RESOURCE_USAGE_UAV,
+           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
+           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+       }});
+
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
   copycontext->updateBuffer(color_buffer, colors,
@@ -171,6 +219,7 @@ int main() {
   pipeline->setName("simple pipeline");
 
   auto graphics = renderer.getGraphicsContext();
+  auto graphics2 = renderer.getGraphicsContext();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,
                                window.getFrameSize().Y);
@@ -189,6 +238,10 @@ int main() {
           graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
               ResourceState::RESOURCE_STATE_COPY_DEST);
+          graph->resourceTransition(
+              sterio_texture,
+                                    ResourceState::RESOURCE_STATE_COPY_DEST,
+              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
@@ -215,27 +268,32 @@ int main() {
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
           graph->resourceTransition(
+              sterio_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+              ResourceState::RESOURCE_STATE_COPY_DEST);
+          graph->resourceTransition(
               constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
           graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
+          graph->setPipeline(pipeline);
+          graph->setGraphicsBindLayout(bind_layout);
+          graph->bindGraphicsResource(color_buffer, "Color");
+          graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
+          graph->setVertexBuffers(buffer);
+          graph->setViewport(view_port);
+          graph->setScissor(scissor);
+          graph->setPrimitiveTopology(
+              PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+          graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
+          graph->drawInstanced(3);
+          graph->resourceTransition(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              ResourceState::RESOURCE_STATE_RENDER_TARGET,
+              ResourceState::RESOURCE_STATE_PRESENT, true);
         },
         false);
-    graphics->setPipeline(pipeline);
-    graphics->setGraphicsBindLayout(bind_layout);
-    graphics->bindGraphicsResource(color_buffer, "Color");
-    graphics->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
-    graphics->setVertexBuffers(buffer);
-    graphics->setViewport(view_port);
-    graphics->setScissor(scissor);
-    graphics->setPrimitiveTopology(
-        PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    graphics->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
-    graphics->drawInstanced(3);
-    graphics->resourceTransition(renderer.getSwapChainBuffer(swap_chain_index),
-                                 ResourceState::RESOURCE_STATE_RENDER_TARGET,
-                                 ResourceState::RESOURCE_STATE_PRESENT, true);
+
     renderer.submitContexts(nullptr, graphics);
     renderer.presentSwapChain();
   });

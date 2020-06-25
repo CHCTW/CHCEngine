@@ -98,6 +98,9 @@
     <ClInclude Include="Renderer\Resource\Utilities.hpp">
       <Filter>Renderer\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Resource\Texture.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -180,6 +183,9 @@
       <Filter>Renderer\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\Resource\DynamicBuffer.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\Texture.cpp">
       <Filter>Renderer\Resource</Filter>
     </ClCompile>
   </ItemGroup>

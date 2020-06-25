@@ -65,9 +65,9 @@ protected:
            ResourceInformation information);
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
       ResourceInformation information,
-      const std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+      std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges,
-      const std::vector<std::pair<DescriptorType, unsigned int>>
+      std::vector<std::pair<DescriptorType, unsigned int>>
           &usage_indices);
   CPUDescriptorHandle getCPUHandleByUsageIndex(unsigned int index);
   GPUDescriptorHandle getGPUHandleByUsageIndex(unsigned int index);

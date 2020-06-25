@@ -668,5 +668,22 @@ convertToD3DPrimitiveTopology(PrimitiveTopology topology) {
   }
   return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
+D3D12_DSV_FLAGS convertToD3D12DSVFlags(DepthStencilFlags flag) {
+  if (flag == DepthStencilFlags::DEPTH_SENCIL_FLAG_READ_ONLY) {
+    return D3D12_DSV_FLAG_READ_ONLY_DEPTH | D3D12_DSV_FLAG_READ_ONLY_STENCIL;
+  }
+  return D3D12_DSV_FLAGS(static_cast<unsigned int>(flag));
+}
+D3D12_RESOURCE_DIMENSION convertToD3D12ResourceDimension(TextureType type) {
+  switch (type) {
+  case TextureType::TEXTURE_TYPE_1D:
+    return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+  case TextureType::TEXTURE_TYPE_2D:
+    return D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+  case TextureType::TEXTURE_TYPE_3D:
+    return D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+  }
+  return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
+}
 } // namespace Renderer
 } // namespace CHCEngine
