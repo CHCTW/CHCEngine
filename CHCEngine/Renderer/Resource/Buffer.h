@@ -56,7 +56,6 @@ public:
       ResourceInformation information, BufferInformation buffer_information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges,
-      std::vector<std::pair<DescriptorType, unsigned int>>& descriptor_indices,
       std::shared_ptr<VertexBufferView> vertex_buffer_view,
       std::shared_ptr<IndexBufferView> index_buffer_view);
 

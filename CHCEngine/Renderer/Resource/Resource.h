@@ -66,11 +66,10 @@ protected:
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
       ResourceInformation information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-          &descriptor_ranges,
-      std::vector<std::pair<DescriptorType, unsigned int>>
-          &usage_indices);
-  CPUDescriptorHandle getCPUHandleByUsageIndex(unsigned int index);
-  GPUDescriptorHandle getGPUHandleByUsageIndex(unsigned int index);
+          &descriptor_ranges);
+  CPUDescriptorHandle getRTVHandleByUsageIndex(unsigned int index);
+  CPUDescriptorHandle getDSVHandleByUsageIndex(unsigned int index);
+  GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index);
 public:
   Resource &operator=(Resource &ref) = delete;
   Resource() = delete;

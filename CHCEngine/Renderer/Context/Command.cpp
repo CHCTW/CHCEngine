@@ -116,7 +116,7 @@ void ContextCommand::bindGraphcisResource(
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
   if (!direct_bind) {
     list_->SetGraphicsRootDescriptorTable(
-        slot_index, resource->getGPUHandleByUsageIndex(usage_index));
+        slot_index, resource->getCBVSRVUAVUsagebyIndex(usage_index));
   } else {
     switch (getUsage(bind_type)) {
     case BindUsage::BIND_USAGE_CBV:

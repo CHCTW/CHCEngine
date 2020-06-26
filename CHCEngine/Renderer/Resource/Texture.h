@@ -24,9 +24,7 @@ public:
       ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
       ResourceInformation information, TextureInformation texture_information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-          &descriptor_ranges,
-      std::vector<std::pair<DescriptorType, unsigned int>>
-          &descriptor_indices);
+          &descriptor_ranges);
 };
 } // namespace Resource
 } // namespace Renderer

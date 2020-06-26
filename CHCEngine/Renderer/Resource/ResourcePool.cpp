@@ -188,16 +188,12 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
 
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges;
-  std::vector<std::pair<DescriptorType, unsigned int>> usage_indices;
   if (usages.size() > 0) {
 
     descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
         getBufferDesciptorRanges(
             device_, usages, gpu_resource, element_count, element_byte_size,
             size, static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]);
-    for (int i = 0; i < usages.size(); ++i) {
-      usage_indices.push_back({DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV, i});
-    }
   }
   std::shared_ptr<VertexBufferView> vertex_view;
   std::shared_ptr<IndexBufferView> index_view;
@@ -237,7 +233,7 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
 
   return std::make_shared<Buffer>(gpu_resource, upload_buffer, res_info,
                                   buffer_information, descriptor_ranges,
-                                  usage_indices, vertex_view, index_view);
+                                   vertex_view, index_view);
 }
 
 std::shared_ptr<Texture> ResourcePool::getTexture(
@@ -251,7 +247,6 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   if (usages.empty()&&render_target_usages.empty()&&depth_stencil_usages.empty()) {
     throw std::exception("No usages, invalid texture create");
   }
-  std::vector<std::pair<DescriptorType, unsigned int>> descriptor_indices;
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges;
   bool use_shader_resource_view = false;
@@ -268,7 +263,6 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
            std::string(magic_enum::enum_name(usages[i].usage_)))
               .c_str());
     }
-    descriptor_indices.push_back({getDescriptorType(usages[i].usage_), i});
   }
   if (render_target_usages.size()) {
     flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
@@ -327,7 +321,7 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   }
   TextureInformation text_inf = {texture_type, raw_format, width,
                                  height,       depth,       mip_levels};
-  return std::make_shared<Texture>(gpu_resource,upload_buffer,information,text_inf,descriptor_ranges,descriptor_indices);
+  return std::make_shared<Texture>(gpu_resource,upload_buffer,information,text_inf,descriptor_ranges);
 }
 
 } // namespace Resource

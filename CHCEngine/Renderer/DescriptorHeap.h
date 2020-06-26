@@ -90,6 +90,8 @@ public:
     ret.offset(index, descriptor_size_);
     return ret;
   }
+  unsigned int getSize() { return size_;
+  }
   unsigned long long getId() { return id_; }
 };
 // a thread safe class, probaly going to store all of them in Renender.
