@@ -794,5 +794,6 @@ struct DepthStencilUsage {
       DepthStencilFlags::DEPTH_SENCIL_FLAG_NONE;
 };
 static const std::vector<DepthStencilUsage> empty_depth_stencil_usage;
+using TextureFootPrint = D3D12_PLACED_SUBRESOURCE_FOOTPRINT;
 } // namespace Renderer
 } // namespace CHCEngine

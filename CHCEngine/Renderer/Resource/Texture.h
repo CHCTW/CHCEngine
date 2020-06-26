@@ -12,6 +12,10 @@ struct TextureInformation {
   unsigned int height_ = 1;
   unsigned int depth_ = 1;
   unsigned int mip_levels_ = 1;
+  std::vector<TextureFootPrint> foot_prints_;
+  std::vector<unsigned int> row_counts_;
+  std::vector<unsigned long long> row_byte_sizes_;
+  unsigned long long byte_size_;
 };
 class Texture : public Resource {
 private:
@@ -22,7 +26,7 @@ public:
   Texture &operator=(Texture &ref) = delete;
   Texture(
       ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-      ResourceInformation information, TextureInformation texture_information,
+      ResourceInformation information, TextureInformation &texture_information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges);
 };

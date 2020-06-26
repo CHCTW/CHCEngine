@@ -30,6 +30,7 @@ public:
   DepthStencilSetup() = default;
   // this will use the foramt to auto turn on/off depth/stencil
   DepthStencilSetup(DataFormat depth_stencil_formats);
+  explicit DepthStencilSetup(bool depth_enable) : depth_enable_(depth_enable) {}
   void setDepthEnable(bool depth_enable) { depth_enable_ = depth_enable; }
   void setStencilEnable(bool stencil_enable) {
     stencil_enable_ = stencil_enable;

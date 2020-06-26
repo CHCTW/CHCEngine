@@ -306,13 +306,29 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   std::string name(magic_enum::enum_name(texture_type));
   name += "_" + std::to_string(id);
   NAME_D3D12_OBJECT_STRING(gpu_resource, name);
+
+  unsigned int subresouce_count = depth * mip_levels;
+  D3D12_RESOURCE_DESC desc = gpu_resource->GetDesc();
+  UINT64 required_size = 0;
+  D3D12_PLACED_SUBRESOURCE_FOOTPRINT *foot_prints =
+      new D3D12_PLACED_SUBRESOURCE_FOOTPRINT[subresouce_count];
+  unsigned int *row_counts = new unsigned int[subresouce_count];
+  unsigned long long *row_byte_size =
+      new unsigned long long[subresouce_count];
+  device_->GetCopyableFootprints(&desc, 0, depth * mip_levels, 0, foot_prints,
+                                 row_counts, row_byte_size, &required_size);
+  std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> foot_print_vec(
+      foot_prints, foot_prints+subresouce_count);
+  std::vector<unsigned int> row_counts_vec(row_counts,
+                                           row_counts+subresouce_count);
+  std::vector<unsigned long long> row_bytes_vec(row_byte_size,
+                                                row_byte_size+subresouce_count);
+  delete[] foot_prints;
+  delete[] row_counts;
+  delete[] row_byte_size;
   ResourceInformation information = {name, ResourceType::RESOURCE_TYPE_TEXTURE,
                                      update_type};
   if (update_type == ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
-    D3D12_RESOURCE_DESC desc = gpu_resource->GetDesc();
-    UINT64 required_size = 0;
-    device_->GetCopyableFootprints(&desc, 0, depth * mip_levels, 0, nullptr,
-                                   nullptr, nullptr, &required_size);
     upload_buffer =
         createBuffer(device_, required_size, HeapType::HEAP_TYPE_UPLOAD,
                      ResourceState::RESOURCE_STATE_COPY_SOURCE);
@@ -320,8 +336,15 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
     NAME_D3D12_OBJECT_STRING(gpu_resource, name);
   }
   TextureInformation text_inf = {texture_type, raw_format, width,
-                                 height,       depth,       mip_levels};
-  return std::make_shared<Texture>(gpu_resource,upload_buffer,information,text_inf,descriptor_ranges);
+                                 height,
+                                 depth,
+                                 mip_levels,
+                                 std::move(foot_print_vec),
+                                 std::move(row_counts_vec),
+                                 std::move(row_bytes_vec),
+                                 required_size};
+  return std::make_shared<Texture>(gpu_resource, upload_buffer, information,
+                                   text_inf, descriptor_ranges);
 }
 
 } // namespace Resource
