@@ -178,18 +178,19 @@ public:
                                      attributes, index_format, initial_state,
                                      update_type);
   }
-  // going to replace data foramt to rawdataformat later, for better support
-  // difference usages
-  std::shared_ptr<Resource::Texture>
-      getTexture(TextureType texture_type, DataFormat data_format,
-          unsigned long long width, unsigned int height, unsigned int depth,
-          unsigned int mip_levels, const std::vector<TextureUsage>& usages,
-          ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
-          Resource::ResourceUpdateType update_type =
+  std::shared_ptr<Resource::Texture> getTexture(
+      TextureType texture_type, RawFormat raw_format, unsigned long long width,
+      unsigned int height, unsigned int depth, unsigned int mip_levels,
+      const std::vector<TextureUsage> &usages,
+      const std::vector<RenderTargetUsage> &render_target_usages =
+          empty_render_target_usage,
+      const std::vector<DepthStencilUsage> &depth_stencil_usages = empty_depth_stencil_usage,
+      ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+      Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
-    return resource_pool_->getTexture(texture_type, data_format, width, height,
-                                      depth, mip_levels, usages, initial_state,
-                                      update_type);
+    return resource_pool_->getTexture(
+        texture_type, raw_format, width, height, depth, mip_levels, usages,
+        render_target_usages, depth_stencil_usages, initial_state, update_type);
   }
 
   // shader visiblity should be the same in the same slot, but it's fine.

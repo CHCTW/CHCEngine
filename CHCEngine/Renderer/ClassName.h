@@ -3,9 +3,9 @@
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 
+#include <limits>
 #include <string>
 #include <unordered_map>
-#include <limits>
 
 // Assign a name to the object to aid with debugging.
 #if defined(_DEBUG) || defined(DBG)
@@ -366,6 +366,81 @@ inline bool hasStencilFormat(DataFormat format) {
   }
   return false;
 }
+enum class RawFormat {
+  RAW_FORMAT_UNKNOWN,
+  RAW_FORMAT_R8,
+  RAW_FORMAT_R16,
+  RAW_FORMAT_R8G8,
+  RAW_FORMAT_R32,
+  RAW_FORMAT_R16G16,
+  RAW_FORMAT_R24G8,
+  RAW_FORMAT_R8G8B8A8,
+  RAW_FORMAT_B8G8R8A8,
+  RAW_FORMAT_B8G8R8X8,
+  RAW_FORMAT_R10G10B10A2,
+  RAW_FORMAT_R32G32,
+  RAW_FORMAT_R32G8X24,
+  RAW_FORMAT_R16G16B16A16,
+  RAW_FORMAT_R32G32B32,
+  RAW_FORMAT_R32G32B32A32,
+};
+inline DataFormat convertToDataFormat(RawFormat format) {
+  switch (format) {
+  case RawFormat::RAW_FORMAT_R8:
+    return DataFormat::DATA_FORMAT_R8_TYPELESS;
+  case RawFormat::RAW_FORMAT_R16:
+    return DataFormat::DATA_FORMAT_R16_TYPELESS;
+  case RawFormat::RAW_FORMAT_R8G8:
+    return DataFormat::DATA_FORMAT_R8G8_TYPELESS;
+  case RawFormat::RAW_FORMAT_R32:
+    return DataFormat::DATA_FORMAT_R32_TYPELESS;
+  case RawFormat::RAW_FORMAT_R16G16:
+    return DataFormat::DATA_FORMAT_R16G16_TYPELESS;
+  case RawFormat::RAW_FORMAT_R24G8:
+    return DataFormat::DATA_FORMAT_R24G8_TYPELESS;
+  case RawFormat::RAW_FORMAT_R8G8B8A8:
+    return DataFormat::DATA_FORMAT_R8G8B8A8_TYPELESS;
+  case RawFormat::RAW_FORMAT_B8G8R8A8:
+    return DataFormat::DATA_FORMAT_B8G8R8A8_TYPELESS;
+  case RawFormat::RAW_FORMAT_B8G8R8X8:
+    return DataFormat::DATA_FORMAT_B8G8R8X8_TYPELESS;
+  case RawFormat::RAW_FORMAT_R10G10B10A2:
+    return DataFormat::DATA_FORMAT_R10G10B10A2_TYPELESS;
+  case RawFormat::RAW_FORMAT_R32G32:
+    return DataFormat::DATA_FORMAT_R32G32_TYPELESS;
+  case RawFormat::RAW_FORMAT_R32G8X24:
+    return DataFormat::DATA_FORMAT_R32G8X24_TYPELESS;
+  case RawFormat::RAW_FORMAT_R16G16B16A16:
+    return DataFormat::DATA_FORMAT_R16G16B16A16_TYPELESS;
+  case RawFormat::RAW_FORMAT_R32G32B32:
+    return DataFormat::DATA_FORMAT_R32G32B32_TYPELESS;
+  case RawFormat::RAW_FORMAT_R32G32B32A32:
+    return DataFormat::DATA_FORMAT_R32G32B32A32_TYPELESS;
+  }
+  return DataFormat::DATA_FORMAT_UNKNOWN;
+}
+enum class DepthStencilFormat {
+  DEPTH_STENCIL_FORMAT_UNKNOWN,
+  DEPTH_STENCIL_FORMAT_D16_UNORM,
+  DEPTH_STENCIL_FORMAT_D32_FLOAT,
+  DEPTH_STENCIL_FORMAT_D24_UNORM_S8_UINT,
+  DEPTH_STENCIL_FORMAT_D32_FLOAT_S8X24_UINT,
+};
+inline DataFormat convertToDataFormat(DepthStencilFormat format) {
+  switch (format) {
+  case DepthStencilFormat::DEPTH_STENCIL_FORMAT_D16_UNORM:
+    return DataFormat::DATA_FORMAT_D16_UNORM;
+  case DepthStencilFormat::DEPTH_STENCIL_FORMAT_D24_UNORM_S8_UINT:
+    return DataFormat::DATA_FORMAT_D24_UNORM_S8_UINT;
+  case DepthStencilFormat::DEPTH_STENCIL_FORMAT_D32_FLOAT:
+    return DataFormat::DATA_FORMAT_D32_FLOAT;
+  case DepthStencilFormat::DEPTH_STENCIL_FORMAT_D32_FLOAT_S8X24_UINT:
+    return DataFormat::DATA_FORMAT_D32_FLOAT_S8X24_UINT;
+  case DepthStencilFormat::DEPTH_STENCIL_FORMAT_UNKNOWN:
+    return DataFormat::DATA_FORMAT_UNKNOWN;
+  }
+  return DataFormat::DATA_FORMAT_UNKNOWN;
+}
 enum class BindUsage {
   BIND_USAGE_CBV,
   BIND_USAGE_SRV,
@@ -633,11 +708,27 @@ enum class BufferType {
   BUFFER_TYPE_RAW = 0x20,
   BUFFER_TYPE_CUSTOM = 0xff,
 };
-enum class TextureType {
-  TEXTURE_TYPE_1D,
-  TEXTURE_TYPE_2D,
-  TEXTURE_TYPE_3D
-};
+enum class TextureType { TEXTURE_TYPE_1D, TEXTURE_TYPE_2D, TEXTURE_TYPE_3D };
+// only used when the texture usage  and rtv, dsv dimension is unknown
+// 1 with simple texture, >1 with arrays, cube and MS should always be
+// decleared by user
+inline DataDimension getDataDimension(TextureType type, unsigned int depth) {
+  switch (type) {
+  case TextureType::TEXTURE_TYPE_1D:
+    if (depth == 1)
+      return DataDimension::DATA_DIMENSION_TEXTURE1D;
+    else
+      return DataDimension::DATA_DIMENSION_TEXTURE1DARRAY;
+  case TextureType::TEXTURE_TYPE_2D:
+    if (depth == 1)
+      return DataDimension::DATA_DIMENSION_TEXTURE2D;
+    else
+      return DataDimension::DATA_DIMENSION_TEXTURE2DARRAY;
+  case TextureType::TEXTURE_TYPE_3D:
+    return DataDimension::DATA_DIMENSION_TEXTURE3D;
+  }
+  return DataDimension::DATA_DIMENSION_UNKNOWN;
+}
 enum class DepthStencilFlags {
   DEPTH_SENCIL_FLAG_NONE = 0x0,
   DEPTH_SENCIL_FLAG_READ_ONLY_DEPTH = 0x1,
@@ -671,17 +762,37 @@ struct SubTexturesRange {
 // take a look at d3d12 array and mip slice
 // https://docs.microsoft.com/en-us/windows/win32/direct3d12/subresources
 // this is just a srv/dsv/rtv combined descriptor
+
+// if dimension is unknown, then it will follow the texture type
+// and check the depth, if depth > 1, it will be arrays
+
 struct TextureUsage {
   ResourceUsage usage_ = ResourceUsage::RESOURCE_USAGE_UNKNOWN;
-  DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
   DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
+  DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
   MipRange mip_range_;
+  MipSlice mip_slice_ = 0;
+  SubTexturesRange sub_texture_ranges_;
+  unsigned int plane_slice_ = 0;
+};
+struct RenderTargetUsage {
+  DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
+  DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
+  MipSlice mip_slice_ = 0;
+  SubTexturesRange sub_texture_ranges_;
+  unsigned int plane_slice_ = 0;
+};
+static const std::vector<RenderTargetUsage> empty_render_target_usage;
+struct DepthStencilUsage {
+  DepthStencilFormat data_format_ =
+      DepthStencilFormat::DEPTH_STENCIL_FORMAT_UNKNOWN;
+  DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
   MipSlice mip_slice_ = 0;
   SubTexturesRange sub_texture_ranges_;
   unsigned int plane_slice_ = 0;
   DepthStencilFlags depth_stencil_flag_ =
       DepthStencilFlags::DEPTH_SENCIL_FLAG_NONE;
 };
-
+static const std::vector<DepthStencilUsage> empty_depth_stencil_usage;
 } // namespace Renderer
 } // namespace CHCEngine

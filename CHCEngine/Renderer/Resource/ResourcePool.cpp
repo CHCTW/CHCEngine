@@ -241,43 +241,40 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
 }
 
 std::shared_ptr<Texture> ResourcePool::getTexture(
-    TextureType texture_type, DataFormat data_format, unsigned long long width,
+    TextureType texture_type, RawFormat raw_format, unsigned long long width,
     unsigned int height, unsigned int depth, unsigned int mip_levels,
-    const std::vector<TextureUsage> &usages, ResourceState initial_state,
+    const std::vector<TextureUsage> &usages,
+    const std::vector<RenderTargetUsage> &render_target_usages,
+    const std::vector<DepthStencilUsage> &depth_stencil_usages,
+    ResourceState initial_state,
     ResourceUpdateType update_type) {
-  if (usages.empty()) {
-    throw std::exception("No descritpor, invalid texture create");
+  if (usages.empty()&&render_target_usages.empty()&&depth_stencil_usages.empty()) {
+    throw std::exception("No usages, invalid texture create");
   }
   std::vector<std::pair<DescriptorType, unsigned int>> descriptor_indices;
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges;
-  std::vector<TextureUsage> srv_uav_usages;
-  std::vector<TextureUsage> rtv_usages;
-  std::vector<TextureUsage> dsv_usages;
   bool use_shader_resource_view = false;
   D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
   for (unsigned int i = 0; i < usages.size(); ++i) {
-    if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_CBV ||
-        usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_SAMPLER ||
-        usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_UNKNOWN) {
+    if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_UAV) {
+      flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
+      use_shader_resource_view = true;
+    }
+    else {
       throw std::exception(
           (std::string("Error usage with texture : ") +
            std::string(magic_enum::enum_name(usages[i].usage_)))
               .c_str());
-    } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_RTV) {
-      rtv_usages.emplace_back(usages[i]);
-      flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_DSV) {
-      dsv_usages.emplace_back(usages[i]);
-      flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-    } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_UAV) {
-      srv_uav_usages.emplace_back(usages[i]);
-      flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
-      srv_uav_usages.emplace_back(usages[i]);
-      use_shader_resource_view = true;
     }
     descriptor_indices.push_back({getDescriptorType(usages[i].usage_), i});
+  }
+  if (render_target_usages.size()) {
+    flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+  }
+  if (depth_stencil_usages.size()) {
+    flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
   }
   if ((flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) &&
       ((flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) |
@@ -290,25 +287,25 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   ComPtr<GPUResource> upload_buffer = nullptr;
   ComPtr<GPUResource> gpu_resource =
       createTexture(device_, convertToD3D12ResourceDimension(texture_type),
-                    convertToDXGIFormat(data_format), width, height, depth,
+                    convertToDXGIFormat(convertToDataFormat(raw_format)), width, height, depth,
                     HeapType::HEAP_TYPE_DEFAULT, mip_levels, initial_state,flags);
 
-  if (srv_uav_usages.size()) {
+  if (usages.size()) {
     descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
         getSRVUAVTextureDesciptorRanges(
-            device_, srv_uav_usages, gpu_resource, depth,
+            device_, usages, gpu_resource, texture_type, depth,
             static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]);
   }
-  if (rtv_usages.size()) {
+  if (render_target_usages.size()) {
     descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_RTV] =
         getRTVTextureDesciptorRanges(
-            device_, rtv_usages, gpu_resource, depth,
+            device_, render_target_usages, gpu_resource, texture_type, depth,
             static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]);
   }
-  if (dsv_usages.size()) {
+  if (depth_stencil_usages.size()) {
     descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_DSV] =
         getDSVTextureDesciptorRanges(
-            device_, rtv_usages, gpu_resource, depth,
+            device_, depth_stencil_usages, gpu_resource, texture_type, depth,
             static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]);
   }
   unsigned long long id = getNextTextureId(texture_type);
@@ -328,7 +325,7 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
     name += "_upload";
     NAME_D3D12_OBJECT_STRING(gpu_resource, name);
   }
-  TextureInformation text_inf = {texture_type, data_format, width,
+  TextureInformation text_inf = {texture_type, raw_format, width,
                                  height,       depth,       mip_levels};
   return std::make_shared<Texture>(gpu_resource,upload_buffer,information,text_inf,descriptor_ranges,descriptor_indices);
 }

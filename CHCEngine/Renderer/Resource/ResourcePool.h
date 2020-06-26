@@ -49,9 +49,11 @@ public:
             IndexFormat index_format, ResourceState initial_state,
             ResourceUpdateType update_type);
   std::shared_ptr<Texture>
-  getTexture(TextureType texture_type, DataFormat data_format,
+  getTexture(TextureType texture_type, RawFormat raw_format,
              unsigned long long width, unsigned int height, unsigned int depth,
              unsigned int mip_levels, const std::vector<TextureUsage> &usages,
+             const std::vector<RenderTargetUsage> &render_target_usages,
+             const std::vector<DepthStencilUsage> &depth_stencil_usages,
              ResourceState initial_state, ResourceUpdateType update_type);
 };
 

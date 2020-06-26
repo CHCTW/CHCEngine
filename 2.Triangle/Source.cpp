@@ -153,48 +153,38 @@ int main() {
   SubTexturesRange textue_range;
 
   auto texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, DataFormat::DATA_FORMAT_B8G8R8A8_TYPELESS,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_B8G8R8A8,
       256, 256, 1, 5,
       {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
-        .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2D,
         .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
-        .mip_range_ = mips},
-       {.usage_ = ResourceUsage::RESOURCE_USAGE_RTV,
-        .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2D,
-        .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
-        .mip_slice_ = 3}});
+        .mip_range_ = mips}},
+      {{.data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+          .mip_slice_=3}});
 
   auto cube_textures = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, DataFormat::DATA_FORMAT_R32_TYPELESS, 512,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R24G8, 512,
       512, 12, 5,
       {{
            .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+           .data_format_ = DataFormat::DATA_FORMAT_R24_UNORM_X8_TYPELESS,
            .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURECUBEARRAY,
-           .data_format_ = DataFormat::DATA_FORMAT_R32_FLOAT,
-       },
-       {
-           .usage_ = ResourceUsage::RESOURCE_USAGE_DSV,
-           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE2DARRAY,
-           .data_format_ = DataFormat::DATA_FORMAT_D32_FLOAT,
-       }});
+      }},
+      empty_render_target_usage,
+      {{.data_format_ =
+            DepthStencilFormat::DEPTH_STENCIL_FORMAT_D24_UNORM_S8_UINT,
+        .mip_slice_ = 4}});
   auto sterio_texture = renderer.getTexture(
       TextureType::TEXTURE_TYPE_3D,
-      DataFormat::DATA_FORMAT_R32G32B32A32_TYPELESS, 32, 32, 32, 5,
+      RawFormat::RAW_FORMAT_R32G32B32A32, 32, 32, 32, 5,
       {{
            .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
-           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
-           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
-       },
-       {
-           .usage_ = ResourceUsage::RESOURCE_USAGE_RTV,
-           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
            .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
        },
        {
            .usage_ = ResourceUsage::RESOURCE_USAGE_UAV,
-           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURE3D,
            .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
-       }});
+       }},
+      {{.data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT}});
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();

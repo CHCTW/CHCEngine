@@ -18,7 +18,7 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Resource {
 ComPtr<GPUResource>
-createBuffer(const ComPtr<Device> & device, UINT64 size, HeapType heap_type,
+createBuffer(const ComPtr<Device> &device, UINT64 size, HeapType heap_type,
              ResourceState initial_state,
              D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE) {
   ComPtr<GPUResource> res;
@@ -49,7 +49,7 @@ createBuffer(const ComPtr<Device> & device, UINT64 size, HeapType heap_type,
   return res;
 }
 ComPtr<GPUResource>
-createTexture(const ComPtr<Device> & device, D3D12_RESOURCE_DIMENSION dimension,
+createTexture(const ComPtr<Device> &device, D3D12_RESOURCE_DIMENSION dimension,
               DXGI_FORMAT format, UINT64 width, UINT height, UINT depth,
               HeapType heap_type, UINT mip_levels, ResourceState initial_state,
               D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
@@ -212,7 +212,8 @@ getVertrexBufferView(ComPtr<GPUResource> gpu_resource, unsigned int buffer_size,
 // only work on srv usage vector, should have none other usage type
 std::shared_ptr<DescriptorRange> getSRVUAVTextureDesciptorRanges(
     const ComPtr<Device> &device, const std::vector<TextureUsage> &usages,
-    const ComPtr<GPUResource> &gpu_resource, unsigned int depth,
+    const ComPtr<GPUResource> &gpu_resource, TextureType texture_type,
+    unsigned int depth,
     const std::shared_ptr<DescriptorHeap> &descriptor_heap) {
   std::shared_ptr<DescriptorRange> range =
       descriptor_heap->allocateRange(static_cast<unsigned int>(usages.size()));
@@ -228,7 +229,10 @@ std::shared_ptr<DescriptorRange> getSRVUAVTextureDesciptorRanges(
     } else {
       uav_desc.Format = convertToDXGIFormat(usage.data_format_);
     }
-    switch (usage.data_dimension_) {
+    DataDimension dimension = usage.data_dimension_;
+    if (dimension == DataDimension::DATA_DIMENSION_UNKNOWN)
+      dimension = getDataDimension(texture_type, depth);
+    switch (dimension) {
     case DataDimension::DATA_DIMENSION_TEXTURE1D:
       if (usage.usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
         srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
@@ -424,8 +428,9 @@ std::shared_ptr<DescriptorRange> getSRVUAVTextureDesciptorRanges(
   return range;
 }
 std::shared_ptr<DescriptorRange> getRTVTextureDesciptorRanges(
-    const ComPtr<Device> &device, const std::vector<TextureUsage> &usages,
-    const ComPtr<GPUResource> &gpu_resource, unsigned int depth,
+    const ComPtr<Device> &device, const std::vector<RenderTargetUsage> &usages,
+    const ComPtr<GPUResource> &gpu_resource, TextureType texture_type,
+    unsigned int depth,
     const std::shared_ptr<DescriptorHeap> &descriptor_heap) {
   std::shared_ptr<DescriptorRange> range =
       descriptor_heap->allocateRange(static_cast<unsigned int>(usages.size()));
@@ -433,7 +438,10 @@ std::shared_ptr<DescriptorRange> getRTVTextureDesciptorRanges(
   for (auto &usage : usages) {
     D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {};
     rtv_desc.Format = convertToDXGIFormat(usage.data_format_);
-    switch (usage.data_dimension_) {
+    DataDimension dimension = usage.data_dimension_;
+    if (dimension == DataDimension::DATA_DIMENSION_UNKNOWN)
+      dimension = getDataDimension(texture_type, depth);
+    switch (dimension) {
     case DataDimension::DATA_DIMENSION_TEXTURE1D:
       rtv_desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE1D;
       rtv_desc.Texture1D.MipSlice = usage.mip_slice_;
@@ -490,23 +498,22 @@ std::shared_ptr<DescriptorRange> getRTVTextureDesciptorRanges(
   return range;
 }
 std::shared_ptr<DescriptorRange> getDSVTextureDesciptorRanges(
-    const ComPtr<Device> &device, const std::vector<TextureUsage> &usages,
-    const ComPtr<GPUResource> &gpu_resource, unsigned int depth,
+    const ComPtr<Device> &device, const std::vector<DepthStencilUsage> &usages,
+    const ComPtr<GPUResource> &gpu_resource, TextureType texture_type,
+    unsigned int depth,
     const std::shared_ptr<DescriptorHeap> &descriptor_heap) {
   std::shared_ptr<DescriptorRange> range =
       descriptor_heap->allocateRange(static_cast<unsigned int>(usages.size()));
   unsigned int index = 0;
   for (auto &usage : usages) {
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = {};
-    if (!hasStencilFormat(usage.data_format_)) {
-      throw std::exception(
-          (std::string("Wrong data format with depth stencil view : ") +
-           std::string(magic_enum::enum_name(usage.data_format_)))
-              .c_str());
-    }
-    dsv_desc.Format = convertToDXGIFormat(usage.data_format_);
+ 
+    dsv_desc.Format = convertToDXGIFormat(convertToDataFormat(usage.data_format_));
     dsv_desc.Flags = convertToD3D12DSVFlags(usage.depth_stencil_flag_);
-    switch (usage.data_dimension_) {
+    DataDimension dimension = usage.data_dimension_;
+    if (dimension == DataDimension::DATA_DIMENSION_UNKNOWN)
+      dimension = getDataDimension(texture_type, depth);
+    switch (dimension) {
     case DataDimension::DATA_DIMENSION_TEXTURE1D:
       dsv_desc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1D;
       dsv_desc.Texture1D.MipSlice = usage.mip_slice_;

@@ -7,7 +7,7 @@ namespace Resource {
 
 struct TextureInformation {
   TextureType type_ = TextureType::TEXTURE_TYPE_2D;
-  DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
+  RawFormat data_format_ = RawFormat::RAW_FORMAT_UNKNOWN;
   unsigned long long width_ = 1;
   unsigned int height_ = 1;
   unsigned int depth_ = 1;
