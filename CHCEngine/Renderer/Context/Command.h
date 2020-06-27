@@ -73,7 +73,7 @@ struct ContextCommand {
   void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
                           unsigned long long data_byte_size,
                           unsigned long long offset,
-                     std::shared_ptr<Resource::AllocateSpace> allocate_space);
+                     std::shared_ptr<Resource::AllocateSpace> &allocate_space);
   void drawInstanced(unsigned int vertex_count, unsigned int instance_count,
                      unsigned int start_vertex_location,
                      unsigned int start_instance_location);

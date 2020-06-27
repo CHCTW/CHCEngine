@@ -173,6 +173,8 @@ using Blob = ID3DBlob;
 using ShaderReflection = ID3D12ShaderReflection;
 // use byte in this order
 // 1,2,4,8,16 for fast fetch size per elemnt
+// only get the enum before DXGI_FORMAT_BC1_TYPELESS
+// will add more in future
 enum class DataFormat {
   DATA_FORMAT_UNKNOWN,
   DATA_FORMAT_R8_TYPELESS,

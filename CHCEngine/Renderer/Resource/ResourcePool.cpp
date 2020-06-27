@@ -308,6 +308,8 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   NAME_D3D12_OBJECT_STRING(gpu_resource, name);
 
   unsigned int subresouce_count = depth * mip_levels;
+  if (texture_type == TextureType::TEXTURE_TYPE_3D)
+    subresouce_count = mip_levels;
   D3D12_RESOURCE_DESC desc = gpu_resource->GetDesc();
   UINT64 required_size = 0;
   D3D12_PLACED_SUBRESOURCE_FOOTPRINT *foot_prints =
@@ -315,7 +317,7 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   unsigned int *row_counts = new unsigned int[subresouce_count];
   unsigned long long *row_byte_size =
       new unsigned long long[subresouce_count];
-  device_->GetCopyableFootprints(&desc, 0, depth * mip_levels, 0, foot_prints,
+  device_->GetCopyableFootprints(&desc, 0, subresouce_count, 0, foot_prints,
                                  row_counts, row_byte_size, &required_size);
   std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> foot_print_vec(
       foot_prints, foot_prints+subresouce_count);

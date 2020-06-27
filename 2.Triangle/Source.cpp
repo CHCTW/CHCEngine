@@ -153,29 +153,29 @@ int main() {
   SubTexturesRange textue_range;
 
   auto texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_B8G8R8A8,
-      256, 256, 1, 5,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_B8G8R8A8, 256, 256, 1,
+      5,
       {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
         .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
         .mip_range_ = mips}},
       {{.data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
-          .mip_slice_=3}});
+        .mip_slice_ = 3}});
 
   auto cube_textures = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R24G8, 512,
-      512, 12, 5,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R24G8, 512, 512, 12,
+      5,
       {{
-           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
-           .data_format_ = DataFormat::DATA_FORMAT_R24_UNORM_X8_TYPELESS,
-           .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURECUBEARRAY,
+          .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+          .data_format_ = DataFormat::DATA_FORMAT_R24_UNORM_X8_TYPELESS,
+          .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURECUBEARRAY,
       }},
       empty_render_target_usage,
       {{.data_format_ =
             DepthStencilFormat::DEPTH_STENCIL_FORMAT_D24_UNORM_S8_UINT,
         .mip_slice_ = 4}});
   auto sterio_texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_3D,
-      RawFormat::RAW_FORMAT_R32G32B32A32, 32, 32, 32, 5,
+      TextureType::TEXTURE_TYPE_3D, RawFormat::RAW_FORMAT_R32G32B32A32, 32, 32,
+      32, 5,
       {{
            .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
            .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
@@ -228,10 +228,9 @@ int main() {
           graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
               ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(
-              sterio_texture,
+          graph->resourceTransition(cube_textures,
                                     ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
+                                    ResourceState::RESOURCE_STATE_DEPTH_WRITE);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
@@ -257,9 +256,9 @@ int main() {
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
-          graph->resourceTransition(
-              sterio_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-              ResourceState::RESOURCE_STATE_COPY_DEST);
+          graph->resourceTransition(cube_textures,
+                                    ResourceState::RESOURCE_STATE_DEPTH_WRITE,
+                                    ResourceState::RESOURCE_STATE_COPY_DEST);
           graph->resourceTransition(
               constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);

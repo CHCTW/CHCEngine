@@ -70,7 +70,7 @@ void ContextCommand::updateBufferRegion(
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const *data,
     unsigned long long data_byte_size, unsigned long long offset,
-    std::shared_ptr<Resource::AllocateSpace> allocate_space) {
+    std::shared_ptr<Resource::AllocateSpace> &allocate_space) {
 
   memcpy(allocate_space->copy_point_, data, data_byte_size);
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,

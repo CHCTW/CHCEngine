@@ -24,11 +24,14 @@ private:
 
 public:
   Texture &operator=(Texture &ref) = delete;
-  Texture(
-      ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-      ResourceInformation information, TextureInformation &texture_information,
-      std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-          &descriptor_ranges);
+  Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+          ResourceInformation information,
+          TextureInformation &texture_information,
+          std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+              &descriptor_ranges);
+  const TextureInformation & getTextureInformation() const {
+    return texture_information_;
+  }
 };
 } // namespace Resource
 } // namespace Renderer
