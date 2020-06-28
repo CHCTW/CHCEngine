@@ -97,7 +97,7 @@ ResourcePool::getIndexBuffer(unsigned int index_count, IndexFormat index_format,
   if (update_type == ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     upload_buffer =
         createBuffer(device_, buffer_size, HeapType::HEAP_TYPE_UPLOAD,
-                     ResourceState::RESOURCE_STATE_COPY_SOURCE);
+                     ResourceState::RESOURCE_STATE_GENERIC_READ);
     std::string temp = name;
     temp += "_upload";
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);
@@ -180,7 +180,7 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
   ComPtr<GPUResource> upload_buffer;
   if (update_type == ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     upload_buffer = createBuffer(device_, size, HeapType::HEAP_TYPE_UPLOAD,
-                                 ResourceState::RESOURCE_STATE_COPY_SOURCE);
+                                 ResourceState::RESOURCE_STATE_GENERIC_READ);
     std::string temp = name;
     temp += "_upload";
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);
@@ -233,7 +233,7 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
 
   return std::make_shared<Buffer>(gpu_resource, upload_buffer, res_info,
                                   buffer_information, descriptor_ranges,
-                                   vertex_view, index_view);
+                                  vertex_view, index_view);
 }
 
 std::shared_ptr<Texture> ResourcePool::getTexture(
@@ -242,9 +242,9 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
     const std::vector<TextureUsage> &usages,
     const std::vector<RenderTargetUsage> &render_target_usages,
     const std::vector<DepthStencilUsage> &depth_stencil_usages,
-    ResourceState initial_state,
-    ResourceUpdateType update_type) {
-  if (usages.empty()&&render_target_usages.empty()&&depth_stencil_usages.empty()) {
+    ResourceState initial_state, ResourceUpdateType update_type) {
+  if (usages.empty() && render_target_usages.empty() &&
+      depth_stencil_usages.empty()) {
     throw std::exception("No usages, invalid texture create");
   }
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
@@ -256,8 +256,7 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
       flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     } else if (usages[i].usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
       use_shader_resource_view = true;
-    }
-    else {
+    } else {
       throw std::exception(
           (std::string("Error usage with texture : ") +
            std::string(magic_enum::enum_name(usages[i].usage_)))
@@ -273,16 +272,17 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   if ((flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) &&
       ((flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) |
        (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS))) {
-    throw std::exception("Can't use depth stencil with rener target or unordered access together");
+    throw std::exception("Can't use depth stencil with rener target or "
+                         "unordered access together");
   }
   if (!use_shader_resource_view &&
       (flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
     flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
   ComPtr<GPUResource> upload_buffer = nullptr;
-  ComPtr<GPUResource> gpu_resource =
-      createTexture(device_, convertToD3D12ResourceDimension(texture_type),
-                    convertToDXGIFormat(convertToDataFormat(raw_format)), width, height, depth,
-                    HeapType::HEAP_TYPE_DEFAULT, mip_levels, initial_state,flags);
+  ComPtr<GPUResource> gpu_resource = createTexture(
+      device_, convertToD3D12ResourceDimension(texture_type),
+      convertToDXGIFormat(convertToDataFormat(raw_format)), width, height,
+      depth, HeapType::HEAP_TYPE_DEFAULT, mip_levels, initial_state, flags);
 
   if (usages.size()) {
     descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
@@ -315,16 +315,15 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   D3D12_PLACED_SUBRESOURCE_FOOTPRINT *foot_prints =
       new D3D12_PLACED_SUBRESOURCE_FOOTPRINT[subresouce_count];
   unsigned int *row_counts = new unsigned int[subresouce_count];
-  unsigned long long *row_byte_size =
-      new unsigned long long[subresouce_count];
+  unsigned long long *row_byte_size = new unsigned long long[subresouce_count];
   device_->GetCopyableFootprints(&desc, 0, subresouce_count, 0, foot_prints,
                                  row_counts, row_byte_size, &required_size);
   std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> foot_print_vec(
-      foot_prints, foot_prints+subresouce_count);
+      foot_prints, foot_prints + subresouce_count);
   std::vector<unsigned int> row_counts_vec(row_counts,
-                                           row_counts+subresouce_count);
-  std::vector<unsigned long long> row_bytes_vec(row_byte_size,
-                                                row_byte_size+subresouce_count);
+                                           row_counts + subresouce_count);
+  std::vector<unsigned long long> row_bytes_vec(
+      row_byte_size, row_byte_size + subresouce_count);
   delete[] foot_prints;
   delete[] row_counts;
   delete[] row_byte_size;
@@ -333,11 +332,13 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   if (update_type == ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     upload_buffer =
         createBuffer(device_, required_size, HeapType::HEAP_TYPE_UPLOAD,
-                     ResourceState::RESOURCE_STATE_COPY_SOURCE);
+                     ResourceState::RESOURCE_STATE_GENERIC_READ);
     name += "_upload";
-    NAME_D3D12_OBJECT_STRING(gpu_resource, name);
+    NAME_D3D12_OBJECT_STRING(upload_buffer, name);
   }
-  TextureInformation text_inf = {texture_type, raw_format, width,
+  TextureInformation text_inf = {texture_type,
+                                 raw_format,
+                                 width,
                                  height,
                                  depth,
                                  mip_levels,

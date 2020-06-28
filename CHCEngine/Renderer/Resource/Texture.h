@@ -4,7 +4,6 @@
 namespace CHCEngine {
 namespace Renderer {
 namespace Resource {
-
 struct TextureInformation {
   TextureType type_ = TextureType::TEXTURE_TYPE_2D;
   RawFormat data_format_ = RawFormat::RAW_FORMAT_UNKNOWN;
@@ -21,7 +20,7 @@ class Texture : public Resource {
 private:
   friend struct Context::ContextCommand;
   TextureInformation texture_information_;
-
+  friend class Context::CopyContext;
 public:
   Texture &operator=(Texture &ref) = delete;
   Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,

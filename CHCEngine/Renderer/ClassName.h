@@ -797,5 +797,6 @@ struct DepthStencilUsage {
 };
 static const std::vector<DepthStencilUsage> empty_depth_stencil_usage;
 using TextureFootPrint = D3D12_PLACED_SUBRESOURCE_FOOTPRINT;
+static unsigned long long texture_subresouce_offset_aligment = 512U;
 } // namespace Renderer
 } // namespace CHCEngine

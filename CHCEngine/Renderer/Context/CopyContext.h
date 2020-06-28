@@ -25,6 +25,7 @@ public:
   void updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
                     const void *data, unsigned long long data_byte_size,
                     unsigned long long offset = 0);
+  // multi planar copy is not support yet, need some use case to have good define
   void updateTexture(
       const std::shared_ptr<Resource::Texture> &texture,
       const void *consecutive_image_data, unsigned int array_start_index = 0,

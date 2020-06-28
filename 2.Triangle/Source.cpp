@@ -142,6 +142,7 @@ int main() {
 
   Color colors[3] = {
       {0.0, 0.0, 0.0, 1.0}, {0.5, 0.5, 0.5, 1.0}, {1.0, 1.0, 1.0, 1.0}};
+
   auto color_buffer = renderer.getBuffer(
       3, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV}});
 
@@ -186,6 +187,20 @@ int main() {
        }},
       {{.data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT}});
 
+  Color texture_data[10] = {{1.0, 0.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0},
+                            {0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0},
+                            {0.0, 1.0, 1.0, 1.0}, {0.0, 0.0, 1.0, 1.0},
+                            {1.0, 1.0, 0.0, 1.0}, {1.0, 0.0, 1.0, 1.0},
+                            {0.0, 0.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}};
+  auto simple_texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_3D, RawFormat::RAW_FORMAT_R32G32B32A32, 2, 2, 2,
+      2,
+      {{
+          .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+          .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+      }},
+      {}, {},ResourceState::RESOURCE_STATE_COPY_DEST,Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
+
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
   copycontext->updateBuffer(color_buffer, colors,
@@ -193,6 +208,7 @@ int main() {
 
   Color color{1.0f, 0.2f, 0.6f, 0.0f};
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
+  copycontext->updateTexture(simple_texture, texture_data);
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
@@ -232,6 +248,9 @@ int main() {
                                     ResourceState::RESOURCE_STATE_COPY_DEST,
                                     ResourceState::RESOURCE_STATE_DEPTH_WRITE);
           graph->resourceTransition(
+              simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
+              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+          graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
               ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
@@ -262,6 +281,10 @@ int main() {
           graph->resourceTransition(
               constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+          graph->resourceTransition(
+              simple_texture,
+              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+              ResourceState::RESOURCE_STATE_COPY_DEST);
           graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);

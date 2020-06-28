@@ -16,7 +16,7 @@ namespace Resource {
 class Resource;
 class Buffer;
 struct AllocateSpace;
-class Buffer;
+class Texture;
 } // namespace Resource
 namespace Context {
 class ContextPoolBase;
@@ -88,7 +88,16 @@ struct ContextCommand {
                             unsigned int usage_index,
                             unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+
   void setStaticDescriptorHeap();
+  void updateTextureRegion(std::shared_ptr<Resource::Texture> texture,
+      const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
+      const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts);
+  void updateTextureRegion(
+      std::shared_ptr<Resource::Texture> texture,
+      const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
+      const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts,
+      std::vector<std::shared_ptr<Resource::AllocateSpace>> &spaces);
 };
 } // namespace Context
 } // namespace Renderer

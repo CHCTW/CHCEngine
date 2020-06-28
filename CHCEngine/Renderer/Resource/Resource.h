@@ -13,6 +13,7 @@ namespace Renderer {
 namespace Context {
 struct ContextCommand;
 class GraphicsContext;
+class CopyContext;
 } // namespace Context
 namespace Pipeline {
 class BindLayout;
@@ -41,6 +42,7 @@ class Resource {
   friend struct CHCEngine::Renderer::Context::ContextCommand;
   friend class CHCEngine::Renderer::Pipeline::BindLayout;
   friend class ResourcePool; 
+  friend class Context::CopyContext;
 
 protected:
   ComPtr<GPUResource> gpu_resource_;

@@ -7,6 +7,7 @@
 #include "../Resource/Buffer.h"
 #include "../Resource/DynamicBuffer.h"
 #include "../Resource/Resource.h"
+#include "../Resource/Texture.h"
 #include "ContextPool.h"
 
 namespace CHCEngine {
@@ -146,6 +147,31 @@ void ContextCommand::setStaticDescriptorHeap() {
   heaps[0] = srv_cbv_uav->descriptors_.Get();
   heaps[1] = sampler_heap->descriptors_.Get();
   list_->SetDescriptorHeaps(2, heaps);
+}
+void ContextCommand::updateTextureRegion(
+    std::shared_ptr<Resource::Texture> texture,
+    const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
+    const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts) {
+  for (unsigned int i = 0 ; i < src_layouts.size() ; ++i) {
+    list_->CopyTextureRegion(&dst_layouts[i], 0, 0, 0, &src_layouts[i],
+                             nullptr);
+  }
+  referenced_resources_.emplace_back(texture);
+}
+void ContextCommand::updateTextureRegion(
+    std::shared_ptr<Resource::Texture> texture,
+    const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
+    const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts,
+    std::vector<std::shared_ptr<Resource::AllocateSpace>> &spaces) {
+  for (unsigned int i = 0; i < src_layouts.size(); ++i) {
+    list_->CopyTextureRegion(&dst_layouts[i], 0, 0, 0, &src_layouts[i],
+                             nullptr);
+  }
+  referenced_resources_.emplace_back(texture);
+  allocated_spaces_.insert(allocated_spaces_.end(),
+                           std::make_move_iterator(spaces.begin()),
+                           std::make_move_iterator(spaces.end()));
+
 }
 } // namespace Context
 } // namespace Renderer
