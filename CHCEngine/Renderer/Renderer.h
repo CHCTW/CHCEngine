@@ -126,13 +126,17 @@ public:
   std::shared_ptr<GraphicsContext>
   getGraphicsContext(std::function<void(GraphicsContext *)> callback = 0,
                      bool async = true);
+
+  std::shared_ptr<CopyContext>
+  getCopyContext(std::function<void(CopyContext *)> callback = 0,
+                     bool async = true);
   std::shared_ptr<ContextFence>
-  submitContexts(std::shared_ptr<ContextFence> fence,
-                 std::vector<std::shared_ptr<GraphicsContext>> &&contexts);
+  submitContexts(const std::shared_ptr<ContextFence> & fence,
+                 std::vector<std::shared_ptr<Context::Context>> &&contexts);
 
   template <class... ContextPTRClass>
   std::shared_ptr<ContextFence>
-  submitContexts(std::shared_ptr<ContextFence> fence,
+  submitContexts(const std::shared_ptr<ContextFence> & fence,
                  ContextPTRClass &&... context_list) {
     return submitContexts(fence,
                           {std::forward<ContextPTRClass>(context_list)...});
@@ -184,7 +188,8 @@ public:
       const std::vector<TextureUsage> &usages,
       const std::vector<RenderTargetUsage> &render_target_usages =
           empty_render_target_usage,
-      const std::vector<DepthStencilUsage> &depth_stencil_usages = empty_depth_stencil_usage,
+      const std::vector<DepthStencilUsage> &depth_stencil_usages =
+          empty_depth_stencil_usage,
       ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
       Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {

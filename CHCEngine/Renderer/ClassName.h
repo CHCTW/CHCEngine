@@ -798,5 +798,27 @@ struct DepthStencilUsage {
 static const std::vector<DepthStencilUsage> empty_depth_stencil_usage;
 using TextureFootPrint = D3D12_PLACED_SUBRESOURCE_FOOTPRINT;
 static unsigned long long texture_subresouce_offset_aligment = 512U;
+// for box update, need to think more
+struct SourceTextureBox {
+  const void *data_;
+  // the offset and size of the data need to be copy
+  unsigned long long left_ = 0;
+  unsigned long long right_ = 1;
+  unsigned int top_ = 0;
+  unsigned int bottom_ = 1;
+  unsigned int font_ = 0;
+  unsigned int back_ = 1;
+  // if width or height or depth means the data is consecative
+  // don't care about the width, height, depth
+  unsigned long long data_width_ =
+      (std::numeric_limits<unsigned long long>::max)();
+  unsigned int data_height_ = (std::numeric_limits<unsigned int>::max)();
+  unsigned int data_depth_ = (std::numeric_limits<unsigned int>::max)();
+};
+struct DestinyTextureBox {
+  unsigned long long left_ = 0;
+  unsigned int top_ = 0;
+  unsigned int font_ = 0;
+};
 } // namespace Renderer
 } // namespace CHCEngine

@@ -54,7 +54,7 @@ protected:
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges_;
   std::vector<std::pair<DescriptorType, unsigned int>> usage_indices_;
-  ComPtr<GPUResource> getGPUResource() { return gpu_resource_; }
+  const ComPtr<GPUResource> & getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            const std::string &name, ResourceType type,
            ResourceUpdateType usage);

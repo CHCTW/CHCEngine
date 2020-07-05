@@ -38,12 +38,12 @@ void CopyContext::updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
     }
   }
 }
-const char *
+inline const char *
 fillCopyLayoutAndCopy(D3D12_TEXTURE_COPY_LOCATION &src_copy_layout,
                       const ComPtr<GPUResource> &src_gpu,
                       unsigned long long src_offset, char *src_cpu_point,
-                      const char *data,
-                      unsigned int row_count, unsigned long long row_byte_size,
+                      const char *data, unsigned int row_count,
+                      unsigned long long row_byte_size,
                       D3D12_PLACED_SUBRESOURCE_FOOTPRINT &texture_footprint) {
   src_copy_layout.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
   src_copy_layout.pResource = src_gpu.Get();
@@ -102,7 +102,7 @@ void CopyContext::updateTexture(
     for (unsigned int j = mip_start_level; j < mip_start_level + mip_count;
          ++j) {
       unsigned int sub_index = i * inf.mip_levels_ + j;
-      unsigned int row_count = inf.foot_prints_[sub_index].Footprint.Height*
+      unsigned int row_count = inf.foot_prints_[sub_index].Footprint.Height *
                                inf.foot_prints_[sub_index].Footprint.Depth;
       dest_copy_layouts_[copy_index].Type =
           D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -116,8 +116,7 @@ void CopyContext::updateTexture(
             inf.foot_prints_[sub_index].Offset,
             static_cast<char *>(texture->upload_buffer_map_pointer_) +
                 inf.foot_prints_[sub_index].Offset,
-            char_data,
-            row_count, inf.row_byte_sizes_[sub_index],
+            char_data, row_count, inf.row_byte_sizes_[sub_index],
             inf.foot_prints_[sub_index]);
       } else {
         if (pool) {
@@ -126,7 +125,7 @@ void CopyContext::updateTexture(
               static_cast<unsigned long long>(row_count) *
               static_cast<unsigned long long>(
                   inf.foot_prints_[sub_index].Footprint.RowPitch);
-          // add more 512 byte since we need offset can 512 byte algiment
+          // add more 512 byte since we need offset can be 512 byte algiment
           allocate_spaces[copy_index] =
               pool->getDynamicUploadBuffer()->reqeustSpace(
                   require_space + texture_subresouce_offset_aligment);
@@ -142,8 +141,7 @@ void CopyContext::updateTexture(
           char_data = fillCopyLayoutAndCopy(
               src_copy_layouts_[copy_index],
               allocate_spaces[copy_index]->buffer_, alignment_gpu_offset,
-              copy_pont, char_data,
-              row_count, inf.row_byte_sizes_[sub_index],
+              copy_pont, char_data, row_count, inf.row_byte_sizes_[sub_index],
               inf.foot_prints_[sub_index]);
         } else {
           throw std::exception(

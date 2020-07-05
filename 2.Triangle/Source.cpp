@@ -199,7 +199,8 @@ int main() {
           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
       }},
-      {}, {},ResourceState::RESOURCE_STATE_COPY_DEST,Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
+      {}, {}, ResourceState::RESOURCE_STATE_COMMON,
+      Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
@@ -208,7 +209,7 @@ int main() {
 
   Color color{1.0f, 0.2f, 0.6f, 0.0f};
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
-  copycontext->updateTexture(simple_texture, texture_data);
+  //copycontext->updateTexture(simple_texture, texture_data);
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
@@ -224,8 +225,13 @@ int main() {
       shset, {buffer->getBufferInformation().vetex_attributes_}, bind_layout);
   pipeline->setName("simple pipeline");
 
+   std::shared_ptr<ContextFence> g1;
+  ;
+  std::shared_ptr<ContextFence> c1;
+
   auto graphics = renderer.getGraphicsContext();
   auto graphics2 = renderer.getGraphicsContext();
+  auto copycxt = renderer.getCopyContext();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,
                                window.getFrameSize().Y);
@@ -247,9 +253,6 @@ int main() {
           graph->resourceTransition(cube_textures,
                                     ResourceState::RESOURCE_STATE_COPY_DEST,
                                     ResourceState::RESOURCE_STATE_DEPTH_WRITE);
-          graph->resourceTransition(
-              simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
@@ -282,10 +285,6 @@ int main() {
               constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
           graph->resourceTransition(
-              simple_texture,
-              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-              ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(
               buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
           graph->setPipeline(pipeline);
@@ -306,6 +305,8 @@ int main() {
         },
         false);
 
+    copycxt->updateTexture(simple_texture, texture_data);
+    renderer.submitContexts(nullptr, copycxt);
     renderer.submitContexts(nullptr, graphics);
     renderer.presentSwapChain();
   });

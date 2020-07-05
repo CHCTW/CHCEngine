@@ -27,7 +27,10 @@ class BaseFence {
   friend class Renderer;
  private:
   unsigned long long id_;
-  std::atomic<FenceState> state_;
+  FenceState state_;
+  // when comes to wait in the queue, the value and the state
+  // should be get at the same time, so we can choose the waiting
+  // value.... should have another mutex for getting the value?
   ComPtr<Fence> fence_;
   HANDLE fence_event_;
   // a value will add after waiting, used for waiting
@@ -37,9 +40,13 @@ class BaseFence {
   // used for waiting value
   std::mutex wait_mutex_;
   std::mutex submit_mutex_;
+  std::mutex state_value_mutex_;
   std::weak_ptr<FencePool> owner_;
   std::vector<std::shared_ptr<Resource::Resource>> using_resources_; 
   FenceState getState();
+  unsigned long long getExpectedValue();
+  std::pair<FenceState, unsigned long long> getStateAndExpectedValue();
+
   void waitFenceComplete();
   void insertFenceSignal(
       const ComPtr<CommandQueue> & command_queue,
@@ -51,11 +58,6 @@ class BaseFence {
   BaseFence(ComPtr<Fence> fence, unsigned long long id,
             std::weak_ptr<FencePool> owner);
   ~BaseFence();
-  // going move to private after finish the cycle, use mutex inside, also add
-  // the wating commandconext in it then trigger the waiting thread and start to
-  // wait
-  /*void startInsertFence(
-      std::vector<std::shared_ptr<ContextCommand>>& waiting_command);*/
 };
 // an interface to really exposed
 class ContextFence {
@@ -70,7 +72,7 @@ class ContextFence {
       base_fence_->free(); }
   FenceState getState() { base_fence_->getState(); };
   void insertFenceSignal(
-      ComPtr<CommandQueue> command_queue,
+      const ComPtr<CommandQueue> & command_queue,
       std::vector<std::shared_ptr<ContextCommand>>& execute_commands) {
     base_fence_->insertFenceSignal(command_queue, execute_commands);
   }

@@ -110,13 +110,14 @@ void Renderer::createResourcePool() {
       static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]);
 }
 void Renderer::createContexts() {
- /* dynamic_upload_buffer_ = std::make_shared<Resource::DynamicBuffer>(device_);*/
+  /* dynamic_upload_buffer_ =
+   * std::make_shared<Resource::DynamicBuffer>(device_);*/
 
   graphics_pool_ =
       std::make_shared<Context::ContextPool<Context::GraphicsContext>>(
-         device_, CommandType::COMMAND_TYPE_GRAPHICS,
-         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
-         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
+          device_, CommandType::COMMAND_TYPE_GRAPHICS,
+          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
+          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
   compute_pool_ =
       std::make_shared<Context::ContextPool<Context::ComputeContext>>(
           device_, CommandType::COMMAND_TYPE_COMPUTE,
@@ -126,10 +127,11 @@ void Renderer::createContexts() {
       device_, CommandType::COMMAND_TYPE_COPY,
       static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
       static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
-  auto grpahics_context = graphics_pool_->getContext([](GraphicsContext const *t) {
-    std::cout << "graphics wait" << std::endl;
-    std::cout << "graphics wait end" << std::endl;
-  });
+  auto grpahics_context =
+      graphics_pool_->getContext([](GraphicsContext const *t) {
+        std::cout << "graphics wait" << std::endl;
+        std::cout << "graphics wait end" << std::endl;
+      });
 
   fence_pool_ = std::make_shared<Context::FencePool>(device_);
   auto fence = fence_pool_->getContextFence();
@@ -265,10 +267,11 @@ void Renderer::setSwapChain(Window::Window &window,
   for (unsigned int i = 0; i < swap_chain_count_; ++i) {
     ComPtr<GPUResource> buffer;
     ThrowIfFailed(swap_chain_->GetBuffer(i, IID_PPV_ARGS(&buffer)));
-    NAME_D3D12_OBJECT_STRING(buffer, std::string("swap chain buffer_")+std::to_string(i));
+    NAME_D3D12_OBJECT_STRING(buffer, std::string("swap chain buffer_") +
+                                         std::to_string(i));
     auto swap_chain_range =
         static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]->allocateRange(1);
-   // D3D_RednerTarget
+    // D3D_RednerTarget
     D3D12_RENDER_TARGET_VIEW_DESC rtv = {};
     rtv.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -284,7 +287,6 @@ void Renderer::setSwapChain(Window::Window &window,
     swap_chain_buffers_[i] = std::make_shared<tempSwapChain>(
         buffer, swap_chain_range, n, size.X, size.Y);
     swap_chain_present_fence_[i] = fence_pool_->getContextFence();
-    swap_chain_buffers_[i]->getGPUResource();
   }
   loop_thread_ = std::thread(&Renderer::loop, this);
 }
@@ -327,22 +329,32 @@ void Renderer::removeLoopCallback(std::string name) {
     loop_remove_names_.emplace_back(name);
   }
 }
-std::shared_ptr<GraphicsContext> Renderer::getGraphicsContext(
-    std::function<void(GraphicsContext *)> callback,
+std::shared_ptr<GraphicsContext>
+Renderer::getGraphicsContext(std::function<void(GraphicsContext *)> callback,
                              bool async) {
   return graphics_pool_->getContext(callback, async);
 }
+std::shared_ptr<CopyContext>
+Renderer::getCopyContext(std::function<void(CopyContext *)> callback,
+                         bool async) {
+  return copy_pool_->getContext(callback, async);
+}
 std::shared_ptr<ContextFence> Renderer::submitContexts(
-    std::shared_ptr<ContextFence> fence,
-    std::vector<std::shared_ptr<GraphicsContext>> &&contexts) {
+    const std::shared_ptr<ContextFence> & fence,
+    std::vector<std::shared_ptr<Context::Context>> &&contexts) {
   if (contexts.empty()) {
     throw std::exception("Submit empty context to queue!");
   }
-  if (!fence)
-    fence = fence_pool_->getContextFence();
-  auto type = contexts[0]->getType();
-  context_queues_[type]->SubmitContextCommand(contexts, fence);
-  return fence;
+  if (!fence) {
+    auto new_fence = fence_pool_->getContextFence();
+    auto type = contexts[0]->getType();
+    context_queues_[type]->SubmitContextCommand(contexts, new_fence);
+    return new_fence;
+  } else {
+    auto type = contexts[0]->getType();
+    context_queues_[type]->SubmitContextCommand(contexts, fence);
+    return fence;
+  }
 }
 std::shared_ptr<ContextFence> Renderer::getContextFence() {
   return fence_pool_->getContextFence();
@@ -429,8 +441,8 @@ std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
   desc.SampleMask = UINT_MAX;
   desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
   ComPtr<PipelineState> pipeline;
-    ThrowIfFailed(
-        device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipeline)));
+  ThrowIfFailed(
+      device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipeline)));
   return std::make_shared<Pipeline::Pipeline>(
       pipeline, Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
 }

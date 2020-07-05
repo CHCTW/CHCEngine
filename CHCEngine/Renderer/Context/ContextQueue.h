@@ -21,7 +21,7 @@ class ContextQueue {
   template<class ContextClass>
   void SubmitContextCommand(
       std::vector<std::shared_ptr<ContextClass>>& submit_context,
-      std::shared_ptr<ContextFence> context_fence) {
+      const std::shared_ptr<ContextFence> & context_fence) {
     std::lock_guard<std::mutex> lock(submit_mutex_);
     std::vector<std::shared_ptr<ContextCommand>> execute_commands(
         submit_context.size());
