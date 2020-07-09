@@ -124,7 +124,7 @@ int main() {
           3, 20,
           {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
             .is_raw_buffer_ = true}},
-          ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+          ResourceState::RESOURCE_STATE_COMMON,
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
            {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}});
@@ -209,14 +209,14 @@ int main() {
 
   Color color{1.0f, 0.2f, 0.6f, 0.0f};
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
-  //copycontext->updateTexture(simple_texture, texture_data);
+  // copycontext->updateTexture(simple_texture, texture_data);
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
       color_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);
-  renderer.submitContexts(nullptr, copycontext)->waitComplete();
+  renderer.submitContexts({copycontext})->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
       renderer.getIndexBuffer(6);
@@ -225,7 +225,7 @@ int main() {
       shset, {buffer->getBufferInformation().vetex_attributes_}, bind_layout);
   pipeline->setName("simple pipeline");
 
-   std::shared_ptr<ContextFence> g1;
+  std::shared_ptr<ContextFence> g1;
   ;
   std::shared_ptr<ContextFence> c1;
 
@@ -239,24 +239,47 @@ int main() {
 
   int sign[3] = {1, 1, 1};
 
+  auto graphics_fence = renderer.getContextFence();
+  auto copy_fence = renderer.getContextFence();
+
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
+    //copycxt->updateTexture(simple_texture, texture_data);
+
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->resourceTransition(
-              constant_buffer,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(cube_textures,
-                                    ResourceState::RESOURCE_STATE_COPY_DEST,
-                                    ResourceState::RESOURCE_STATE_DEPTH_WRITE);
+              buffer, ResourceState::RESOURCE_STATE_COMMON,
+              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
+              ResourceState::RESOURCE_STATE_RENDER_TARGET,true);
+          graph->clearRenderTarget(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              {0.1f, 0.6f, 0.7f, 0.0f});
+          graph->setPipeline(pipeline);
+          graph->setGraphicsBindLayout(bind_layout);
+          graph->bindGraphicsResource(color_buffer, "Color");
+          graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
+          graph->setVertexBuffers(buffer);
+          graph->setViewport(view_port);
+          graph->setScissor(scissor);
+          graph->setPrimitiveTopology(
+              PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+          graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
+          graph->drawInstanced(3);
+          graph->resourceTransition(
+              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+              ResourceState::RESOURCE_STATE_COMMON);
+          graph->resourceTransition(
+              renderer.getSwapChainBuffer(swap_chain_index),
+              ResourceState::RESOURCE_STATE_RENDER_TARGET,
+              ResourceState::RESOURCE_STATE_PRESENT, true);
+        },
+        false);
+    copycxt->recordCommands<CHCEngine::Renderer::Context::CopyContext>(
+        [&](CHCEngine::Renderer::Context::CopyContext *copy) {
           tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
           tridata[7] += sign[0] * 0.001f;
           if (tridata[7] >= 1.0)
@@ -273,41 +296,11 @@ int main() {
             sign[2] = -1;
           if (tridata[9] <= 0.0)
             sign[2] = 1;
-          graph->updateBuffer(buffer, tridata,
-                              buffer->getBufferInformation().size_);
-          graph->clearRenderTarget(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              {0.1f, 0.6f, 0.7f, 0.0f});
-          graph->resourceTransition(cube_textures,
-                                    ResourceState::RESOURCE_STATE_DEPTH_WRITE,
-                                    ResourceState::RESOURCE_STATE_COPY_DEST);
-          graph->resourceTransition(
-              constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
-          graph->setPipeline(pipeline);
-          graph->setGraphicsBindLayout(bind_layout);
-          graph->bindGraphicsResource(color_buffer, "Color");
-          graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
-          graph->setVertexBuffers(buffer);
-          graph->setViewport(view_port);
-          graph->setScissor(scissor);
-          graph->setPrimitiveTopology(
-              PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-          graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
-          graph->drawInstanced(3);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT, true);
-        },
-        false);
-
-    copycxt->updateTexture(simple_texture, texture_data);
-    renderer.submitContexts(nullptr, copycxt);
-    renderer.submitContexts(nullptr, graphics);
+          copy->updateBuffer(buffer, tridata,
+                             buffer->getBufferInformation().size_);
+        },false);
+    renderer.waitFenceSubmitContexts(graphics_fence,copy_fence, {copycxt});
+    renderer.waitFenceSubmitContexts(copy_fence,graphics_fence, {graphics});
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

@@ -339,22 +339,55 @@ Renderer::getCopyContext(std::function<void(CopyContext *)> callback,
                          bool async) {
   return copy_pool_->getContext(callback, async);
 }
+const std::shared_ptr<ContextFence> & Renderer::submitContexts(
+    const std::shared_ptr<ContextFence> &fence,
+    const std::vector<std::shared_ptr<Context::Context>> &contexts) {
+  if (contexts.empty()) {
+    throw std::exception("Submit empty context to queue!");
+  }
+  auto type = contexts[0]->getType();
+  context_queues_[type]->SubmitContextCommand(contexts, fence);
+  return fence;
+}
 std::shared_ptr<ContextFence> Renderer::submitContexts(
-    const std::shared_ptr<ContextFence> & fence,
-    std::vector<std::shared_ptr<Context::Context>> &&contexts) {
+    const std::vector<std::shared_ptr<Context::Context>> &contexts) {
+  if (contexts.empty()) {
+    throw std::exception("Submit empty context to queue!");
+  }
+  auto new_fence = fence_pool_->getContextFence();
+  auto type = contexts[0]->getType();
+  context_queues_[type]->SubmitContextCommand(contexts, new_fence);
+  return new_fence;
+}
+std::shared_ptr<ContextFence> Renderer::waitFenceValueSubmitContexts(
+    const std::shared_ptr<ContextFence> &fence, uint64_t wait_value,
+    const std::vector<std::shared_ptr<Context::Context>> &contexts) {
   if (contexts.empty()) {
     throw std::exception("Submit empty context to queue!");
   }
   if (!fence) {
-    auto new_fence = fence_pool_->getContextFence();
-    auto type = contexts[0]->getType();
-    context_queues_[type]->SubmitContextCommand(contexts, new_fence);
-    return new_fence;
-  } else {
-    auto type = contexts[0]->getType();
-    context_queues_[type]->SubmitContextCommand(contexts, fence);
-    return fence;
+    throw std::exception("Wait Fence is a nullptr for wait and submit context!");
   }
+  auto new_fence = fence_pool_->getContextFence();
+  auto type = contexts[0]->getType();
+  context_queues_[type]->waitFenceSubmitContextCommand(fence,wait_value,contexts, new_fence);
+  return new_fence;
+}
+const std::shared_ptr<ContextFence> &Renderer::waitFenceValueSubmitContexts(
+    const std::shared_ptr<ContextFence> &wait_fence, uint64_t wait_value,
+    const std::shared_ptr<ContextFence> &fence,
+    const std::vector<std::shared_ptr<Context::Context>> &contexts) {
+  // TODO: insert return statement here
+  if (contexts.empty()) {
+    throw std::exception("Submit empty context to queue!");
+  }
+  if (!wait_fence) {
+    throw std::exception(
+        "Wait Fence is a nullptr for wait and submit context!");
+  }
+  auto type = contexts[0]->getType();
+  context_queues_[type]->waitFenceSubmitContextCommand(wait_fence,wait_value,contexts, fence);
+  return fence;
 }
 std::shared_ptr<ContextFence> Renderer::getContextFence() {
   return fence_pool_->getContextFence();

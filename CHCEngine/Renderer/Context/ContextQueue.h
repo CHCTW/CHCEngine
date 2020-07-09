@@ -20,7 +20,7 @@ class ContextQueue {
   ComPtr<CommandQueue> getCommandQueue();
   template<class ContextClass>
   void SubmitContextCommand(
-      std::vector<std::shared_ptr<ContextClass>>& submit_context,
+      const std::vector<std::shared_ptr<ContextClass>>& submit_context,
       const std::shared_ptr<ContextFence> & context_fence) {
     std::lock_guard<std::mutex> lock(submit_mutex_);
     std::vector<std::shared_ptr<ContextCommand>> execute_commands(
@@ -38,7 +38,32 @@ class ContextQueue {
     }
     context_fence->insertFenceSignal(command_queue_, execute_commands);
   }
-  void insertFenceSignal(std::shared_ptr<ContextFence> context_fence) {
+  template <class ContextClass>
+  void waitFenceSubmitContextCommand(
+      const std::shared_ptr<ContextFence> &wait_fence,
+      uint64_t value,
+      const std::vector<std::shared_ptr<ContextClass>> &submit_context,
+      const std::shared_ptr<ContextFence> &context_fence) {
+    std::lock_guard<std::mutex> lock(submit_mutex_);
+    std::vector<std::shared_ptr<ContextCommand>> execute_commands(
+        submit_context.size());
+    for (int i = 0; i < submit_context.size(); ++i) {
+      // std::cout << "wait context recording cone" << std::endl;
+      submit_context[i]->waitRecordingDone();
+      if (!submit_context[i]->transitions_.empty()) {
+        throw std::exception("Context has unrecorded resource transition");
+      }
+      // std::cout << "wait finish" << std::endl;
+      submit_context[i]->closeContext();
+      execute_commands[i] = submit_context[i]->context_command_;
+      submit_context[i]->resetContextCommand();
+    }
+    wait_fence->insertFenceWait(command_queue_, value);
+    context_fence->insertFenceSignal(command_queue_, execute_commands);
+  }
+
+
+  void insertFenceSignal(const std::shared_ptr<ContextFence> &context_fence) {
     std::lock_guard<std::mutex> lock(submit_mutex_);
     std::vector<std::shared_ptr<ContextCommand>> dummy;
     context_fence->insertFenceSignal(command_queue_, dummy);

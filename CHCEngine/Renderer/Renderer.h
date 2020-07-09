@@ -129,18 +129,59 @@ public:
 
   std::shared_ptr<CopyContext>
   getCopyContext(std::function<void(CopyContext *)> callback = 0,
-                     bool async = true);
-  std::shared_ptr<ContextFence>
-  submitContexts(const std::shared_ptr<ContextFence> & fence,
-                 std::vector<std::shared_ptr<Context::Context>> &&contexts);
+                 bool async = true);
+  const std::shared_ptr<ContextFence> &submitContexts(
+      const std::shared_ptr<ContextFence> &fence,
+      const std::vector<std::shared_ptr<Context::Context>> &contexts);
 
-  template <class... ContextPTRClass>
-  std::shared_ptr<ContextFence>
-  submitContexts(const std::shared_ptr<ContextFence> & fence,
+  std::shared_ptr<ContextFence> submitContexts(
+      const std::vector<std::shared_ptr<Context::Context>> &contexts);
+
+  std::shared_ptr<ContextFence> waitFenceValueSubmitContexts(
+      const std::shared_ptr<ContextFence> &fence, uint64_t wait_value,
+      const std::vector<std::shared_ptr<Context::Context>> &contexts);
+
+  const std::shared_ptr<ContextFence> &waitFenceValueSubmitContexts(
+      const std::shared_ptr<ContextFence> &wait_fence, uint64_t wait_value,
+      const std::shared_ptr<ContextFence> &fence,
+      const std::vector<std::shared_ptr<Context::Context>> &contexts);
+  // usually work for the fence that is already submitted contexts
+  std::shared_ptr<ContextFence> waitFenceSubmitContexts(
+      const std::shared_ptr<ContextFence> &fence,
+      const std::vector<std::shared_ptr<Context::Context>> &contexts) {
+    auto state = fence->getStateAndExpectedValue();
+    // the commands already finished executing, doesn't need to wait
+    if (state.first == Context::FenceState::FENCE_STATE_IDLE) {
+      return submitContexts(contexts);
+    }
+    return waitFenceValueSubmitContexts(fence, state.second, contexts);
+  }
+  const std::shared_ptr<ContextFence> &waitFenceSubmitContexts(
+      const std::shared_ptr<ContextFence> &wait_fence,
+      const std::shared_ptr<ContextFence> &fence,
+      const std::vector<std::shared_ptr<Context::Context>> &contexts) {
+    auto state = wait_fence->getStateAndExpectedValue();
+    // the commands already finished executing, doesn't need to wait
+    if (state.first == Context::FenceState::FENCE_STATE_IDLE) {
+      return submitContexts(fence,contexts);
+    }
+    return waitFenceValueSubmitContexts(wait_fence, state.second, fence,
+                                        contexts);
+  }
+
+  /*template <std::shared_ptr<ContextFence> &,class... ContextPTRClass>
+  std::shared_ptr<ContextFence> &
+  submitContexts(const std::shared_ptr<ContextFence> &fence,
                  ContextPTRClass &&... context_list) {
     return submitContexts(fence,
                           {std::forward<ContextPTRClass>(context_list)...});
   }
+
+  template <class... ContextPTRClass>
+  std::shared_ptr<ContextFence>
+  submitContexts(ContextPTRClass &&... context_list) {
+    return submitContexts({std::forward<ContextPTRClass>(context_list)...});
+  }*/
 
   std::shared_ptr<Resource::SwapChainBuffer>
   getSwapChainBuffer(int swap_chain_index) {

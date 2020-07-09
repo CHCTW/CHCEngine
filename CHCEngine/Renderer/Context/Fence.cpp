@@ -65,11 +65,11 @@ FenceState BaseFence::getState() {
   std::lock_guard<std::mutex> lock(state_value_mutex_);
   return state_;
 }
-unsigned long long BaseFence::getExpectedValue() {
+uint64_t BaseFence::getExpectedValue() {
   std::lock_guard<std::mutex> lock(state_value_mutex_);
   return expected_value_;
 }
-std::pair<FenceState, unsigned long long> BaseFence::getStateAndExpectedValue() {
+std::pair<FenceState, uint64_t> BaseFence::getStateAndExpectedValue() {
   std::lock_guard<std::mutex> lock(state_value_mutex_);
   return {state_,expected_value_};
 }
@@ -78,6 +78,10 @@ void BaseFence::waitFenceComplete() {
   if (waiting_thread_.joinable()) {
     waiting_thread_.join();
   }
+}
+void BaseFence::insertFenceWait(const ComPtr<CommandQueue> &command_queue,
+                                uint64_t value) {
+  command_queue->Wait(fence_.Get(), value);
 }
 BaseFence::BaseFence(ComPtr<Fence> fence, unsigned long long id,
                      std::weak_ptr<FencePool> owner)
