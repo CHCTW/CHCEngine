@@ -110,6 +110,7 @@
     <ClInclude Include="Renderer\Resource\Buffer.h" />
     <ClInclude Include="Renderer\Resource\DynamicBuffer.h" />
     <ClInclude Include="Renderer\Resource\Resource.h" />
+    <ClInclude Include="Renderer\Resource\ResourceGroup.h" />
     <ClInclude Include="Renderer\Resource\ResourcePool.h" />
     <ClInclude Include="Renderer\Resource\SwapChainBuffer.h" />
     <ClInclude Include="Renderer\Resource\Texture.h" />
@@ -181,6 +182,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Renderer\Resource\ResourceGroup.cpp" />
     <ClCompile Include="Renderer\Resource\ResourcePool.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>

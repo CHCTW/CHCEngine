@@ -68,6 +68,14 @@ GPUDescriptorHandle Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) {
   return descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
       ->getGPUHandle(index);
 }
+CPUDescriptorHandle Resource::getCPUCBVSRVUAVUsagebyIndex(unsigned int index) {
+  if (index >= descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
+                   ->getSize()) {
+    throw std::exception("Invalid usage index, out of usage indices size");
+  }
+  return descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
+      ->getHandle(index);
+}
 void Resource::setName(std::string_view name) {
   std::string temp(name);
   NAME_D3D12_OBJECT_STRING(gpu_resource_, temp);

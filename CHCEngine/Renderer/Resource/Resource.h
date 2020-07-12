@@ -43,7 +43,7 @@ class Resource {
   friend class CHCEngine::Renderer::Pipeline::BindLayout;
   friend class ResourcePool; 
   friend class Context::CopyContext;
-
+  friend class ResourceGroup;
 protected:
   ComPtr<GPUResource> gpu_resource_;
   ResourceInformation information_;
@@ -72,6 +72,8 @@ protected:
   CPUDescriptorHandle getRTVHandleByUsageIndex(unsigned int index);
   CPUDescriptorHandle getDSVHandleByUsageIndex(unsigned int index);
   GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index);
+  CPUDescriptorHandle getCPUCBVSRVUAVUsagebyIndex(unsigned int index);
+
 public:
   Resource &operator=(Resource &ref) = delete;
   Resource() = delete;

@@ -101,6 +101,9 @@
     <ClInclude Include="Renderer\Resource\Texture.h">
       <Filter>Renderer\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Resource\ResourceGroup.h">
+      <Filter>Renderer\Resource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -186,6 +189,9 @@
       <Filter>Renderer\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\Resource\Texture.cpp">
+      <Filter>Renderer\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Resource\ResourceGroup.cpp">
       <Filter>Renderer\Resource</Filter>
     </ClCompile>
   </ItemGroup>
