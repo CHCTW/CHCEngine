@@ -44,12 +44,19 @@ Resource::Resource(
         upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
   }
 }
-/*Resource::Resource(
+Resource::Resource(
     ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
     ResourceInformation information,
-    std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-        &descriptor_ranges,
-    ResourceDescriptorRange &resource_desc_range) {}*/
+                   ResourceDescriptorRange &resource_desc_range)
+    : gpu_resource_(gpu_resource),
+      upload_buffer_(upload_buffer), information_{information},
+      resource_descriptor_range_(std::move(resource_desc_range)) {
+  if (upload_buffer_) {
+    D3D12_RANGE readRange{0, 0};
+    ThrowIfFailed(
+        upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
+  }
+}
 /*CPUDescriptorHandle Resource::getRTVHandleByUsageIndex(unsigned int index) {
   if (index >=
       descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_RTV]->getSize()) {

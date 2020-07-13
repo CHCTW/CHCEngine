@@ -73,9 +73,9 @@ protected:
       ResourceInformation information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges);
-  /*Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+  Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            ResourceInformation information,
-           ResourceDescriptorRange &resource_desc_range);*/
+           ResourceDescriptorRange &resource_desc_range);
 
   /*CPUDescriptorHandle getRTVHandleByUsageIndex(unsigned int index);
   CPUDescriptorHandle getDSVHandleByUsageIndex(unsigned int index);*/

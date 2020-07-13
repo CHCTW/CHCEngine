@@ -21,6 +21,8 @@ private:
   friend struct Context::ContextCommand;
   TextureInformation texture_information_;
   friend class Context::CopyContext;
+  std::shared_ptr<DescriptorRange> render_target_usage_;
+  std::shared_ptr<DescriptorRange> depth_stencil_usage_;
 public:
   Texture &operator=(Texture &ref) = delete;
   Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
@@ -28,6 +30,12 @@ public:
           TextureInformation &texture_information,
           std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
               &descriptor_ranges);
+  Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+          ResourceInformation information,
+          TextureInformation &texture_information,
+          ResourceDescriptorRange &resource_desc_range,
+          std::shared_ptr<DescriptorRange> &rtv_range,
+          std::shared_ptr<DescriptorRange> &dsv_range);
   const TextureInformation & getTextureInformation() const {
     return texture_information_;
   }

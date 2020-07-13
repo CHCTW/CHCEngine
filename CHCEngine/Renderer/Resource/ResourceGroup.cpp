@@ -16,7 +16,7 @@ ResourceGroup::ResourceGroup(
           ->getSize());
  
 }
-void ResourceGroup::insertResource(
+/*void ResourceGroup::insertResource(
     unsigned int insert_index,std::shared_ptr<Resource> resource,
                                    unsigned int usage_index) {
   if (insert_index >= resources_.size()) {
@@ -30,7 +30,7 @@ void ResourceGroup::insertResource(
   device_->CopyDescriptorsSimple(
       1, insert_handle, handle,D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
   resources_.emplace(resources_.begin()+insert_index, std::move(resource));
-}
+}*/
 } // namespace Resource
 } // namespace Renderer
 } // namespace CHCEngine
