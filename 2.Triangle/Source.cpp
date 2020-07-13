@@ -152,8 +152,8 @@ int main() {
   auto constant_buffer = renderer.getBuffer(
       1, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_CBV}});
   constant_buffer->setName("constant buffer");
-  //res_group->insertResource(0, color_buffer);
-  //res_group->insertResource(1, constant_buffer);
+  res_group->insertResource(0, color_buffer);
+  res_group->insertResource(1, constant_buffer);
 
   MipRange mips;
   mips.mips_start_level_ = 2;

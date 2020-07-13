@@ -6,17 +6,15 @@ namespace Renderer {
 namespace Resource {
 ResourceGroup::ResourceGroup(
     ComPtr<GPUResource> gpu_resource, ResourceInformation information,
-    std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-        &descriptor_ranges,
+                             ResourceDescriptorRange &resource_desc_range,
     ComPtr<Device> device)
-    : Resource(gpu_resource, nullptr, information, descriptor_ranges),
+    : Resource(gpu_resource, nullptr, information, resource_desc_range),
       device_(std::move(device)) {
-  resources_.resize(
-      descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
+  resources_.resize(resource_descriptor_range_.bind_usage_descriptors_
           ->getSize());
  
 }
-/*void ResourceGroup::insertResource(
+void ResourceGroup::insertResource(
     unsigned int insert_index,std::shared_ptr<Resource> resource,
                                    unsigned int usage_index) {
   if (insert_index >= resources_.size()) {
@@ -25,12 +23,11 @@ ResourceGroup::ResourceGroup(
   CPUDescriptorHandle handle =
       resource->getCPUCBVSRVUAVUsagebyIndex(usage_index);
   CPUDescriptorHandle insert_handle =
-      descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
-          ->getHandle(insert_index);
+      resource_descriptor_range_.bind_usage_descriptors_->getHandle(insert_index);
   device_->CopyDescriptorsSimple(
       1, insert_handle, handle,D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-  resources_.emplace(resources_.begin()+insert_index, std::move(resource));
-}*/
+  resources_[insert_index]=std::move(resource);
+}
 } // namespace Resource
 } // namespace Renderer
 } // namespace CHCEngine

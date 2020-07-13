@@ -13,10 +13,9 @@ private:
 public:
   ResourceGroup(ComPtr<GPUResource> gpu_resource,
                 ResourceInformation information,
-      std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-          &descriptor_ranges,
+                ResourceDescriptorRange &resource_desc_range ,
       ComPtr<Device> device_);
-  /*void insertResource(unsigned int insert_index,std::shared_ptr<Resource> resource, unsigned int usage_index = 0);*/
+  void insertResource(unsigned int insert_index,std::shared_ptr<Resource> resource, unsigned int usage_index = 0);
 };
 } // namespace Resource
 } // namespace Renderer

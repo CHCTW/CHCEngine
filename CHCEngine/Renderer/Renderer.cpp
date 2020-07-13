@@ -92,7 +92,7 @@ void Renderer::createDescriptorHeap() {
     std::string name(magic_enum::enum_name(type));
     name += "_STATIC";
     static_heaps_[type] = std::make_shared<DescriptorHeap>(
-        device_, type, heap_sizes_[type], name, true);
+        device_, type, heap_sizes_[type], name, false);
   }
   std::string name("SHADER_VISIBLE_RESOURCE_DESCRIPTOR_HEAP");
   shader_visible_resource_heap_ = std::make_shared<DescriptorHeap>(
@@ -117,17 +117,15 @@ void Renderer::createContexts() {
   graphics_pool_ =
       std::make_shared<Context::ContextPool<Context::GraphicsContext>>(
           device_, CommandType::COMMAND_TYPE_GRAPHICS,
-          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
-          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
+          shader_visible_resource_heap_,
+          shader_visible_sampler_heap_);
   compute_pool_ =
       std::make_shared<Context::ContextPool<Context::ComputeContext>>(
           device_, CommandType::COMMAND_TYPE_COMPUTE,
-          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
-          static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
+          shader_visible_resource_heap_, shader_visible_sampler_heap_);
   copy_pool_ = std::make_shared<Context::ContextPool<Context::CopyContext>>(
-      device_, CommandType::COMMAND_TYPE_COPY,
-      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
-      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]);
+      device_, CommandType::COMMAND_TYPE_COPY, shader_visible_resource_heap_,
+      shader_visible_sampler_heap_);
   auto grpahics_context =
       graphics_pool_->getContext([](GraphicsContext const *t) {
         std::cout << "graphics wait" << std::endl;

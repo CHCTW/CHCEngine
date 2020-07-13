@@ -26,9 +26,9 @@ unsigned long long ResourcePool::getNextResourceGroupId() {
   std::lock_guard<std::mutex> lock(pool_mutex_);
   return resource_group_id_count_++;
 }
-ResourcePool::ResourcePool(ComPtr<Device> device,
-                           std::shared_ptr<DescriptorHeap> srv_uav_cbv,
-                           std::shared_ptr<DescriptorHeap> rtv, std::shared_ptr<DescriptorHeap> dsv,
+ResourcePool::ResourcePool(
+    ComPtr<Device> device, std::shared_ptr<DescriptorHeap> srv_uav_cbv,
+    std::shared_ptr<DescriptorHeap> rtv, std::shared_ptr<DescriptorHeap> dsv,
     std::shared_ptr<DescriptorHeap> shader_visible_resource_heap,
     std::shared_ptr<DescriptorHeap> shader_visible_sampler_heap)
     : device_(device), resource_group_id_count_(0),
@@ -193,14 +193,23 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
     NAME_D3D12_OBJECT_STRING(upload_buffer, temp);
   }
 
-  std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-      descriptor_ranges;
+  ResourceDescriptorRange resource_range;
+
+  /*std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+      descriptor_ranges;*/
   if (usages.size() > 0) {
 
-    descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
-        getBufferDesciptorRanges(
-            device_, usages, gpu_resource, element_count, element_byte_size,
-            size, static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]);
+    resource_range.copy_usage_descriptors_ = std::move(getBufferDesciptorRanges(
+        device_, usages, gpu_resource, element_count, element_byte_size, size,
+        static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]));
+    resource_range.bind_usage_descriptors_ =
+        shader_visible_resource_heap_->allocateRange(
+            static_cast<unsigned int>(usages.size()));
+    device_->CopyDescriptorsSimple(
+        static_cast<unsigned int>(usages.size()),
+        resource_range.bind_usage_descriptors_->getHandle(0),
+        resource_range.copy_usage_descriptors_->getHandle(0),
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
   }
   std::shared_ptr<VertexBufferView> vertex_view;
   std::shared_ptr<IndexBufferView> index_view;
@@ -239,7 +248,7 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
       size, element_count, vertex_attributes};
 
   return std::make_shared<Buffer>(gpu_resource, upload_buffer, res_info,
-                                  buffer_information, descriptor_ranges,
+                                  buffer_information, resource_range,
                                   vertex_view, index_view);
 }
 
@@ -254,8 +263,12 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
       depth_stencil_usages.empty()) {
     throw std::exception("No usages, invalid texture create");
   }
-  std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-      descriptor_ranges;
+  /*std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+      descriptor_ranges;*/
+
+  ResourceDescriptorRange resource_range;
+  std::shared_ptr<DescriptorRange> rtv_range;
+  std::shared_ptr<DescriptorRange> dsv_range;
   bool use_shader_resource_view = false;
   D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
   for (unsigned int i = 0; i < usages.size(); ++i) {
@@ -292,22 +305,27 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
       depth, HeapType::HEAP_TYPE_DEFAULT, mip_levels, initial_state, flags);
 
   if (usages.size()) {
-    descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
-        getSRVUAVTextureDesciptorRanges(
-            device_, usages, gpu_resource, texture_type, depth,
-            static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]);
+    resource_range.copy_usage_descriptors_ = getSRVUAVTextureDesciptorRanges(
+        device_, usages, gpu_resource, texture_type, depth,
+        static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]);
+    resource_range.bind_usage_descriptors_ =
+        shader_visible_resource_heap_->allocateRange(
+            static_cast<unsigned int>(usages.size()));
+    device_->CopyDescriptorsSimple(
+        static_cast<unsigned int>(usages.size()),
+        resource_range.bind_usage_descriptors_->getHandle(0),
+        resource_range.copy_usage_descriptors_->getHandle(0),
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
   }
   if (render_target_usages.size()) {
-    descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_RTV] =
-        getRTVTextureDesciptorRanges(
-            device_, render_target_usages, gpu_resource, texture_type, depth,
-            static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]);
+    rtv_range = std::move(getRTVTextureDesciptorRanges(
+        device_, render_target_usages, gpu_resource, texture_type, depth,
+        static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV]));
   }
   if (depth_stencil_usages.size()) {
-    descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_DSV] =
-        getDSVTextureDesciptorRanges(
-            device_, depth_stencil_usages, gpu_resource, texture_type, depth,
-            static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]);
+    dsv_range = std::move(getDSVTextureDesciptorRanges(
+        device_, depth_stencil_usages, gpu_resource, texture_type, depth,
+        static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]));
   }
   unsigned long long id = getNextTextureId(texture_type);
   std::string name(magic_enum::enum_name(texture_type));
@@ -354,7 +372,8 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
                                  std::move(row_bytes_vec),
                                  required_size};
   return std::make_shared<Texture>(gpu_resource, upload_buffer, information,
-                                   text_inf, descriptor_ranges);
+                                   text_inf, resource_range, rtv_range,
+                                   dsv_range);
 }
 
 std::shared_ptr<ResourceGroup>
@@ -368,11 +387,12 @@ ResourcePool::getResrouceGroup(unsigned int size) {
       ResourceUpdateType::RESOURCE_UPDATE_TYPE_NONE};
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges;
-  descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
-      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]->allocateRange(
-          size);
+  ResourceDescriptorRange resource_range;
+  resource_range.bind_usage_descriptors_ =
+      shader_visible_resource_heap_->allocateRange(size);
 
-  return std::make_shared<ResourceGroup>(nullptr,information,descriptor_ranges,device_);
+  return std::make_shared<ResourceGroup>(nullptr, information, resource_range,
+                                         device_);
 }
 
 } // namespace Resource

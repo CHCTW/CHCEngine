@@ -51,14 +51,6 @@ public:
          ResourceInformation information, BufferInformation buffer_information,
          std::shared_ptr<IndexBufferView> index_buffer_view);
 
-  Buffer(
-      ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-      ResourceInformation information, BufferInformation buffer_information,
-      std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-          &descriptor_ranges,
-      std::shared_ptr<VertexBufferView> vertex_buffer_view,
-      std::shared_ptr<IndexBufferView> index_buffer_view);
-
     Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
          ResourceInformation information, BufferInformation buffer_information,
          ResourceDescriptorRange &resource_desc_range,

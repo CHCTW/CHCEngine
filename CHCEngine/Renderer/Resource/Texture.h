@@ -28,11 +28,6 @@ public:
   Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
           ResourceInformation information,
           TextureInformation &texture_information,
-          std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
-              &descriptor_ranges);
-  Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-          ResourceInformation information,
-          TextureInformation &texture_information,
           ResourceDescriptorRange &resource_desc_range,
           std::shared_ptr<DescriptorRange> &rtv_range,
           std::shared_ptr<DescriptorRange> &dsv_range);
