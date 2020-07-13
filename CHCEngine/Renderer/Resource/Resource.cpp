@@ -44,7 +44,13 @@ Resource::Resource(
         upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
   }
 }
-CPUDescriptorHandle Resource::getRTVHandleByUsageIndex(unsigned int index) {
+/*Resource::Resource(
+    ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+    ResourceInformation information,
+    std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+        &descriptor_ranges,
+    ResourceDescriptorRange &resource_desc_range) {}*/
+/*CPUDescriptorHandle Resource::getRTVHandleByUsageIndex(unsigned int index) {
   if (index >=
       descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_RTV]->getSize()) {
     throw std::exception("Invalid usage index, out of rtv usage indices size");
@@ -59,7 +65,7 @@ CPUDescriptorHandle Resource::getDSVHandleByUsageIndex(unsigned int index) {
   }
   return descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_DSV]->getHandle(
       index);
-}
+}*/
 GPUDescriptorHandle Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) {
   if (index >= descriptor_ranges_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]
                    ->getSize()) {

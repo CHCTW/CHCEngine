@@ -107,7 +107,8 @@ void Renderer::createResourcePool() {
   resource_pool_ = std::make_shared<Resource::ResourcePool>(
       device_, static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV],
       static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV],
-      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV]);
+      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV],
+      shader_visible_resource_heap_, shader_visible_sampler_heap_);
 }
 void Renderer::createContexts() {
   /* dynamic_upload_buffer_ =

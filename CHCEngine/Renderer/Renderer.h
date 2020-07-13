@@ -260,6 +260,9 @@ public:
       PrimitiveTopologyType primitive =
           PrimitiveTopologyType::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
       const Pipeline::SampleSetup &sample = Pipeline::defualt_sample_setup);
+  std::shared_ptr<Resource::ResourceGroup> getResourceGroup(unsigned int size) {
+    return resource_pool_->getResrouceGroup(size);
+  }
 };
 
 } // namespace Renderer

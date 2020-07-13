@@ -114,10 +114,13 @@ int main() {
   // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
 
   std::vector<Pipeline::BindSlot> slots = {
-      Pipeline::BindSlot({shset.getBindFormat("Color")}),
-      Pipeline::BindSlot({shset.getBindFormat("SceneConstBuffer")})};
+      Pipeline::BindSlot({shset.getBindFormat("Color"),
+                          shset.getBindFormat("SceneConstBuffer")})};
   auto bind_layout = renderer.getBindLayout(exsample);
+  auto groups_bind_layout = renderer.getBindLayout(slots);
   bind_layout->setName("simple layout");
+
+  auto res_group = renderer.getResourceGroup(2);
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getBuffer(
@@ -149,6 +152,9 @@ int main() {
   auto constant_buffer = renderer.getBuffer(
       1, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_CBV}});
   constant_buffer->setName("constant buffer");
+  //res_group->insertResource(0, color_buffer);
+  //res_group->insertResource(1, constant_buffer);
+
   MipRange mips;
   mips.mips_start_level_ = 2;
   SubTexturesRange textue_range;

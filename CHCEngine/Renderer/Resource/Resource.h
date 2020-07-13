@@ -24,7 +24,6 @@ enum class ResourceType {
   RESOURCE_TYPE_BUFFER,
   RESOURCE_TYPE_TEXTURE,
   RESOURCE_TYPE_SWAP_CHAIN,
-  RESOURCE_TYPE_SAMPLER,
   RESOURCE_TYPE_GROUP,
 };
 enum class ResourceUpdateType {
@@ -36,6 +35,10 @@ struct ResourceInformation {
   std::string name_;
   ResourceType type_;
   ResourceUpdateType update_type_;
+};
+struct ResourceDescriptorRange {
+  std::shared_ptr<DescriptorRange> copy_usage_descriptors_;
+  std::shared_ptr<DescriptorRange> bind_usage_descriptors_;
 };
 class Resource {
   friend class Renderer;
@@ -53,7 +56,7 @@ protected:
   void *upload_buffer_map_pointer_ = nullptr;
   std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
       descriptor_ranges_;
-  std::vector<std::pair<DescriptorType, unsigned int>> usage_indices_;
+  ResourceDescriptorRange resource_descriptor_range_;
   const ComPtr<GPUResource> & getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            const std::string &name, ResourceType type,
@@ -65,12 +68,17 @@ protected:
       : gpu_resource_(gpu_resource), information_{information} {}
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            ResourceInformation information);
+  // goin to replace it
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
       ResourceInformation information,
       std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
           &descriptor_ranges);
-  CPUDescriptorHandle getRTVHandleByUsageIndex(unsigned int index);
-  CPUDescriptorHandle getDSVHandleByUsageIndex(unsigned int index);
+  /*Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+           ResourceInformation information,
+           ResourceDescriptorRange &resource_desc_range);*/
+
+  /*CPUDescriptorHandle getRTVHandleByUsageIndex(unsigned int index);
+  CPUDescriptorHandle getDSVHandleByUsageIndex(unsigned int index);*/
   GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index);
   CPUDescriptorHandle getCPUCBVSRVUAVUsagebyIndex(unsigned int index);
 

@@ -22,11 +22,18 @@ unsigned long long ResourcePool::getNextTextureId(TextureType type) {
     texture_id_count_[type] = 0;
   return texture_id_count_[type]++;
 }
+unsigned long long ResourcePool::getNextResourceGroupId() {
+  std::lock_guard<std::mutex> lock(pool_mutex_);
+  return resource_group_id_count_++;
+}
 ResourcePool::ResourcePool(ComPtr<Device> device,
                            std::shared_ptr<DescriptorHeap> srv_uav_cbv,
-                           std::shared_ptr<DescriptorHeap> rtv,
-                           std::shared_ptr<DescriptorHeap> dsv)
-    : device_(device) {
+                           std::shared_ptr<DescriptorHeap> rtv, std::shared_ptr<DescriptorHeap> dsv,
+    std::shared_ptr<DescriptorHeap> shader_visible_resource_heap,
+    std::shared_ptr<DescriptorHeap> shader_visible_sampler_heap)
+    : device_(device), resource_group_id_count_(0),
+      shader_visible_resource_heap_(std::move(shader_visible_resource_heap)),
+      shader_visible_sampler_heap_(std::move(shader_visible_sampler_heap)) {
   static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] = srv_uav_cbv;
   static_heaps_[DescriptorType::DESCRIPTOR_TYPE_RTV] = rtv;
   static_heaps_[DescriptorType::DESCRIPTOR_TYPE_DSV] = dsv;
@@ -348,6 +355,24 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
                                  required_size};
   return std::make_shared<Texture>(gpu_resource, upload_buffer, information,
                                    text_inf, descriptor_ranges);
+}
+
+std::shared_ptr<ResourceGroup>
+ResourcePool::getResrouceGroup(unsigned int size) {
+
+  unsigned long long id = getNextResourceGroupId();
+  std::string name(magic_enum::enum_name<ResourceType::RESOURCE_TYPE_GROUP>());
+  name += "_" + std::to_string(id);
+  ResourceInformation information = {
+      name, ResourceType::RESOURCE_TYPE_GROUP,
+      ResourceUpdateType::RESOURCE_UPDATE_TYPE_NONE};
+  std::unordered_map<DescriptorType, std::shared_ptr<DescriptorRange>>
+      descriptor_ranges;
+  descriptor_ranges[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV] =
+      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SRV_UAV_CBV]->allocateRange(
+          size);
+
+  return std::make_shared<ResourceGroup>(nullptr,information,descriptor_ranges,device_);
 }
 
 } // namespace Resource
