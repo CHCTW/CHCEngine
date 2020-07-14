@@ -33,6 +33,7 @@ std::shared_ptr<ContextCommand> ContextPoolBase::getContextCommand() {
     // std::cout << "pool size " << pool_.size() << std::endl;
 
   }
+  // this part need to consider, need to check the overhead for setting heap
   if (type_ == CommandType::COMMAND_TYPE_COMPUTE ||
       type_ == CommandType::COMMAND_TYPE_GRAPHICS ||
       type_ == CommandType::COMMAND_TYPE_BUNDLE)

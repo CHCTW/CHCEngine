@@ -104,6 +104,9 @@
     <ClInclude Include="Renderer\Resource\ResourceGroup.h">
       <Filter>Renderer\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Sampler\Sampler.h">
+      <Filter>Renderer\Sampler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -194,6 +197,9 @@
     <ClCompile Include="Renderer\Resource\ResourceGroup.cpp">
       <Filter>Renderer\Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer\Sampler\Sampler.cpp">
+      <Filter>Renderer\Sampler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Window">
@@ -210,6 +216,9 @@
     </Filter>
     <Filter Include="Renderer\Pipeline">
       <UniqueIdentifier>{d2c89615-148f-43c2-8cae-2ca9219a7885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\Sampler">
+      <UniqueIdentifier>{0f134976-623a-40b3-89d3-127e7d58846a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

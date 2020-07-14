@@ -117,8 +117,7 @@ void Renderer::createContexts() {
   graphics_pool_ =
       std::make_shared<Context::ContextPool<Context::GraphicsContext>>(
           device_, CommandType::COMMAND_TYPE_GRAPHICS,
-          shader_visible_resource_heap_,
-          shader_visible_sampler_heap_);
+          shader_visible_resource_heap_, shader_visible_sampler_heap_);
   compute_pool_ =
       std::make_shared<Context::ContextPool<Context::ComputeContext>>(
           device_, CommandType::COMMAND_TYPE_COMPUTE,
@@ -338,7 +337,7 @@ Renderer::getCopyContext(std::function<void(CopyContext *)> callback,
                          bool async) {
   return copy_pool_->getContext(callback, async);
 }
-const std::shared_ptr<ContextFence> & Renderer::submitContexts(
+const std::shared_ptr<ContextFence> &Renderer::submitContexts(
     const std::shared_ptr<ContextFence> &fence,
     const std::vector<std::shared_ptr<Context::Context>> &contexts) {
   if (contexts.empty()) {
@@ -365,11 +364,13 @@ std::shared_ptr<ContextFence> Renderer::waitFenceValueSubmitContexts(
     throw std::exception("Submit empty context to queue!");
   }
   if (!fence) {
-    throw std::exception("Wait Fence is a nullptr for wait and submit context!");
+    throw std::exception(
+        "Wait Fence is a nullptr for wait and submit context!");
   }
   auto new_fence = fence_pool_->getContextFence();
   auto type = contexts[0]->getType();
-  context_queues_[type]->waitFenceSubmitContextCommand(fence,wait_value,contexts, new_fence);
+  context_queues_[type]->waitFenceSubmitContextCommand(fence, wait_value,
+                                                       contexts, new_fence);
   return new_fence;
 }
 const std::shared_ptr<ContextFence> &Renderer::waitFenceValueSubmitContexts(
@@ -385,7 +386,8 @@ const std::shared_ptr<ContextFence> &Renderer::waitFenceValueSubmitContexts(
         "Wait Fence is a nullptr for wait and submit context!");
   }
   auto type = contexts[0]->getType();
-  context_queues_[type]->waitFenceSubmitContextCommand(wait_fence,wait_value,contexts, fence);
+  context_queues_[type]->waitFenceSubmitContextCommand(wait_fence, wait_value,
+                                                       contexts, fence);
   return fence;
 }
 std::shared_ptr<ContextFence> Renderer::getContextFence() {
@@ -477,6 +479,22 @@ std::shared_ptr<Pipeline::Pipeline> Renderer::getGraphicsPipeline(
       device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pipeline)));
   return std::make_shared<Pipeline::Pipeline>(
       pipeline, Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS);
+}
+std::shared_ptr<Sampler::Sampler>
+Renderer::getSampler(const Sampler::SamplerInformation &sampler_inf) {
+  D3D12_SAMPLER_DESC sampler;
+  fillSampler(sampler, sampler_inf);
+  Sampler::SamplerDescriptorRange range;
+  range.copy_usage_descriptors_ =
+      static_heaps_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER]->allocateRange(1);
+  range.bind_usage_descriptors_ =
+      shader_visible_sampler_heap_->allocateRange(1);
+  device_->CreateSampler(&sampler, range.copy_usage_descriptors_->getHandle(0));
+  device_->CopyDescriptorsSimple(1, range.bind_usage_descriptors_->getHandle(0),
+                                 range.copy_usage_descriptors_->getHandle(0),
+                                 D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+  return std::make_shared<Sampler::Sampler>(sampler_inf, range);
 }
 } // namespace Renderer
 } // namespace CHCEngine

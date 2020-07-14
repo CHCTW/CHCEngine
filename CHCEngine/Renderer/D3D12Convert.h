@@ -30,5 +30,8 @@ D3D_PRIMITIVE_TOPOLOGY
 convertToD3DPrimitiveTopology(PrimitiveTopology topology);
 D3D12_DSV_FLAGS convertToD3D12DSVFlags(DepthStencilFlags flag);
 D3D12_RESOURCE_DIMENSION convertToD3D12ResourceDimension(TextureType type);
+D3D12_FILTER convertToD3D12Filter(Filter filter);
+D3D12_TEXTURE_ADDRESS_MODE
+converToD3D12TextureAddressMode(TextureAddressMode mode);
 }  // namespace Renderer
 }  // namespace CHCEngine

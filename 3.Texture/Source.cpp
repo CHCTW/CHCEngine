@@ -206,6 +206,8 @@ int main() {
       }},
       {}, {}, ResourceState::RESOURCE_STATE_COMMON,
       Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
+  Sampler::SamplerInformation sample_set = {.filter_ = Filter::FILTER_COMPARISON_MIN_MAG_MIP_POINT};
+  auto sampler = renderer.getSampler(sample_set);
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();

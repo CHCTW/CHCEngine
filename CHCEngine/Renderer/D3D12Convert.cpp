@@ -685,5 +685,12 @@ D3D12_RESOURCE_DIMENSION convertToD3D12ResourceDimension(TextureType type) {
   }
   return D3D12_RESOURCE_DIMENSION_TEXTURE1D;
 }
+D3D12_FILTER convertToD3D12Filter(Filter filter) {
+  return D3D12_FILTER(static_cast<unsigned int>(filter));
+}
+D3D12_TEXTURE_ADDRESS_MODE
+converToD3D12TextureAddressMode(TextureAddressMode mode) {
+  return D3D12_TEXTURE_ADDRESS_MODE(static_cast<unsigned int>(mode));
+}
 } // namespace Renderer
 } // namespace CHCEngine

@@ -2,6 +2,7 @@
 #include "ClassName.h"
 #include "Pipeline/BindLayout.h"
 #include "Pipeline/Pipeline.h"
+#include "Sampler/Sampler.h"
 
 namespace CHCEngine {
 namespace Renderer {
@@ -304,6 +305,22 @@ void fillRastersizer(D3D12_RASTERIZER_DESC &desc,
   desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
   if (rasterizer.conservative_rasterization_enable_)
     desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON;
+}
+void fillSampler(D3D12_SAMPLER_DESC& sampler, const Sampler::SamplerInformation& inf) {
+  sampler = {};
+  sampler.Filter = convertToD3D12Filter(inf.filter_);
+  sampler.AddressU = converToD3D12TextureAddressMode(inf.u_mode_);
+  sampler.AddressV = converToD3D12TextureAddressMode(inf.v_mode_);
+  sampler.AddressW = converToD3D12TextureAddressMode(inf.w_mode_);
+  sampler.BorderColor[0] = inf.border_color_.r;
+  sampler.BorderColor[1] = inf.border_color_.g;
+  sampler.BorderColor[2] = inf.border_color_.b;
+  sampler.BorderColor[3] = inf.border_color_.a;
+  sampler.ComparisonFunc = convertToD3D12ComparisonFUNC(inf.comparison_func_);
+  sampler.MaxAnisotropy = inf.max_anisotropy_;
+  sampler.MaxLOD = inf.max_lod;
+  sampler.MinLOD = inf.min_lod;
+  sampler.MipLODBias = inf.mip_lod_bias_;
 }
 } // namespace Renderer
 } // namespace CHCEngine

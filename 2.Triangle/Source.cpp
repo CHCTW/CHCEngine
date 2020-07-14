@@ -186,7 +186,6 @@ int main() {
   std::shared_ptr<ContextFence> c1;
 
   auto graphics = renderer.getGraphicsContext();
-  auto graphics2 = renderer.getGraphicsContext();
   auto copycxt = renderer.getCopyContext();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,

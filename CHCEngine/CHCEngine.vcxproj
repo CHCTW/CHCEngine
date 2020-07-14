@@ -115,6 +115,7 @@
     <ClInclude Include="Renderer\Resource\SwapChainBuffer.h" />
     <ClInclude Include="Renderer\Resource\Texture.h" />
     <ClInclude Include="Renderer\Resource\Utilities.hpp" />
+    <ClInclude Include="Renderer\Sampler\Sampler.h" />
     <ClInclude Include="Window\GLFWInputConvert.h" />
     <ClInclude Include="Window\InputTable.h" />
     <ClInclude Include="Window\Window.h" />
@@ -202,6 +203,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Renderer\Sampler\Sampler.cpp" />
     <ClCompile Include="Window\GLFWInputConvert.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
