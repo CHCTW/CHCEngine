@@ -50,7 +50,7 @@ void GraphicsContext::setGraphicsBindLayout(
 void GraphicsContext::bindGraphicsResource(
     const std::shared_ptr<Resource::Resource> &resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
-  context_command_->bindGraphcisResource(resource, usage_index, slot_index,
+  context_command_->bindGraphicsResource(resource, usage_index, slot_index,
                                          bind_type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(

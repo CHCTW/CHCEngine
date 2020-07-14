@@ -8,6 +8,7 @@
 #include "../Resource/DynamicBuffer.h"
 #include "../Resource/Resource.h"
 #include "../Resource/Texture.h"
+#include "../Resource/ResourceGroup.h"
 #include "ContextPool.h"
 
 namespace CHCEngine {
@@ -112,13 +113,18 @@ void ContextCommand::setGraphicsBindSignature(
   list_->SetGraphicsRootSignature(bind_signature.Get());
   graphics_bind_signature_ = std::move(bind_signature);
 }
-void ContextCommand::bindGraphcisResource(
+void ContextCommand::bindGraphicsResource(
     std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
   if (!direct_bind) {
     list_->SetGraphicsRootDescriptorTable(
         slot_index, resource->getCBVSRVUAVUsagebyIndex(usage_index));
   } else {
+      // special case when bin group resource to a direct bind
+    if (resource->getInformation().type_ == Resource::ResourceType::RESOURCE_TYPE_GROUP) {
+        resource = std::move(std::static_pointer_cast<Resource::ResourceGroup>(resource)
+                       ->getResource(usage_index));
+    }
     switch (getUsage(bind_type)) {
     case BindUsage::BIND_USAGE_CBV:
       list_->SetGraphicsRootConstantBufferView(

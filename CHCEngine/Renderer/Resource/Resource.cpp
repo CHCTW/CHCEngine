@@ -44,7 +44,7 @@ Resource::Resource(
   }
 }
 GPUDescriptorHandle Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) {
-  if (index >= resource_descriptor_range_.copy_usage_descriptors_
+  if (index >= resource_descriptor_range_.bind_usage_descriptors_
                    ->getSize()) {
     throw std::exception("Invalid usage index, out of usage indices size");
   }

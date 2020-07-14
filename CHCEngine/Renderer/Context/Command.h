@@ -60,7 +60,8 @@ struct ContextCommand {
   ComPtr<PipelineState> pipeline_state_;
   ContextCommand(unsigned long long id, const ComPtr<CommandAllocator> &allocator,
                 const  ComPtr<CommandList> & list, std::weak_ptr<ContextPoolBase> owner)
-      : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
+      : id_(id), allocator_(allocator), list_(list), owner_(owner) {
+  }
   void free();
   void reset();
   void close();
@@ -84,7 +85,7 @@ struct ContextCommand {
   void setTopology(PrimitiveTopology topology);
   void setRenderTarget(CPUDescriptorHandle handle);
   void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
-  void bindGraphcisResource(std::shared_ptr<Resource::Resource> resource,
+  void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
                             unsigned int usage_index,
                             unsigned int slot_index,
                             BindType bind_type, bool direct_bind);

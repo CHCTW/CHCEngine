@@ -4,6 +4,12 @@
 namespace CHCEngine {
 namespace Renderer {
 namespace Resource {
+std::shared_ptr<Resource> ResourceGroup::getResource(unsigned int index) {
+  if (index >= resources_.size()) {
+    throw std::exception("Index is our of resource group size!");
+  }
+  return resources_[index];
+}
 ResourceGroup::ResourceGroup(
     ComPtr<GPUResource> gpu_resource, ResourceInformation information,
                              ResourceDescriptorRange &resource_desc_range,
