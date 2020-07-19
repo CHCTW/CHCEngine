@@ -20,7 +20,7 @@ public:
   ResourceGroup(ComPtr<GPUResource> gpu_resource,
                 ResourceInformation information,
                 ResourceDescriptorRange &resource_desc_range,
-                ComPtr<Device> device_);
+                ComPtr<Device> device);
   void insertResource(unsigned int insert_index,
                       std::shared_ptr<Resource> resource,
                       unsigned int usage_index = 0);

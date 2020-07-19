@@ -19,6 +19,7 @@ class BindLayout;
 namespace Sampler
 {
 class Sampler;
+class SamplerGroup;
 }
 namespace Context {
 class GraphicsContext : public ComputeContext {
@@ -66,6 +67,13 @@ public:
                            unsigned int slot_index);
   void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &sampler,
                            const std::string &slot_name);
+  void bindGraphicsSamplers(
+      const std::shared_ptr<Sampler::Sampler> &resource_group,
+      unsigned int slot_index, unsigned int start_index = 0);
+  void
+  bindGraphicsSamplers(const std::shared_ptr<Sampler::Sampler> &sampler_group,
+                           const std::string &slot_name,unsigned int start_index = 0);
+
   };
 } // namespace Context
 } // namespace Renderer

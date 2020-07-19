@@ -23,6 +23,7 @@
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"
 #include "Sampler/Sampler.h"
+#include "Sampler/SamplerGroup.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -266,6 +267,7 @@ public:
   }
   std::shared_ptr<Sampler::Sampler>
   getSampler(const Sampler::SamplerInformation &sampler_inf);
+  std::shared_ptr<Sampler::SamplerGroup> getSamplerGroup(unsigned int size);
 };
 
 } // namespace Renderer

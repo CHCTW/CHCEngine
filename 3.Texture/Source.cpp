@@ -106,16 +106,9 @@ int main() {
 
   auto compute_bind_layout =
       renderer.getBindLayout({Pipeline::BindSlot({compute_bind})});
-
-  // auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
-
-  // Pipeline::BindSlot exsampleslot("resource slot", exsample);
-  // Pipeline::BindSlot sampleslot(sample);
-  // Pipeline::BindSlot dummyslot;
-  // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
 
   std::vector<Pipeline::BindSlot> slots = {
       Pipeline::BindSlot({shset.getBindFormat("Color"),
@@ -147,7 +140,7 @@ int main() {
   frame_count_buffer->setName("frame count buffer");
 
   float tridata[] = {0.0f, 0.25f, 0.0f,   0.0f,   0.25f, -0.25f,
-                     0.0f, 1.0f,  -0.25f, -0.25f, 1.0f,  1.0f};
+                     10.0f, 0.0f,  -0.25f, -0.25f, 10.0f,  10.0f};
 
   Color colors[3] = {
       {0.0, 0.0, 0.0, 1.0}, {0.5, 0.5, 0.5, 1.0}, {1.0, 1.0, 1.0, 1.0}};
@@ -209,12 +202,16 @@ int main() {
           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
       }});
-  Sampler::SamplerInformation sample_set;
+  Sampler::SamplerInformation sample_set = {.u_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_WRAP,
+      .v_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_MIRROR};
   res_group->insertResource(0, color_buffer);
   res_group->insertResource(1, constant_buffer);
   res_group->insertResource(2, simple_texture);
 
   auto sampler = renderer.getSampler(sample_set);
+
+  auto sampler_group = renderer.getSamplerGroup(1);
+  sampler_group->insertSampler(0,sampler);
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
@@ -258,10 +255,7 @@ int main() {
                                window.getFrameSize().Y);
   Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
-  int sign[3] = {1, 1, 1};
-
   auto graphics_fence = renderer.getContextFence();
-  auto copy_fence = renderer.getContextFence();
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
@@ -277,8 +271,7 @@ int main() {
           graph->setPipeline(pipeline);
           graph->setGraphicsBindLayout(groups_bind_layout);
           graph->bindGraphicsResource(res_group, "Color");
-          graph->bindGraphicsSampler(sampler, "simple_sampler");
-          // graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
+          graph->bindGraphicsSamplers(sampler_group, "simple_sampler");
           graph->setVertexBuffers(buffer);
           graph->setViewport(view_port);
           graph->setScissor(scissor);

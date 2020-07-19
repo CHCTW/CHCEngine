@@ -28,17 +28,25 @@ struct SamplerDescriptorRange {
   std::shared_ptr<DescriptorRange> bind_usage_descriptors_ = nullptr;
 };
 class Sampler {
-private:
+protected:
   friend struct Context::ContextCommand;
+  friend class SamplerGroup;
   SamplerInformation information_;
   SamplerDescriptorRange sampler_descriptor_range_;
-  std::string name_;
   GPUDescriptorHandle getSampleHandler(unsigned int index = 0) {
     return sampler_descriptor_range_.bind_usage_descriptors_->getGPUHandle(
         index);
   }
+  CPUDescriptorHandle getSampleCPUHandler(unsigned int index = 0) {
+    return sampler_descriptor_range_.bind_usage_descriptors_->getHandle(
+        index);
+  }
+  CPUDescriptorHandle getCopySampleHandler(unsigned int index = 0) {
+    return sampler_descriptor_range_.copy_usage_descriptors_->getHandle(0);
+  }
 
 public:
+  Sampler(SamplerDescriptorRange &sampler_descriptor_range);
   Sampler(const SamplerInformation &information,
           SamplerDescriptorRange &sampler_descriptor_range);
 };

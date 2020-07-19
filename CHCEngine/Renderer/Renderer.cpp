@@ -496,5 +496,12 @@ Renderer::getSampler(const Sampler::SamplerInformation &sampler_inf) {
 
   return std::make_shared<Sampler::Sampler>(sampler_inf, range);
 }
+std::shared_ptr<Sampler::SamplerGroup>
+Renderer::getSamplerGroup(unsigned int size) {
+  Sampler::SamplerDescriptorRange range;
+  range.bind_usage_descriptors_ =
+      shader_visible_sampler_heap_->allocateRange(size);
+  return std::make_shared<Sampler::SamplerGroup>(range,device_);
+}
 } // namespace Renderer
 } // namespace CHCEngine

@@ -107,6 +107,9 @@
     <ClInclude Include="Renderer\Sampler\Sampler.h">
       <Filter>Renderer\Sampler</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Sampler\SamplerGroup.h">
+      <Filter>Renderer\Sampler</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -198,6 +201,9 @@
       <Filter>Renderer\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Renderer\Sampler\Sampler.cpp">
+      <Filter>Renderer\Sampler</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Sampler\SamplerGroup.cpp">
       <Filter>Renderer\Sampler</Filter>
     </ClCompile>
   </ItemGroup>

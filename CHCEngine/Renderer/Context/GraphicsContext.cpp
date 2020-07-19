@@ -101,6 +101,34 @@ void GraphicsContext::bindGraphicsSampler(
   bindGraphicsSampler(sampler, slot_index);
 }
 
+void GraphicsContext::bindGraphicsSamplers(
+    const std::shared_ptr<Sampler::Sampler> &sampler_group,
+    unsigned int slot_index, unsigned int start_index) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  auto type = graphics_layout_->getFirstBindType(slot_index);
+  if (type != BindType::BIND_TYPE_SIT_SAMPLER) {
+    throw std::exception("Error slot index, the slot should be for sampler");
+  }
+  context_command_->bindGraphicsSampler(sampler_group,
+                                        start_index,
+                                        slot_index);
+}
+
+void GraphicsContext::bindGraphicsSamplers(
+    const std::shared_ptr<Sampler::Sampler> &sampler_group,
+    const std::string &slot_name, unsigned int start_index) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
+  bindGraphicsSamplers(sampler_group, slot_index,start_index);
+
+}
+
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine
