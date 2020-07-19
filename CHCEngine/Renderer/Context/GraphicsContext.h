@@ -16,6 +16,10 @@ class Buffer;
 namespace Pipeline {
 class BindLayout;
 }
+namespace Sampler
+{
+class Sampler;
+}
 namespace Context {
 class GraphicsContext : public ComputeContext {
 protected:
@@ -58,6 +62,10 @@ public:
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource> & resource,
                             const std::string &slot_name,
                             unsigned int usage_index = 0);
+  void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &resource,
+                           unsigned int slot_index);
+  void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &sampler,
+                           const std::string &slot_name);
   };
 } // namespace Context
 } // namespace Renderer

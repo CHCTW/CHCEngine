@@ -140,7 +140,12 @@ enum class ResourceState {
   RESOURCE_STATE_VIDEO_ENCODE_READ = 0x200000,
   RESOURCE_STATE_VIDEO_ENCODE_WRITE = 0x800000
 };
-
+inline ResourceState operator|(const ResourceState &lhs,
+                               const ResourceState &rhs) {
+  return static_cast<ResourceState>(
+      static_cast<std::underlying_type<ResourceState>::type>(lhs) |
+      static_cast<std::underlying_type<ResourceState>::type>(rhs));
+}
 enum class ResourceTransitionFlag {
   RESOURCE_TRANSITION_FLAG_NONE = 0,
   RESOURCE_TRANSITION_FLAG_BEGIN = 0x1,

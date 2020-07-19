@@ -29,20 +29,24 @@ int main() {
   std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
-    float3 color : COLOR;\
+    float3 color: COLOR;\
+    float2 uv : UV;\
   };\
   cbuffer SceneConstBuffer : register(b0) {\
     float4 scenecolor;\
   };\
   StructuredBuffer<float4> Color: register(t0);\
-  PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float3 color : COLOR) {\
+  Texture2D simple_exture : register(t1);\
+  SamplerState simple_sampler : register(s1);\
+  PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float2 uv : UV) {\
     PSInput result;\
     result.position = float4(position, 1.0, 1.0);\
-    result.color = (Color[id].xyz+scenecolor.xyz+color)/3.0;\
+    result.color = (Color[id].xyz+scenecolor.xyz)/2.0;\
+    result.uv = uv;\
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
-    return float4(input.color,0);\
+    return float4(input.color,0)+simple_exture.Sample(simple_sampler,input.uv);\
   }";
 
   std::string compute = "struct Particle\
@@ -113,23 +117,26 @@ int main() {
   // Pipeline::BindSlot dummyslot;
   // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
 
-  std::vector<Pipeline::BindSlot> slots = {Pipeline::BindSlot(
-      {shset.getBindFormat("Color"), shset.getBindFormat("SceneConstBuffer")})};
+  std::vector<Pipeline::BindSlot> slots = {
+      Pipeline::BindSlot({shset.getBindFormat("Color"),
+                          shset.getBindFormat("SceneConstBuffer"),
+                          shset.getBindFormat("simple_exture")}),
+      {sample}};
   auto bind_layout = renderer.getBindLayout(exsample);
   auto groups_bind_layout = renderer.getBindLayout(slots);
   bind_layout->setName("simple layout");
 
-  auto res_group = renderer.getResourceGroup(2);
+  auto res_group = renderer.getResourceGroup(3);
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getBuffer(
-          3, 20,
+          3, 16,
           {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
             .is_raw_buffer_ = true}},
           ResourceState::RESOURCE_STATE_COMMON,
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
-           {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}});
+           {"UV", DataFormat::DATA_FORMAT_R32G32_FLOAT}});
   buffer->setName("custom vertex buffer");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
@@ -139,8 +146,8 @@ int main() {
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
   frame_count_buffer->setName("frame count buffer");
 
-  float tridata[] = {0.0f, 0.25f, 1.0f,   0.0f,   0.0f, 0.25f, -0.25f, 0.0f,
-                     1.0f, 0.0f,  -0.25f, -0.25f, 0.0f, 0.0f,  1.0f};
+  float tridata[] = {0.0f, 0.25f, 0.0f,   0.0f,   0.25f, -0.25f,
+                     0.0f, 1.0f,  -0.25f, -0.25f, 1.0f,  1.0f};
 
   Color colors[3] = {
       {0.0, 0.0, 0.0, 1.0}, {0.5, 0.5, 0.5, 1.0}, {1.0, 1.0, 1.0, 1.0}};
@@ -151,8 +158,6 @@ int main() {
   auto constant_buffer = renderer.getBuffer(
       1, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_CBV}});
   constant_buffer->setName("constant buffer");
-  res_group->insertResource(0, color_buffer);
-  res_group->insertResource(1, constant_buffer);
 
   MipRange mips;
   mips.mips_start_level_ = 2;
@@ -198,15 +203,17 @@ int main() {
                             {1.0, 1.0, 0.0, 1.0}, {1.0, 0.0, 1.0, 1.0},
                             {0.0, 0.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}};
   auto simple_texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_3D, RawFormat::RAW_FORMAT_R32G32B32A32, 2, 2, 2,
-      2,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 2, 2, 1,
+      1,
       {{
           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
-      }},
-      {}, {}, ResourceState::RESOURCE_STATE_COMMON,
-      Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
-  Sampler::SamplerInformation sample_set = {.filter_ = Filter::FILTER_COMPARISON_MIN_MAG_MIP_POINT};
+      }});
+  Sampler::SamplerInformation sample_set;
+  res_group->insertResource(0, color_buffer);
+  res_group->insertResource(1, constant_buffer);
+  res_group->insertResource(2, simple_texture);
+
   auto sampler = renderer.getSampler(sample_set);
 
   auto copycontext = renderer.getGraphicsContext();
@@ -216,9 +223,18 @@ int main() {
 
   Color color{1.0f, 0.2f, 0.6f, 0.0f};
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
-  // copycontext->updateTexture(simple_texture, texture_data);
+  copycontext->updateBuffer(buffer, &tridata,
+                            buffer->getBufferInformation().size_);
+  copycontext->updateTexture(simple_texture, texture_data);
+  copycontext->resourceTransition(
+      simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+          ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+  copycontext->resourceTransition(
+      buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
       color_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
@@ -232,10 +248,6 @@ int main() {
       shset, {buffer->getBufferInformation().vetex_attributes_},
       groups_bind_layout);
   pipeline->setName("simple pipeline");
-
-  std::shared_ptr<ContextFence> g1;
-  ;
-  std::shared_ptr<ContextFence> c1;
 
   auto graphics = renderer.getGraphicsContext();
   renderer.submitContexts({graphics})->waitComplete();
@@ -253,13 +265,8 @@ int main() {
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    // copycxt->updateTexture(simple_texture, texture_data);
-
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_COMMON,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
@@ -270,7 +277,8 @@ int main() {
           graph->setPipeline(pipeline);
           graph->setGraphicsBindLayout(groups_bind_layout);
           graph->bindGraphicsResource(res_group, "Color");
-          //graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
+          graph->bindGraphicsSampler(sampler, "simple_sampler");
+          // graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
           graph->setVertexBuffers(buffer);
           graph->setViewport(view_port);
           graph->setScissor(scissor);
@@ -279,38 +287,12 @@ int main() {
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(3);
           graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COMMON);
-          graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_RENDER_TARGET,
               ResourceState::RESOURCE_STATE_PRESENT, true);
         },
         false);
-    copycxt->recordCommands<CHCEngine::Renderer::Context::CopyContext>(
-        [&](CHCEngine::Renderer::Context::CopyContext *copy) {
-          tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
-          tridata[7] += sign[0] * 0.001f;
-          if (tridata[7] >= 1.0)
-            sign[0] = -1;
-          if (tridata[7] <= 0.0)
-            sign[0] = 1;
-          tridata[8] += sign[1] * 0.001f;
-          if (tridata[8] >= 1.0)
-            sign[1] = -1;
-          if (tridata[8] <= 0.0)
-            sign[1] = 1;
-          tridata[9] += sign[2] * 0.001f;
-          if (tridata[9] >= 1.0)
-            sign[2] = -1;
-          if (tridata[9] <= 0.0)
-            sign[2] = 1;
-          copy->updateBuffer(buffer, tridata,
-                             buffer->getBufferInformation().size_);
-        },
-        false);
-    renderer.waitFenceSubmitContexts(graphics_fence, copy_fence, {copycxt});
-    renderer.waitFenceSubmitContexts(copy_fence, graphics_fence, {graphics});
+    renderer.submitContexts(graphics_fence, {graphics});
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

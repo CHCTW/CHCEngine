@@ -18,6 +18,10 @@ class Buffer;
 struct AllocateSpace;
 class Texture;
 } // namespace Resource
+namespace Sampler
+{
+class Sampler;
+}
 namespace Context {
 class ContextPoolBase;
 class BaseFence;
@@ -55,6 +59,7 @@ struct ContextCommand {
   ComPtr<CommandAllocator> allocator_;
   ComPtr<CommandList> list_;
   std::vector<std::shared_ptr<Resource::Resource>> referenced_resources_;
+  std::vector<std::shared_ptr<Sampler::Sampler>> referenced_samplers_;
   std::vector<std::shared_ptr<Resource::AllocateSpace>> allocated_spaces_;
   ComPtr<BindSignature> graphics_bind_signature_;
   ComPtr<PipelineState> pipeline_state_;
@@ -89,6 +94,9 @@ struct ContextCommand {
                             unsigned int usage_index,
                             unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void bindGraphicsSampler(std::shared_ptr<Sampler::Sampler> sampler,
+                            unsigned int usage_index, unsigned int slot_index
+                        );
 
   void setStaticDescriptorHeap();
   void updateTextureRegion(std::shared_ptr<Resource::Texture> texture,

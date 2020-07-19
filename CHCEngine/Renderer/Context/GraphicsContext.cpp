@@ -48,14 +48,15 @@ void GraphicsContext::setGraphicsBindLayout(
   context_command_->setGraphicsBindSignature(bind_layout->bind_signature_);
 }
 void GraphicsContext::bindGraphicsResource(
-    const std::shared_ptr<Resource::Resource> &resource, unsigned int usage_index,
-    unsigned int slot_index, BindType bind_type, bool direct_bind) {
+    const std::shared_ptr<Resource::Resource> &resource,
+    unsigned int usage_index, unsigned int slot_index, BindType bind_type,
+    bool direct_bind) {
   context_command_->bindGraphicsResource(resource, usage_index, slot_index,
                                          bind_type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(
-    const std::shared_ptr<Resource::Resource> &resource, unsigned int slot_index,
-    unsigned int usage_index) {
+    const std::shared_ptr<Resource::Resource> &resource,
+    unsigned int slot_index, unsigned int usage_index) {
   if (!graphics_layout_) {
     throw std::exception(
         "Need to set graphics bind layout first in this context");
@@ -65,14 +66,39 @@ void GraphicsContext::bindGraphicsResource(
   bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(
-    const std::shared_ptr<Resource::Resource> &resource, const std::string &slot_name,
-    unsigned int usage_index) {
+    const std::shared_ptr<Resource::Resource> &resource,
+    const std::string &slot_name, unsigned int usage_index) {
   if (!graphics_layout_) {
     throw std::exception(
         "Need to set graphics bind layout first in this context");
   }
   unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
   bindGraphicsResource(resource, slot_index, usage_index);
+}
+
+void GraphicsContext::bindGraphicsSampler(
+    const std::shared_ptr<Sampler::Sampler> &sampler, unsigned int slot_index) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  auto type = graphics_layout_->getFirstBindType(slot_index);
+  if (type != BindType::BIND_TYPE_SIT_SAMPLER) {
+    throw std::exception(
+        "Error slot index, the slot should be for sampler");
+  }
+  context_command_->bindGraphicsSampler(sampler, 0, slot_index);
+}
+
+void GraphicsContext::bindGraphicsSampler(
+    const std::shared_ptr<Sampler::Sampler> &sampler,
+    const std::string &slot_name) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
+  bindGraphicsSampler(sampler, slot_index);
 }
 
 } // namespace Context

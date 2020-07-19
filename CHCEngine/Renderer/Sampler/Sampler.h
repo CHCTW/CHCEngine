@@ -1,11 +1,14 @@
 #pragma once
-#include <numeric>
 #include "../ClassName.h"
 #include "../DescriptorHeap.h"
+#include <numeric>
 #include <string>
 
 namespace CHCEngine {
 namespace Renderer {
+namespace Context {
+struct ContextCommand;
+}
 namespace Sampler {
 struct SamplerInformation {
   Filter filter_ = Filter::FILTER_MIN_MAG_MIP_LINEAR;
@@ -26,13 +29,19 @@ struct SamplerDescriptorRange {
 };
 class Sampler {
 private:
+  friend struct Context::ContextCommand;
   SamplerInformation information_;
   SamplerDescriptorRange sampler_descriptor_range_;
   std::string name_;
+  GPUDescriptorHandle getSampleHandler(unsigned int index = 0) {
+    return sampler_descriptor_range_.bind_usage_descriptors_->getGPUHandle(
+        index);
+  }
+
 public:
-  Sampler(const SamplerInformation & information,
-          SamplerDescriptorRange & sampler_descriptor_range);
+  Sampler(const SamplerInformation &information,
+          SamplerDescriptorRange &sampler_descriptor_range);
 };
-}
+} // namespace Sampler
 } // namespace Renderer
 } // namespace CHCEngine

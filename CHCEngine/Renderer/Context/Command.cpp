@@ -9,6 +9,7 @@
 #include "../Resource/Resource.h"
 #include "../Resource/Texture.h"
 #include "../Resource/ResourceGroup.h"
+#include "../Sampler/Sampler.h"
 #include "ContextPool.h"
 
 namespace CHCEngine {
@@ -18,6 +19,7 @@ namespace Context {
 void ContextCommand::free() {
   allocated_spaces_.clear();
   referenced_resources_.clear();
+  referenced_samplers_.clear();
   pipeline_state_ = nullptr;
   graphics_bind_signature_ = nullptr;
   if (auto use_owner = owner_.lock()) {
@@ -141,6 +143,13 @@ void ContextCommand::bindGraphicsResource(
     }
   }
   referenced_resources_.emplace_back(std::move(resource));
+}
+void ContextCommand::bindGraphicsSampler(
+    std::shared_ptr<Sampler::Sampler> sampler, unsigned int usage_index,
+    unsigned int slot_index) {
+  list_->SetGraphicsRootDescriptorTable(slot_index,
+                                        sampler->getSampleHandler(usage_index));
+  referenced_samplers_.emplace_back(std::move(sampler));
 }
 void ContextCommand::setStaticDescriptorHeap() {
   auto pool = owner_.lock();
