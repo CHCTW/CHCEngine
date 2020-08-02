@@ -49,6 +49,11 @@ public:
                                          IndexFormat index_format,
                                          ResourceState initial_state,
                                          ResourceUpdateType update_type);
+  // all usage for buffer and texture should going to buffer and texture
+  // this helps on auto resoruce transition, with  bind format and usage 
+  // index, we can percisely generate all the resouce transisiton
+  // need to think about delay transition, this should be open for
+  // user, so they can optimize the pipeline
   std::shared_ptr<Buffer>
   getBuffer(unsigned int element_count, unsigned int element_byte_size,
             const std::vector<BufferUsage> &usages,

@@ -26,11 +26,12 @@ Buffer::Buffer(ComPtr<GPUResource> gpu_resource,
                BufferInformation buffer_information,
                ResourceDescriptorRange &resource_desc_range,
                std::shared_ptr<VertexBufferView> vertex_buffer_view,
-               std::shared_ptr<IndexBufferView> index_buffer_view)
+               std::shared_ptr<IndexBufferView> index_buffer_view,
+               const std::vector<BufferUsage> &usages)
     : Resource(gpu_resource, upload_buffer, information, resource_desc_range),
       buffer_information_(buffer_information),
       vertex_buffer_view_(vertex_buffer_view),
-      index_buffer_view_(index_buffer_view) {}
+      index_buffer_view_(index_buffer_view),usages_(usages_) {}
 const BufferInformation &Buffer::getBufferInformation() {
   return buffer_information_;
 }

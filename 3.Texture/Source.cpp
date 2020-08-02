@@ -248,8 +248,6 @@ int main() {
 
   auto graphics = renderer.getGraphicsContext();
   renderer.submitContexts({graphics})->waitComplete();
-  auto graphics2 = renderer.getGraphicsContext();
-  auto copycxt = renderer.getCopyContext();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,
                                window.getFrameSize().Y);
