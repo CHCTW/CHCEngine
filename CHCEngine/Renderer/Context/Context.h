@@ -40,9 +40,13 @@ class Context : public std::enable_shared_from_this<Context> {
   // pool
 
     // why use raw point in the callback, cause shared ptr is not allowed in
-    // the desc, but when we wait we might still use in another thread,
-    // that is when we wait in the desc this will crashed
+    // the destructor, but when we wait we might still use in another thread,
+    // that is when we wait in the destructor this will crashed
     // another way is use reference probally can chagne in future
+
+    // going to add a {resource,end state},
+    // when submit the context, will actually record the transition
+    // commmand in another command list and submit
   enum class ContextState { CONTEXT_STATE_IDLE, CONTEXT_STATE_RECORDING };
 
  protected:

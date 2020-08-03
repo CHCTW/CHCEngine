@@ -503,5 +503,19 @@ Renderer::getSamplerGroup(unsigned int size) {
       shader_visible_sampler_heap_->allocateRange(size);
   return std::make_shared<Sampler::SamplerGroup>(range,device_);
 }
+std::shared_ptr<Pipeline::Pipeline>
+Renderer::getComputePipeline(const Pipeline::Shader &shader,
+                             const std::shared_ptr<BindLayout> &bind_layout) {
+  D3D12_COMPUTE_PIPELINE_STATE_DESC com_desc = {};
+  com_desc.CS = CD3DX12_SHADER_BYTECODE(shader.byte_code_.Get());
+  com_desc.pRootSignature = bind_layout->bind_signature_.Get();
+
+    ComPtr<PipelineState> pipeline;
+  ThrowIfFailed(device_->CreateComputePipelineState(&com_desc,
+                                                      IID_PPV_ARGS(&pipeline)));
+
+  return std::make_shared<Pipeline::Pipeline>(
+      pipeline, Pipeline::PipelineType::PIPELINE_TYPE_COMPUTE);
+}
 } // namespace Renderer
 } // namespace CHCEngine

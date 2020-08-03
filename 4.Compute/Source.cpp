@@ -22,27 +22,31 @@ int t = 0;
 Renderer renderer;
 int main() {
   Window window;
-  window.openWindow("Triangle", 800, 600);
+  window.openWindow("Compute", 800, 600);
   renderer.initializeDevice();
   renderer.setSwapChain(window);
 
   std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
-    float3 color : COLOR;\
+    float3 color: COLOR;\
+    float2 uv : UV;\
   };\
   cbuffer SceneConstBuffer : register(b0) {\
     float4 scenecolor;\
   };\
   StructuredBuffer<float4> Color: register(t0);\
-  PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float3 color : COLOR) {\
+  Texture2D simple_exture : register(t1);\
+  SamplerState simple_sampler : register(s1);\
+  PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float2 uv : UV) {\
     PSInput result;\
     result.position = float4(position, 1.0, 1.0);\
-    result.color = (Color[id].xyz+scenecolor.xyz+color)/3.0;\
+    result.color = (Color[id].xyz+scenecolor.xyz)/2.0;\
+    result.uv = uv;\
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
-    return float4(input.color,0);\
+    return float4(input.color,0)+simple_exture.Sample(simple_sampler,input.uv);\
   }";
 
   std::string compute = "struct Particle\
@@ -102,35 +106,33 @@ int main() {
 
   auto compute_bind_layout =
       renderer.getBindLayout({Pipeline::BindSlot({compute_bind})});
+  auto compute_pipe =
+      renderer.getComputePipeline(computeshader, compute_bind_layout);
 
-  // auto input = sh.getOutputTable();
   auto exsample = shset.getBindFormatsExclude(BindType::BIND_TYPE_SIT_SAMPLER);
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
 
-  // Pipeline::BindSlot exsampleslot("resource slot", exsample);
-  // Pipeline::BindSlot sampleslot(sample);
-  // Pipeline::BindSlot dummyslot;
-  // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
-
   std::vector<Pipeline::BindSlot> slots = {
       Pipeline::BindSlot({shset.getBindFormat("Color"),
-                          shset.getBindFormat("SceneConstBuffer")})};
+                          shset.getBindFormat("SceneConstBuffer"),
+                          shset.getBindFormat("simple_exture")}),
+      {sample}};
   auto bind_layout = renderer.getBindLayout(exsample);
   auto groups_bind_layout = renderer.getBindLayout(slots);
   bind_layout->setName("simple layout");
 
-  auto res_group = renderer.getResourceGroup(2);
+  auto res_group = renderer.getResourceGroup(3);
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getBuffer(
-          3, 20,
+          3, 16,
           {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
             .is_raw_buffer_ = true}},
           ResourceState::RESOURCE_STATE_COMMON,
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
-           {"COLOR", DataFormat::DATA_FORMAT_R32G32B32_FLOAT}});
+           {"UV", DataFormat::DATA_FORMAT_R32G32_FLOAT}});
   buffer->setName("custom vertex buffer");
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
@@ -140,8 +142,8 @@ int main() {
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
   frame_count_buffer->setName("frame count buffer");
 
-  float tridata[] = {0.0f, 0.25f, 1.0f,   0.0f,   0.0f, 0.25f, -0.25f, 0.0f,
-                     1.0f, 0.0f,  -0.25f, -0.25f, 0.0f, 0.0f,  1.0f};
+  float tridata[] = {0.0f,  0.25f, 0.0f,   0.0f,   0.25f, -0.25f,
+                     10.0f, 0.0f,  -0.25f, -0.25f, 10.0f, 10.0f};
 
   Color colors[3] = {
       {0.0, 0.0, 0.0, 1.0}, {0.5, 0.5, 0.5, 1.0}, {1.0, 1.0, 1.0, 1.0}};
@@ -152,12 +154,68 @@ int main() {
   auto constant_buffer = renderer.getBuffer(
       1, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_CBV}});
   constant_buffer->setName("constant buffer");
-  res_group->insertResource(0, color_buffer);
-  res_group->insertResource(1, constant_buffer);
 
   MipRange mips;
   mips.mips_start_level_ = 2;
-  
+  SubTexturesRange textue_range;
+
+  auto texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_B8G8R8A8, 256, 256, 1,
+      5,
+      {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+        .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_range_ = mips}},
+      {{.data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_slice_ = 3}});
+
+  auto cube_textures = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R24G8, 512, 512, 12,
+      5,
+      {{
+          .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+          .data_format_ = DataFormat::DATA_FORMAT_R24_UNORM_X8_TYPELESS,
+          .data_dimension_ = DataDimension::DATA_DIMENSION_TEXTURECUBEARRAY,
+      }},
+      empty_render_target_usage,
+      {{.data_format_ =
+            DepthStencilFormat::DEPTH_STENCIL_FORMAT_D24_UNORM_S8_UINT,
+        .mip_slice_ = 4}});
+  auto sterio_texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_3D, RawFormat::RAW_FORMAT_R32G32B32A32, 32, 32,
+      32, 5,
+      {{
+           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+       },
+       {
+           .usage_ = ResourceUsage::RESOURCE_USAGE_UAV,
+           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+       }},
+      {{.data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT}});
+
+  Color texture_data[10] = {{1.0, 0.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0},
+                            {0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0},
+                            {0.0, 1.0, 1.0, 1.0}, {0.0, 0.0, 1.0, 1.0},
+                            {1.0, 1.0, 0.0, 1.0}, {1.0, 0.0, 1.0, 1.0},
+                            {0.0, 0.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}};
+  auto simple_texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 2, 2, 1,
+      1,
+      {{
+          .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+          .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
+      }});
+  Sampler::SamplerInformation sample_set = {
+      .u_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_WRAP,
+      .v_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_MIRROR};
+  res_group->insertResource(0, color_buffer);
+  res_group->insertResource(1, constant_buffer);
+  res_group->insertResource(2, simple_texture);
+
+  auto sampler = renderer.getSampler(sample_set);
+
+  auto sampler_group = renderer.getSamplerGroup(1);
+  sampler_group->insertSampler(0, sampler);
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
@@ -166,8 +224,18 @@ int main() {
 
   Color color{1.0f, 0.2f, 0.6f, 0.0f};
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
+  copycontext->updateBuffer(buffer, &tridata,
+                            buffer->getBufferInformation().size_);
+  copycontext->updateTexture(simple_texture, texture_data);
+  copycontext->resourceTransition(
+      simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+          ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+  copycontext->resourceTransition(
+      buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
       color_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
@@ -178,84 +246,48 @@ int main() {
       renderer.getIndexBuffer(6);
 
   auto pipeline = renderer.getGraphicsPipeline(
-      shset, {buffer->getBufferInformation().vetex_attributes_}, bind_layout);
+      shset, {buffer->getBufferInformation().vetex_attributes_},
+      groups_bind_layout);
   pipeline->setName("simple pipeline");
 
-  std::shared_ptr<ContextFence> g1;
-  ;
-  std::shared_ptr<ContextFence> c1;
-
   auto graphics = renderer.getGraphicsContext();
-  auto copycxt = renderer.getCopyContext();
+  renderer.submitContexts({graphics})->waitComplete();
 
   Pipeline::Viewport view_port(window.getFrameSize().X,
                                window.getFrameSize().Y);
   Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
-  int sign[3] = {1, 1, 1};
-
   auto graphics_fence = renderer.getContextFence();
-  auto copy_fence = renderer.getContextFence();
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    //copycxt->updateTexture(simple_texture, texture_data);
-
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,true);
+              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
           graph->setPipeline(pipeline);
-          graph->setGraphicsBindLayout(bind_layout);
+          graph->setGraphicsBindLayout(groups_bind_layout);
           graph->bindGraphicsResource(res_group, "Color");
-          graph->bindGraphicsResource(constant_buffer, "SceneConstBuffer");
+          graph->bindGraphicsSamplers(sampler_group, "simple_sampler");
           graph->setVertexBuffers(buffer);
           graph->setViewport(view_port);
           graph->setScissor(scissor);
           graph->setPrimitiveTopology(
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_COMMON,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);
           graph->drawInstanced(3);
-          graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COMMON);
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_RENDER_TARGET,
               ResourceState::RESOURCE_STATE_PRESENT, true);
         },
         false);
-    copycxt->recordCommands<CHCEngine::Renderer::Context::CopyContext>(
-        [&](CHCEngine::Renderer::Context::CopyContext *copy) {
-          tridata[1] = ((float)(rand() % 1000)) / 1000.0f;
-          tridata[7] += sign[0] * 0.001f;
-          if (tridata[7] >= 1.0)
-            sign[0] = -1;
-          if (tridata[7] <= 0.0)
-            sign[0] = 1;
-          tridata[8] += sign[1] * 0.001f;
-          if (tridata[8] >= 1.0)
-            sign[1] = -1;
-          if (tridata[8] <= 0.0)
-            sign[1] = 1;
-          tridata[9] += sign[2] * 0.001f;
-          if (tridata[9] >= 1.0)
-            sign[2] = -1;
-          if (tridata[9] <= 0.0)
-            sign[2] = 1;
-          copy->updateBuffer(buffer, tridata,
-                             buffer->getBufferInformation().size_);
-        },false);
-    renderer.waitFenceSubmitContexts(graphics_fence,copy_fence, {copycxt});
-    renderer.waitFenceSubmitContexts(copy_fence,graphics_fence, {graphics});
+    renderer.submitContexts(graphics_fence, {graphics});
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

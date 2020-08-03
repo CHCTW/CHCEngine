@@ -268,6 +268,10 @@ public:
   std::shared_ptr<Sampler::Sampler>
   getSampler(const Sampler::SamplerInformation &sampler_inf);
   std::shared_ptr<Sampler::SamplerGroup> getSamplerGroup(unsigned int size);
+  std::shared_ptr<Pipeline::Pipeline>
+  getComputePipeline(const Pipeline::Shader &shader,
+                     const std::shared_ptr<BindLayout> &bind_layout);
+
 };
 
 } // namespace Renderer

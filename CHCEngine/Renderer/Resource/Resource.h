@@ -51,7 +51,8 @@ class Resource {
   // 1. all subresources state - just one represent all
   // 2. specfic subresources state , if it's differ than all resources
   // the states only updated when submitted to queue
-  // also need to think about start and end 
+  // also need to think about start and end, this should only
+  // manually used 
 protected:
   ComPtr<GPUResource> gpu_resource_;
   ResourceInformation information_;

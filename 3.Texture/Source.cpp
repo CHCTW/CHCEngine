@@ -22,7 +22,7 @@ int t = 0;
 Renderer renderer;
 int main() {
   Window window;
-  window.openWindow("Triangle", 800, 600);
+  window.openWindow("Texture", 800, 600);
   renderer.initializeDevice();
   renderer.setSwapChain(window);
 
