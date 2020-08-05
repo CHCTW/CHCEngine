@@ -222,7 +222,7 @@ public:
   std::shared_ptr<Resource::Buffer> getBuffer(
       unsigned int element_count, unsigned int element_byte_size,
       const std::vector<BufferUsage> &usages,
-      ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState initial_state = ResourceState::RESOURCE_STATE_COMMON,
       Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC,
       const std::vector<std::pair<std::string, DataFormat>> &attributes = {},

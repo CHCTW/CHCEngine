@@ -190,9 +190,10 @@ int main() {
   copycontext->updateBuffer(buffer, &tridata,
                             buffer->getBufferInformation().size_);
   copycontext->resourceTransition(
-      simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS
+      simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState::RESOURCE_STATE_UNORDERED_ACCESS, true
       );
-  copycontext->resourceTransition(
+ /* copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
@@ -200,7 +201,7 @@ int main() {
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
       color_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);
+      ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);*/
   renderer.submitContexts({copycontext})->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
