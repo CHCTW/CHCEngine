@@ -23,9 +23,9 @@ const static std::unordered_map<ShaderType, const char *> targetchars{
                 // might go wrong
     {ShaderType::SHADER_TYPE_MESH, "ms_6_5"}};
 
-Shader::Shader(std::string const &code, std::string const &entry_point,
-               ShaderType type)
-    : code_(code), entry_point_(entry_point), type_(type) {
+Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
+               ShaderType type,bool from_file)
+    :  entry_point_(entry_point), type_(type) {
   ComPtr<Blob> errors;
 
 #if defined(_DEBUG)
@@ -37,14 +37,30 @@ Shader::Shader(std::string const &code, std::string const &entry_point,
   UINT compileFlags = D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES |
                       D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
 #endif
-  auto hr = D3DCompile2(code.c_str(), code.size(), NULL, NULL,
-                        D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point.c_str(),
-                        targetchars.find(type)->second, compileFlags, 0, 0,
-                        NULL, 0, &byte_code_, &errors);
-  if (errors != nullptr) {
-    OutputDebugStringA((char *)errors->GetBufferPointer());
+  if (!from_file) {
+
+    auto hr = D3DCompile2(code_or_file.c_str(), code_or_file.size(), NULL, NULL,
+                          D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                          entry_point.c_str(), targetchars.find(type)->second,
+                          compileFlags, 0, 0, NULL, 0, &byte_code_, &errors);
+    if (errors != nullptr) {
+      OutputDebugStringA((char *)errors->GetBufferPointer());
+    }
+    ThrowIfFailed(hr);
+  } else {
+    std::wstring strins;
+    strins.resize(256);
+    WCHAR wsz[256];
+    ID3DBlob *error;
+    swprintf(wsz, 256, L"%S", code_or_file.c_str());
+    HRESULT hr = D3DCompileFromFile(
+        wsz, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point.c_str(),
+        targetchars.find(type)->second, compileFlags, 0, &byte_code_, &error);
+    if (errors != nullptr) {
+      OutputDebugStringA((char *)errors->GetBufferPointer());
+    }
+    ThrowIfFailed(hr);
   }
-  ThrowIfFailed(hr);
   ThrowIfFailed(D3DReflect(byte_code_->GetBufferPointer(),
                            byte_code_->GetBufferSize(),
                            IID_PPV_ARGS(&shader_reflection_)));

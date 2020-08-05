@@ -68,6 +68,10 @@ class ContextQueue {
     std::vector<std::shared_ptr<ContextCommand>> dummy;
     context_fence->insertFenceSignal(command_queue_, dummy);
   }
+  void insertWaitFenceValue(const std::shared_ptr<ContextFence>& context_fence,
+      uint64_t value) {
+    context_fence->insertFenceWait(command_queue_, value);
+  }
 };
 }  // namespace Context
 }  // namespace Renderer

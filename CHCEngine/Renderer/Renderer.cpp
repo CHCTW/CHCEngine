@@ -332,6 +332,11 @@ Renderer::getGraphicsContext(std::function<void(GraphicsContext *)> callback,
                              bool async) {
   return graphics_pool_->getContext(callback, async);
 }
+std::shared_ptr<ComputeContext>
+Renderer::getComputeContext(std::function<void(ComputeContext *)> callback,
+                            bool async) {
+  return compute_pool_->getContext(callback,async);
+}
 std::shared_ptr<CopyContext>
 Renderer::getCopyContext(std::function<void(CopyContext *)> callback,
                          bool async) {
@@ -356,6 +361,10 @@ std::shared_ptr<ContextFence> Renderer::submitContexts(
   auto type = contexts[0]->getType();
   context_queues_[type]->SubmitContextCommand(contexts, new_fence);
   return new_fence;
+}
+void Renderer::waitFenceValue(const std::shared_ptr<ContextFence> &fence,
+                              uint64_t wait_value, CommandType type) {
+  context_queues_[type]->insertWaitFenceValue(fence, wait_value);
 }
 std::shared_ptr<ContextFence> Renderer::waitFenceValueSubmitContexts(
     const std::shared_ptr<ContextFence> &fence, uint64_t wait_value,

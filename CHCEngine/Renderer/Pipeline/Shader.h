@@ -37,7 +37,6 @@ struct BindFormat {
 class Shader {
 private:
   friend class Renderer;
-  std::string code_;
   std::string entry_point_;
   ComPtr<Blob> byte_code_;
   ComPtr<ShaderReflection> shader_reflection_;
@@ -45,8 +44,8 @@ private:
   std::unordered_map<std::string, BindFormat> resource_bind_table_;
   std::unordered_map<std::string, InputFormat> input_table_;
 public:
-  Shader(std::string const &code, std::string const &entry_point,
-         ShaderType type);
+  Shader(std::string const &code_or_file, std::string const &entry_point,
+         ShaderType type, bool from_file = false);
   const std::unordered_map<std::string, BindFormat> &getBindTable() const {
     return resource_bind_table_;
   }

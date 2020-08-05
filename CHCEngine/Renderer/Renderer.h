@@ -128,6 +128,9 @@ public:
   std::shared_ptr<GraphicsContext>
   getGraphicsContext(std::function<void(GraphicsContext *)> callback = 0,
                      bool async = true);
+  std::shared_ptr<ComputeContext>
+  getComputeContext(std::function<void(ComputeContext *)> callback = 0,
+                    bool async = true);
 
   std::shared_ptr<CopyContext>
   getCopyContext(std::function<void(CopyContext *)> callback = 0,
@@ -139,9 +142,13 @@ public:
   std::shared_ptr<ContextFence> submitContexts(
       const std::vector<std::shared_ptr<Context::Context>> &contexts);
 
+  void waitFenceValue(const std::shared_ptr<ContextFence> &fence,
+                      uint64_t wait_value, CommandType type);
+
   std::shared_ptr<ContextFence> waitFenceValueSubmitContexts(
       const std::shared_ptr<ContextFence> &fence, uint64_t wait_value,
       const std::vector<std::shared_ptr<Context::Context>> &contexts);
+
 
   const std::shared_ptr<ContextFence> &waitFenceValueSubmitContexts(
       const std::shared_ptr<ContextFence> &wait_fence, uint64_t wait_value,

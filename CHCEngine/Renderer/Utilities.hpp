@@ -23,7 +23,11 @@ using Pipeline::ShaderSet;
 // return the <relax,pack> size, if pack is still over 64, it should a exception
 static const BindType unbuffer =
     BindType::BIND_TYPE_SIT_TEXTURE | BindType::BIND_TYPE_SIT_SAMPLER;
-inline bool canUseDescriptor(BindType type) {
+
+inline bool canUseDescriptor(BindType type, DataDimension dimension) {
+  if (dimension != DataDimension::DATA_DIMENSION_BUFFER ||
+      dimension != DataDimension::DATA_DIMENSION_BUFFEREX)
+    return false;
   if (static_cast<unsigned int>(type & unbuffer)) {
     return false;
   }
@@ -50,7 +54,7 @@ calRootSignatureSize(const std::vector<Pipeline::BindSlot> &bind_layout) {
           relax += 2;
           pack += 2;
         } else {// only buffer can use pure disc
-          if (canUseDescriptor(formats[0].type_)) {
+          if (canUseDescriptor(formats[0].type_,formats[0].dimension_)) {
             relax += 2;
             pack += 1;
           } else {
@@ -75,7 +79,7 @@ bool shouldUseTable(const Pipeline::BindSlot &slot, bool relax) {
     return true;
   if (slot.formats_[0].resource_count_ == 1) {
     if (slot.formats_[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER ||
-        (canUseDescriptor(slot.formats_[0].type_) && relax)) {
+        (canUseDescriptor(slot.formats_[0].type_, slot.formats_[0].dimension_) && relax)) {
       return false;
     }
   }

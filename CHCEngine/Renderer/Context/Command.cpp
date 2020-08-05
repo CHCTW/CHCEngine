@@ -22,6 +22,7 @@ void ContextCommand::free() {
   referenced_samplers_.clear();
   pipeline_state_ = nullptr;
   graphics_bind_signature_ = nullptr;
+  compute_bind_signature_ = nullptr;
   if (auto use_owner = owner_.lock()) {
     reset();
     use_owner->freeContextCommand(id_);
@@ -115,6 +116,11 @@ void ContextCommand::setGraphicsBindSignature(
   list_->SetGraphicsRootSignature(bind_signature.Get());
   graphics_bind_signature_ = std::move(bind_signature);
 }
+void ContextCommand::setComputeBindSignature(
+    ComPtr<BindSignature> bind_signature) {
+  list_->SetComputeRootSignature(bind_signature.Get());
+  compute_bind_signature_ = std::move(bind_signature);
+}
 void ContextCommand::bindGraphicsResource(
     std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
@@ -138,6 +144,37 @@ void ContextCommand::bindGraphicsResource(
       break;
     case BindUsage::BIND_USAGE_UAV:
       list_->SetGraphicsRootUnorderedAccessView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
+    }
+  }
+  referenced_resources_.emplace_back(std::move(resource));
+}
+void ContextCommand::bindComputeResource(
+    std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
+    unsigned int slot_index, BindType bind_type, bool direct_bind) {
+  if (!direct_bind) {
+    list_->SetComputeRootDescriptorTable(
+        slot_index, resource->getCBVSRVUAVUsagebyIndex(usage_index));
+  } else {
+    // special case when bin group resource to a direct bind
+    if (resource->getInformation().type_ ==
+        Resource::ResourceType::RESOURCE_TYPE_GROUP) {
+      resource =
+          std::move(std::static_pointer_cast<Resource::ResourceGroup>(resource)
+                        ->getResource(usage_index));
+    }
+    switch (getUsage(bind_type)) {
+    case BindUsage::BIND_USAGE_CBV:
+      list_->SetComputeRootConstantBufferView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
+    case BindUsage::BIND_USAGE_SRV:
+      list_->SetComputeRootShaderResourceView(
+          slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
+      break;
+    case BindUsage::BIND_USAGE_UAV:
+      list_->SetComputeRootUnorderedAccessView(
           slot_index, resource->gpu_resource_->GetGPUVirtualAddress());
       break;
     }
@@ -187,6 +224,9 @@ void ContextCommand::updateTextureRegion(
                            std::make_move_iterator(spaces.begin()),
                            std::make_move_iterator(spaces.end()));
 
+}
+void ContextCommand::dispatch(unsigned int x, unsigned int y, unsigned int z) {
+  list_->Dispatch(x, y, z);
 }
 } // namespace Context
 } // namespace Renderer

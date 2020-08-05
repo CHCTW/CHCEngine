@@ -14,6 +14,7 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Context {
 class GraphicsContext;
+class ComputeContext;
 }
 namespace Pipeline {
 // blind slot will have 1~many bind format, and will have
@@ -70,6 +71,7 @@ private:
   std::string name_;
   friend class Renderer;
   friend class Context::GraphicsContext;
+  friend class Context::ComputeContext;
 
 public:
   BindLayout(ComPtr<BindSignature> bind_signature,

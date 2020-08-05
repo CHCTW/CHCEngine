@@ -23,7 +23,19 @@ class ComputeContext : public CopyContext {
               std::weak_ptr<ContextPoolBase> pool)
       : CopyContext(type, context_command, pool) {}
   void setPipeline(const std::shared_ptr<Pipeline::Pipeline> &pipline);
+  void setComputeBindLayout(
+      const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
+  void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
+                            unsigned int usage_index, unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
+  void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
+                            unsigned int slot_index,
+                            unsigned int usage_index = 0);
+  void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
+                            const std::string &slot_name,
+                            unsigned int usage_index = 0);
   void setStaticUsageHeap();
+  void dispatch(unsigned int x, unsigned int y, unsigned int z);
 };
 }  // namespace Context
 }  // namespace Renderer

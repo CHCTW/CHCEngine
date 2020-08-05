@@ -62,6 +62,7 @@ struct ContextCommand {
   std::vector<std::shared_ptr<Sampler::Sampler>> referenced_samplers_;
   std::vector<std::shared_ptr<Resource::AllocateSpace>> allocated_spaces_;
   ComPtr<BindSignature> graphics_bind_signature_;
+  ComPtr<BindSignature> compute_bind_signature_;
   ComPtr<PipelineState> pipeline_state_;
   ContextCommand(unsigned long long id, const ComPtr<CommandAllocator> &allocator,
                 const  ComPtr<CommandList> & list, std::weak_ptr<ContextPoolBase> owner)
@@ -90,9 +91,13 @@ struct ContextCommand {
   void setTopology(PrimitiveTopology topology);
   void setRenderTarget(CPUDescriptorHandle handle);
   void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
+  void setComputeBindSignature(ComPtr<BindSignature> bind_signature);
   void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
                             unsigned int usage_index,
                             unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
+  void bindComputeResource(std::shared_ptr<Resource::Resource> resource,
+                            unsigned int usage_index, unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
   void bindGraphicsSampler(std::shared_ptr<Sampler::Sampler> sampler,
                             unsigned int usage_index, unsigned int slot_index
@@ -107,6 +112,7 @@ struct ContextCommand {
       const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
       const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts,
       std::vector<std::shared_ptr<Resource::AllocateSpace>> &spaces);
+  void dispatch(unsigned int x, unsigned int y, unsigned int z);
 };
 } // namespace Context
 } // namespace Renderer
