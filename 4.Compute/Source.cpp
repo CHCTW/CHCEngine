@@ -37,7 +37,7 @@ int main() {
     float4 scenecolor;\
   };\
   StructuredBuffer<float4> Color: register(t0);\
-  Texture2D simple_exture : register(t1);\
+  Texture2D simple_texture : register(t1);\
   SamplerState simple_sampler : register(s1);\
   PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float2 uv : UV) {\
     PSInput result;\
@@ -47,7 +47,7 @@ int main() {
     return result;\
   }\
   half4 PSMain(PSInput input) : SV_TARGET {\
-    return float4(input.color,0)+simple_exture.Sample(simple_sampler,input.uv);\
+    return float4(input.color,0)+simple_texture.Sample(simple_sampler,input.uv);\
   }";
 
   std::string compute = "compute.hlsl";
@@ -73,10 +73,14 @@ int main() {
 
   auto sample = shset.getBindFormats(BindType::BIND_TYPE_SIT_SAMPLER);
 
+  // all bind int the same slot will share the same visibility,
+  // thus simple_texture need to has state with
+  // pixel| non_pixel when binding....
+  // this could be better when we have auto transition
   std::vector<Pipeline::BindSlot> slots = {
       Pipeline::BindSlot({shset.getBindFormat("Color"),
                           shset.getBindFormat("SceneConstBuffer"),
-                          shset.getBindFormat("simple_exture")}),
+                          shset.getBindFormat("simple_texture")}),
       {sample}};
   auto bind_layout = renderer.getBindLayout(exsample);
   auto groups_bind_layout = renderer.getBindLayout(slots);
@@ -153,13 +157,8 @@ int main() {
        }},
       {{.data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT}});
 
-  Color texture_data[10] = {{1.0, 0.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0},
-                            {0.0, 0.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0},
-                            {0.0, 1.0, 1.0, 1.0}, {0.0, 0.0, 1.0, 1.0},
-                            {1.0, 1.0, 0.0, 1.0}, {1.0, 0.0, 1.0, 1.0},
-                            {0.0, 0.0, 0.0, 1.0}, {1.0, 1.0, 1.0, 1.0}};
   auto simple_texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 2, 2, 1,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 800, 800, 1,
       1,
       {{
            .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
@@ -190,7 +189,6 @@ int main() {
   copycontext->updateBuffer(constant_buffer, &color, sizeof(color));
   copycontext->updateBuffer(buffer, &tridata,
                             buffer->getBufferInformation().size_);
-  copycontext->updateTexture(simple_texture, texture_data);
   copycontext->resourceTransition(
       simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS
       );

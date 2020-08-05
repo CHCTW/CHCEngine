@@ -87,7 +87,7 @@ bool shouldUseTable(const Pipeline::BindSlot &slot, bool relax) {
   // the count should be 0
   return true;
 }
-// vert akward way, but since it's just a help function, I will keep this
+// very akward way, but since it's just a help function, I will keep this
 void generateRootParameters(
     const std::vector<Pipeline::BindSlot> &bind_slots,
     std::vector<D3D12_ROOT_PARAMETER1> &RootParameters,
