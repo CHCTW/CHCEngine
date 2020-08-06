@@ -77,6 +77,9 @@ void BindLayout::setBindResource(const std::string &slot_name,
 unsigned int BindLayout::getSlotIndex(const std::string &slot_name) {
   if (name_table_.count(slot_name))
     return name_table_[slot_name];
+  else {
+    throw std::exception("Can't find slot name in bind layout");
+  }
   return (std::numeric_limits<unsigned int>::max)();
 }
 void BindLayout::setName(std::string_view name) {
