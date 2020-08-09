@@ -30,7 +30,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         uint dist = abs(DTid.y - uv.y * dim.y) * abs(DTid.y - uv.y * dim.y) + abs(DTid.x - uv.x * dim.x) * abs(DTid.x - uv.x * dim.x);
         float4 prev = texts[DTid.xy];
         float2 res = rand_2_10(uv * 5.0);
-        if (dist<10)
+        if (dist<80)
             prev = float4(0.0,0.1, 0, 0);
         prev += float4(0.0, 0.001, 0.002, 0);
         prev = clamp(prev, float4(0.0, 0.0, 0, 0)

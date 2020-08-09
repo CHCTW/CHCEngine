@@ -15,12 +15,14 @@ void GraphicsContext::clearRenderTarget(
   c[1] = color.g;
   c[2] = color.b;
   c[3] = color.a;*/
+  flushTransitions();
   context_command_->clearSwapChainBuffer(swap_chain_buffer->getDescriptor(), c);
 }
 void GraphicsContext::drawInstanced(unsigned int vertex_count,
                                     unsigned int instance_count,
                                     unsigned int start_vertex_location,
                                     unsigned int start_instance_location) {
+  flushTransitions();
   context_command_->drawInstanced(vertex_count, instance_count,
                                   start_vertex_location,
                                   start_instance_location);

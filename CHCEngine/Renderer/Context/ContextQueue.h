@@ -28,9 +28,9 @@ class ContextQueue {
     for (int i = 0; i < submit_context.size(); ++i) {
       //std::cout << "wait context recording cone" << std::endl;
       submit_context[i]->waitRecordingDone();
-      if (!submit_context[i]->transitions_.empty()) {
+      /*if (!submit_context[i]->transitions_.empty()) {
         throw std::exception("Context has unrecorded resource transition");
-      }
+      }*/
       //std::cout << "wait finish" << std::endl;
       submit_context[i]->closeContext();
       execute_commands[i] = submit_context[i]->context_command_;
@@ -50,9 +50,9 @@ class ContextQueue {
     for (int i = 0; i < submit_context.size(); ++i) {
       // std::cout << "wait context recording cone" << std::endl;
       submit_context[i]->waitRecordingDone();
-      if (!submit_context[i]->transitions_.empty()) {
+      /*if (!submit_context[i]->transitions_.empty()) {
         throw std::exception("Context has unrecorded resource transition");
-      }
+      }*/
       // std::cout << "wait finish" << std::endl;
       submit_context[i]->closeContext();
       execute_commands[i] = submit_context[i]->context_command_;

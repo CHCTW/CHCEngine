@@ -32,6 +32,7 @@ struct Transition {
   ResourceTransitionFlag flag;
   unsigned int subresource_index;
 };
+using PendingTransitions = std::vector<Transition>[resrouce_transition_flag_count_];
 struct ContextCommandAllocator {
   friend class CHCEngine::Renderer::Renderer;
   CommandAllocatorState state_;
@@ -52,6 +53,23 @@ struct ContextCommandList {
 };
 // thinking move all implementation to h file inline callback,
 // since the call usually is a one line code
+
+/*
+The commands that will trigger the command to flush the barriers
+this doesn't trigger pending barriers, only submit commands will trigger it
+
+draw instance
+draw instance index
+depatch
+execute indirect
+occuluction query
+clear rtv
+clear dsv
+
+This will record the barieers immedately
+also close commands will trigger it immedately
+*/
+
 struct ContextCommand {
   unsigned long long id_;
   friend class BaseFence;

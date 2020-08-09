@@ -19,8 +19,17 @@ void Context::resetContextCommand() {
   context_command_ = used_pool->getContextCommand();
 }
 
-void Context::closeContext() { context_command_->close(); }
+void Context::closeContext() { 
+    flushTransitions();
+    context_command_->close();
+}
 
+void Context::flushTransitions() {
+  if (transitions_.size()) {
+    context_command_->resrourceTransition(transitions_);
+    transitions_.clear();
+  }
+}
 void Context::waitRecordingDone() {
   try {
     std::lock_guard<std::mutex> lock(wait_mutex_);

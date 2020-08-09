@@ -52,6 +52,7 @@ void ComputeContext::setStaticUsageHeap() {
   context_command_->setStaticDescriptorHeap();
 }
 void ComputeContext::dispatch(unsigned int x, unsigned int y, unsigned int z) {
+    flushTransitions();
   context_command_->dispatch(x, y, z);
 }
 } // namespace Context

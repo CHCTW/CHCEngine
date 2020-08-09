@@ -3,6 +3,7 @@
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 
+#include <memory>
 #include <limits>
 #include <string>
 #include <unordered_map>
@@ -110,7 +111,7 @@ enum class CommandListState {
 };
 using GPUResource = ID3D12Resource;
 using Fence = ID3D12Fence;
-enum class ResourceState {
+enum class ResourceState : unsigned {
   RESOURCE_STATE_COMMON = 0,
   RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER = 0x1,
   RESOURCE_STATE_INDEX_BUFFER = 0x2,
@@ -138,7 +139,8 @@ enum class ResourceState {
   RESOURCE_STATE_VIDEO_PROCESS_READ = 0x40000,
   RESOURCE_STATE_VIDEO_PROCESS_WRITE = 0x80000,
   RESOURCE_STATE_VIDEO_ENCODE_READ = 0x200000,
-  RESOURCE_STATE_VIDEO_ENCODE_WRITE = 0x800000
+  RESOURCE_STATE_VIDEO_ENCODE_WRITE = 0x800000,
+  RESOURCE_STATE_UNKNOWN = 0xffffffff // only used for resrouce tracking
 };
 inline ResourceState operator|(const ResourceState &lhs,
                                const ResourceState &rhs) {
@@ -146,13 +148,19 @@ inline ResourceState operator|(const ResourceState &lhs,
       static_cast<std::underlying_type<ResourceState>::type>(lhs) |
       static_cast<std::underlying_type<ResourceState>::type>(rhs));
 }
-enum class ResourceTransitionFlag {
+enum class ResourceTransitionFlag{
   RESOURCE_TRANSITION_FLAG_NONE = 0,
   RESOURCE_TRANSITION_FLAG_BEGIN = 0x1,
-  RESOURCE_TRANSITION_FLAG_END = 0x2
+  RESOURCE_TRANSITION_FLAG_END = 0x2,
+  RESOURCE_TRANSITION_FLAG_COUNT = 0x3
 };
+static const unsigned int resrouce_transition_flag_count_ =
+    static_cast<unsigned int>(ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_COUNT);
 static unsigned int all_subresrouce_index =
     D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+namespace Resource {
+class Resource;
+};
 struct Color {
   float r;
   float g;
@@ -782,6 +790,36 @@ struct TextureUsage {
   SubTexturesRange sub_texture_ranges_;
   unsigned int plane_slice_ = 0;
 };
+
+inline void getSubResourceList(std::vector<unsigned int> &list, TextureUsage &usage,
+                        unsigned int mip_levels) {
+  if (usage.usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
+    unsigned int array_size = usage.sub_texture_ranges_.count_;
+    unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
+    if (usage.data_dimension_ == DataDimension::DATA_DIMENSION_TEXTURE3D) {
+      array_size = 1;
+      array_start = 0;
+    }
+    for (unsigned int i = 0; i < array_size; ++i) {
+      for (unsigned int j = 0; j < usage.mip_range_.mips_count_; ++j) {
+        unsigned int index = (i + array_start) * mip_levels + j +
+                             usage.mip_range_.mips_start_level_;
+        list.push_back(index);
+      }
+    }
+  } else {
+    unsigned int array_size = usage.sub_texture_ranges_.count_;
+    unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
+    if (usage.data_dimension_ == DataDimension::DATA_DIMENSION_TEXTURE3D) {
+      array_size = 1;
+      array_start = 0;
+    }
+    for (unsigned int i = 0; i < array_size; ++i) {
+      unsigned int index = (i + array_start) * mip_levels + usage.mip_slice_;
+      list.push_back(index);
+    }
+  }
+}
 struct RenderTargetUsage {
   DataFormat data_format_ = DataFormat::DATA_FORMAT_UNKNOWN;
   DataDimension data_dimension_ = DataDimension::DATA_DIMENSION_UNKNOWN;
@@ -789,6 +827,7 @@ struct RenderTargetUsage {
   SubTexturesRange sub_texture_ranges_;
   unsigned int plane_slice_ = 0;
 };
+
 static const std::vector<RenderTargetUsage> empty_render_target_usage;
 struct DepthStencilUsage {
   DepthStencilFormat data_format_ =
@@ -870,5 +909,22 @@ enum class TextureAddressMode {
   TEXTURE_ADDRESS_MODE_BORDER = 4,
   TEXTURE_ADDRESS_MODE_MIRROR_ONCE = 5
 };
+inline ResourceState
+getBindState(ResourceUsage usage,
+             ShaderType visibility = ShaderType::SHADER_TYPE_ALL) {
+  switch (usage) {
+  case ResourceUsage::RESOURCE_USAGE_CBV:
+    return ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+  case ResourceUsage::RESOURCE_USAGE_UAV:
+    return ResourceState::RESOURCE_STATE_UNORDERED_ACCESS;
+  case ResourceUsage::RESOURCE_USAGE_SRV:
+    if (visibility == ShaderType::SHADER_TYPE_ALL)
+      return ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE;
+    if (visibility == ShaderType::SHADER_TYPE_PIXEL)
+      return ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    return ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+  }
+  return ResourceState::RESOURCE_STATE_COMMON;
+}
 } // namespace Renderer
 } // namespace CHCEngine

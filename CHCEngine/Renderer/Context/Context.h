@@ -68,6 +68,7 @@ class Context : public std::enable_shared_from_this<Context> {
   std::weak_ptr<ContextPoolBase> pool_;
   void resetContextCommand();
   void closeContext();
+  void flushTransitions();
   std::vector<Transition> transitions_;
  public:
   void waitRecordingDone();

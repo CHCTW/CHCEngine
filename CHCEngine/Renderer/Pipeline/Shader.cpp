@@ -14,7 +14,7 @@ namespace Pipeline {
 const static std::unordered_map<ShaderType, const char *> targetchars{
     {ShaderType::SHADER_TYPE_VERTEX, "vs_5_1"},
     {ShaderType::SHADER_TYPE_PIXEL, "ps_5_1"},
-    {ShaderType::SHADER_TYPE_COMPUTE, "cs_5_0"},
+    {ShaderType::SHADER_TYPE_COMPUTE, "cs_5_1"},
     {ShaderType::SHADER_TYPE_GEOMETRY, "gs_5_1"},
     {ShaderType::SHADER_TYPE_DOMAIN, "ds_5_1"},
     {ShaderType::SHADER_TYPE_HULL, "hs_5_1"},
@@ -51,11 +51,10 @@ Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
     std::wstring strins;
     strins.resize(256);
     WCHAR wsz[256];
-    ID3DBlob *error;
     swprintf(wsz, 256, L"%S", code_or_file.c_str());
     HRESULT hr = D3DCompileFromFile(
         wsz, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry_point.c_str(),
-        targetchars.find(type)->second, compileFlags, 0, &byte_code_, &error);
+        targetchars.find(type)->second, compileFlags, 0, &byte_code_, &errors);
     if (errors != nullptr) {
       OutputDebugStringA((char *)errors->GetBufferPointer());
     }
