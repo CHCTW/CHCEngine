@@ -52,8 +52,28 @@ void ComputeContext::setStaticUsageHeap() {
   context_command_->setStaticDescriptorHeap();
 }
 void ComputeContext::dispatch(unsigned int x, unsigned int y, unsigned int z) {
-    flushTransitions();
+  flushBarriers();
   context_command_->dispatch(x, y, z);
+}
+void ComputeContext::resourceTransition(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ResourceState before_state, ResourceState after_state, bool set_barrier,
+    ResourceTransitionFlag flag, unsigned int subresource_index) {
+  transitions_.push_back(
+      {resource, before_state, after_state, flag, subresource_index});
+  if (set_barrier) {
+    flushBarriers();
+  }
+}
+void ComputeContext::uavResourceWait(
+    const std::shared_ptr<Resource::Resource> & resource,
+    bool set_barrier) {
+  UAVWait wait;
+  wait.resource_ = resource;
+  uav_waits_.emplace_back(std::move(wait));
+  if (set_barrier) {
+    flushBarriers();
+  }
 }
 } // namespace Context
 } // namespace Renderer

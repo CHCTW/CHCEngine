@@ -926,5 +926,16 @@ getBindState(ResourceUsage usage,
   }
   return ResourceState::RESOURCE_STATE_COMMON;
 }
+// when next state is not unknown, means it's under split barrier
+struct ResourceStates {
+  ResourceState current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  ResourceState next_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+};
+// for resrouce all sub resource reperest all states that can't find
+// int sub resource states
+struct TrackingStates {
+  ResourceStates all_sub_resource_states_;
+  std::unordered_map<unsigned int, ResourceStates> sub_resource_states_;
+};
 } // namespace Renderer
 } // namespace CHCEngine

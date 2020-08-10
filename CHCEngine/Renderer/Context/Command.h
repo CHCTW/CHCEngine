@@ -32,6 +32,9 @@ struct Transition {
   ResourceTransitionFlag flag;
   unsigned int subresource_index;
 };
+struct UAVWait {
+  std::shared_ptr<Resource::Resource> resource_;
+};
 using PendingTransitions = std::vector<Transition>[resrouce_transition_flag_count_];
 struct ContextCommandAllocator {
   friend class CHCEngine::Renderer::Renderer;
@@ -89,7 +92,8 @@ struct ContextCommand {
   void free();
   void reset();
   void close();
-  void resrourceTransition(std::vector<Transition> &transitions);
+  void resrourceTransition(std::vector<Transition> &transitions,
+                           std::vector<UAVWait> &waits);
   void clearSwapChainBuffer(CPUDescriptorHandle handle, const float *color);
   void setPipelineState(ComPtr<PipelineState> pipeline_state);
   void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,

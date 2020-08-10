@@ -36,8 +36,8 @@ void ContextCommand::reset() {
 
 void ContextCommand::close() { ThrowIfFailed(list_->Close()); }
 
-void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
-  std::vector<D3D12_RESOURCE_BARRIER> barriers_(transitions.size());
+void ContextCommand::resrourceTransition(std::vector<Transition> &transitions,std::vector<UAVWait> &waits) {
+  std::vector<D3D12_RESOURCE_BARRIER> barriers_(transitions.size()+waits.size());
   for (int i = 0; i < transitions.size(); ++i) {
     barriers_[i].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barriers_[i].Flags =
@@ -53,7 +53,14 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions) {
         std::move(transitions[i].resource);
     referenced_resources_.emplace_back(std::move(transitions[i].resource));
   }
-  list_->ResourceBarrier(static_cast<unsigned int>(transitions.size()),
+  unsigned int offset = static_cast<unsigned int>(transitions.size());
+  for (unsigned int i  = 0; i< waits.size() ; ++i) {
+    barriers_[static_cast<size_t>(offset) + i].Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    barriers_[static_cast<size_t>(offset) + i].UAV.pResource =
+        waits[i].resource_->getGPUResource().Get();
+    referenced_resources_.emplace_back(std::move(waits[i].resource_));
+  }
+  list_->ResourceBarrier(static_cast<unsigned int>(barriers_.size()),
                          barriers_.data());
 }
 void ContextCommand::clearSwapChainBuffer(CPUDescriptorHandle handle,

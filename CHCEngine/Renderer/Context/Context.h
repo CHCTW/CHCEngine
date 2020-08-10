@@ -68,8 +68,9 @@ class Context : public std::enable_shared_from_this<Context> {
   std::weak_ptr<ContextPoolBase> pool_;
   void resetContextCommand();
   void closeContext();
-  void flushTransitions();
+  void flushBarriers();
   std::vector<Transition> transitions_;
+  std::vector<UAVWait> uav_waits_;
  public:
   void waitRecordingDone();
   virtual ~Context();
@@ -101,12 +102,6 @@ class Context : public std::enable_shared_from_this<Context> {
     else
       this->running<ContextClass>(funcs);
   }
-  void resourceTransition(
-      const std::shared_ptr<Resource::Resource> &resource, ResourceState before_state,
-      ResourceState after_state, bool set_barrier = false,
-      ResourceTransitionFlag flag =
-          ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE,
-      unsigned int subresource_index = all_subresrouce_index);
   CommandType getType();
 };
 }  // namespace Context

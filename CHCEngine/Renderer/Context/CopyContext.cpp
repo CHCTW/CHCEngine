@@ -26,7 +26,7 @@ void CopyContext::updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
   }
   // copy queue will auto decay to common, so not transiton will be used this context
   if (type_!=CommandType::COMMAND_TYPE_COPY) {
-      flushTransitions();
+      flushBarriers();
   }
   if (buffer->getInformation().update_type_ ==
       Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
@@ -89,7 +89,7 @@ void CopyContext::updateTexture(
             .c_str());
   }
   if (type_ != CommandType::COMMAND_TYPE_COPY) {
-    flushTransitions();
+    flushBarriers();
   }
   array_count = (std::min)(array_count, array_size - array_start_index);
   mip_count = (std::min)(mip_count, inf.mip_levels_ - mip_start_level);

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <mutex>
 #include <atomic>
+#include <unordered_map>
 
 #include "CHCEngine.h"
 #include "Renderer/Pipeline/Shader.h"
@@ -43,6 +44,8 @@ int main() {
   renderer.initializeDevice();
   renderer.setSwapChain(window);
   window.setFrameTimeLowerBound(15000000);
+
+
   window.addMouseMoveCallback(
       "update", [&](const Vector &position, const Vector &offset)
       {
@@ -109,7 +112,6 @@ int main() {
   bind_layout->setName("simple layout");
 
   auto res_group = renderer.getResourceGroup(1);
-
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> buffer =
       renderer.getBuffer(
           6, 16,
@@ -120,7 +122,6 @@ int main() {
           {{"POSITION", DataFormat::DATA_FORMAT_R32G32_FLOAT},
            {"UV", DataFormat::DATA_FORMAT_R32G32_FLOAT}});
   buffer->setName("custom vertex buffer");
-
 
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =

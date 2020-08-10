@@ -20,14 +20,15 @@ void Context::resetContextCommand() {
 }
 
 void Context::closeContext() { 
-    flushTransitions();
+    flushBarriers();
     context_command_->close();
 }
 
-void Context::flushTransitions() {
-  if (transitions_.size()) {
-    context_command_->resrourceTransition(transitions_);
+void Context::flushBarriers() {
+  if (transitions_.size()||uav_waits_.size()) {
+    context_command_->resrourceTransition(transitions_,uav_waits_);
     transitions_.clear();
+    uav_waits_.clear();
   }
 }
 void Context::waitRecordingDone() {
@@ -60,18 +61,6 @@ Context::~Context() {
       used_pool->freeContextCommand(context_command_->id_);
       context_command_.reset();
     }
-  }
-}
-void Context::resourceTransition(const std::shared_ptr<Resource::Resource> &resource,
-                                 ResourceState before_state,
-                                 ResourceState after_state, bool set_barrier,
-                                 ResourceTransitionFlag flag,
-                                 unsigned int subresource_index) {
-  transitions_.push_back(
-      {resource, before_state, after_state, flag, subresource_index});
-  if (set_barrier) {
-    context_command_->resrourceTransition(transitions_);
-    transitions_.clear();
   }
 }
 CommandType Context::getType() { return type_; }

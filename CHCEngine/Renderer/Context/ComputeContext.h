@@ -36,6 +36,15 @@ class ComputeContext : public CopyContext {
                             unsigned int usage_index = 0);
   void setStaticUsageHeap();
   void dispatch(unsigned int x, unsigned int y, unsigned int z);
+  void
+  resourceTransition(const std::shared_ptr<Resource::Resource> &resource,
+                     ResourceState before_state, ResourceState after_state,
+                     bool set_barrier = false,
+                     ResourceTransitionFlag flag =
+                         ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE,
+                     unsigned int subresource_index = all_subresrouce_index);
+  void uavResourceWait(const std::shared_ptr<Resource::Resource> & resource,
+                       bool set_barrier = false);
 };
 }  // namespace Context
 }  // namespace Renderer
