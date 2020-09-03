@@ -26,6 +26,12 @@ void ComputeContext::bindComputeResource(
   context_command_->bindComputeResource(resource, usage_index, slot_index,
                                         bind_type, direct_bind);
 }
+/*void ComputeContext::bindComputeResource(
+    const std::shared_ptr<Resource::Resource> &resource,
+    unsigned int usage_index, unsigned int slot_index,
+    const Pipeline::BindSlot &slot) {
+
+}*/
 void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,
     unsigned int slot_index, unsigned int usage_index) {

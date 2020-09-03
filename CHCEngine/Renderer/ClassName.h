@@ -3,8 +3,8 @@
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 
-#include <memory>
 #include <limits>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -148,14 +148,27 @@ inline ResourceState operator|(const ResourceState &lhs,
       static_cast<std::underlying_type<ResourceState>::type>(lhs) |
       static_cast<std::underlying_type<ResourceState>::type>(rhs));
 }
-enum class ResourceTransitionFlag{
+static unsigned int gen_read =
+    static_cast<unsigned int>(ResourceState::RESOURCE_STATE_GENERIC_READ);
+// will return unknown if it can't merge, only read state can merge
+inline ResourceState mergeIfPossible(ResourceState left_state,
+                              ResourceState right_state) {
+  ResourceState merge = ResourceState::RESOURCE_STATE_UNKNOWN;
+  unsigned int left = static_cast<unsigned int>(left_state);
+  unsigned int right = static_cast<unsigned int>(right_state);
+  if ((left & gen_read) && (right & gen_read))
+    return left_state | right_state;
+  return merge;
+}
+enum class ResourceTransitionFlag {
   RESOURCE_TRANSITION_FLAG_NONE = 0,
   RESOURCE_TRANSITION_FLAG_BEGIN = 0x1,
   RESOURCE_TRANSITION_FLAG_END = 0x2,
   RESOURCE_TRANSITION_FLAG_COUNT = 0x3
 };
 static const unsigned int resrouce_transition_flag_count_ =
-    static_cast<unsigned int>(ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_COUNT);
+    static_cast<unsigned int>(
+        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_COUNT);
 static unsigned int all_subresrouce_index =
     D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 namespace Resource {
@@ -791,8 +804,8 @@ struct TextureUsage {
   unsigned int plane_slice_ = 0;
 };
 
-inline void getSubResourceList(std::vector<unsigned int> &list, TextureUsage &usage,
-                        unsigned int mip_levels) {
+inline void getSubResourceList(std::vector<unsigned int> &list,
+                               TextureUsage &usage, unsigned int mip_levels) {
   if (usage.usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
     unsigned int array_size = usage.sub_texture_ranges_.count_;
     unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
@@ -926,16 +939,38 @@ getBindState(ResourceUsage usage,
   }
   return ResourceState::RESOURCE_STATE_COMMON;
 }
+enum class TranstionState {
+  TRANSITION_STATE_DONE,
+  TRANSITION_STATE_TRANSITING
+};
 // when next state is not unknown, means it's under split barrier
-struct ResourceStates {
-  ResourceState current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
-  ResourceState next_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+struct SubResourceState {
+  ResourceState state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  TranstionState transition_state_ = TranstionState::TRANSITION_STATE_DONE;
 };
-// for resrouce all sub resource reperest all states that can't find
-// int sub resource states
-struct TrackingStates {
-  ResourceStates all_sub_resource_states_;
-  std::unordered_map<unsigned int, ResourceStates> sub_resource_states_;
+struct TrackingState {
+  std::unordered_map<unsigned int, SubResourceState> sub_resrouces_states_;
+  SubResourceState getSubResrouceState(unsigned int sub_resrouce_index) {
+    if (sub_resrouces_states_.count(sub_resrouce_index)) {
+      return sub_resrouces_states_[sub_resrouce_index];
+    }
+    return sub_resrouces_states_[all_subresrouce_index];
+  }
+  void setAllResrouceState(SubResourceState all_resource_state) {
+    sub_resrouces_states_.clear();
+    sub_resrouces_states_[all_subresrouce_index] = all_resource_state;
+  }
+  void setSubResrouceState(unsigned int sub_resrouce_index,
+                           SubResourceState sub_state) {
+    if (sub_resrouce_index == all_subresrouce_index)
+      sub_resrouces_states_.clear();
+    sub_resrouces_states_[sub_resrouce_index] = sub_state;
+  }
+  bool allSubResrouceSameState() {
+    return sub_resrouces_states_.size() == 1 &&
+           sub_resrouces_states_.count(all_subresrouce_index);
+  }
 };
+
 } // namespace Renderer
 } // namespace CHCEngine

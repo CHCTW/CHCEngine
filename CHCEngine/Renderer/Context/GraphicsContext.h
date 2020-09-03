@@ -25,6 +25,9 @@ namespace Context {
 class GraphicsContext : public ComputeContext {
 protected:
   friend class Renderer;
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
+                            unsigned int usage_index, unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
 
 public:
   ~GraphicsContext() {
@@ -53,10 +56,6 @@ public:
   // unfinished, should also  bind the resrouce in the bind layout ,will add it
   // later
   void setGraphicsBindLayout(const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
-  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
-                            unsigned int usage_index,
-                            unsigned int slot_index, BindType bind_type,
-                            bool direct_bind);
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource>& resource,
                             unsigned int slot_index,
                             unsigned int usage_index = 0);

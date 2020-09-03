@@ -40,6 +40,8 @@ struct ResourceDescriptorRange {
   std::shared_ptr<DescriptorRange> copy_usage_descriptors_ = nullptr;
   std::shared_ptr<DescriptorRange> bind_usage_descriptors_ = nullptr;
 };
+
+
 class Resource {
   friend class Renderer;
   friend struct CHCEngine::Renderer::Context::ContextCommand;

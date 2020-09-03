@@ -80,6 +80,14 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Renderer\Context\ResourceTrackingState.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\ResourceTrakcingState.cpp" />
+    <ClCompile Include="Renderer\Context\ResrouceTrakcingState.cpp" />
     <ClCompile Include="Renderer\D3D12Convert.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClassName.h</PrecompiledHeaderFile>
@@ -95,6 +103,7 @@
     <ClInclude Include="Renderer\Context\Fence.h" />
     <ClInclude Include="Renderer\Context\FencePool.h" />
     <ClInclude Include="Renderer\Context\GraphicsContext.h" />
+    <ClInclude Include="Renderer\Context\ResourceTrackingState.h" />
     <ClInclude Include="Renderer\D3D12Convert.h" />
     <ClCompile Include="Renderer\D3D12Utilities.hpp" />
     <ClInclude Include="Renderer\DescriptorHeap.h" />

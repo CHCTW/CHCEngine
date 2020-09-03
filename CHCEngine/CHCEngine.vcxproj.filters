@@ -110,6 +110,9 @@
     <ClInclude Include="Renderer\Sampler\SamplerGroup.h">
       <Filter>Renderer\Sampler</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer\Context\ResourceTrackingState.h">
+      <Filter>Renderer\Context</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHCEngine.cpp" />
@@ -206,6 +209,11 @@
     <ClCompile Include="Renderer\Sampler\SamplerGroup.cpp">
       <Filter>Renderer\Sampler</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer\Context\ResourceTrackingState.cpp">
+      <Filter>Renderer\Context</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\Context\ResrouceTrakcingState.cpp" />
+    <ClCompile Include="Renderer\Context\ResourceTrakcingState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Window">

@@ -9,11 +9,15 @@ class DynamicBuffer;
 } // namespace Resource
 namespace Pipeline {
 class Pipeline;
+struct BindSlot;
 }
 namespace Context {
 class ComputeContext : public CopyContext {
  protected:
   friend class Renderer;
+   void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
+                            unsigned int usage_index, unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
  public:
   virtual ~ComputeContext() { 
      // waitRecordingDone(); 
@@ -25,9 +29,8 @@ class ComputeContext : public CopyContext {
   void setPipeline(const std::shared_ptr<Pipeline::Pipeline> &pipline);
   void setComputeBindLayout(
       const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
-  void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
-                            unsigned int usage_index, unsigned int slot_index,
-                            BindType bind_type, bool direct_bind);
+  /*void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
+                           unsigned int usage_index, unsigned int slot_index,const Pipeline::BindSlot& slot);*/
   void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
                             unsigned int slot_index,
                             unsigned int usage_index = 0);
