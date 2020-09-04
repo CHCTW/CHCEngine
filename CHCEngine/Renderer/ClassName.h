@@ -152,7 +152,7 @@ static unsigned int gen_read =
     static_cast<unsigned int>(ResourceState::RESOURCE_STATE_GENERIC_READ);
 // will return unknown if it can't merge, only read state can merge
 inline ResourceState mergeIfPossible(ResourceState left_state,
-                              ResourceState right_state) {
+                                     ResourceState right_state) {
   ResourceState merge = ResourceState::RESOURCE_STATE_UNKNOWN;
   unsigned int left = static_cast<unsigned int>(left_state);
   unsigned int right = static_cast<unsigned int>(right_state);
@@ -945,24 +945,34 @@ enum class TranstionState {
 };
 // when next state is not unknown, means it's under split barrier
 struct SubResourceState {
-  ResourceState state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
-  TranstionState transition_state_ = TranstionState::TRANSITION_STATE_DONE;
+  ResourceState previous_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  ResourceState current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  bool isTransiting() { return !(previous_state_ == current_state_); }
 };
 struct TrackingState {
+  unsigned int total_sub_resrouces_count_ = 1;
   std::unordered_map<unsigned int, SubResourceState> sub_resrouces_states_;
+  /*TrackingState(unsigned int total_sub_resrouces_count)
+      : total_sub_resrouces_count_(total_sub_resrouces_count) {}*/
   SubResourceState getSubResrouceState(unsigned int sub_resrouce_index) {
     if (sub_resrouces_states_.count(sub_resrouce_index)) {
       return sub_resrouces_states_[sub_resrouce_index];
     }
     return sub_resrouces_states_[all_subresrouce_index];
   }
-  void setAllResrouceState(SubResourceState all_resource_state) {
+  void setSubResrouceCount(unsigned int count) {
+    total_sub_resrouces_count_ = count;
+  }
+  // should have transition here also
+  void updateAllResrouceState(SubResourceState all_resource_state) {
     sub_resrouces_states_.clear();
     sub_resrouces_states_[all_subresrouce_index] = all_resource_state;
   }
-  void setSubResrouceState(unsigned int sub_resrouce_index,
+  // same 
+  void updateSubResrouceState(unsigned int sub_resrouce_index,
                            SubResourceState sub_state) {
-    if (sub_resrouce_index == all_subresrouce_index)
+    if (sub_resrouce_index == all_subresrouce_index ||
+        total_sub_resrouces_count_==1)
       sub_resrouces_states_.clear();
     sub_resrouces_states_[sub_resrouce_index] = sub_state;
   }

@@ -26,11 +26,11 @@ namespace Context {
 class ContextPoolBase;
 class BaseFence;
 struct Transition {
-  std::shared_ptr<Resource::Resource> resource;
-  ResourceState before_state;
-  ResourceState after_state;
-  ResourceTransitionFlag flag;
-  unsigned int subresource_index;
+  std::shared_ptr<Resource::Resource> resource_;
+  ResourceState before_state_;
+  ResourceState after_state_;
+  ResourceTransitionFlag flag_;
+  unsigned int subresource_index_;
 };
 struct UAVWait {
   std::shared_ptr<Resource::Resource> resource_;

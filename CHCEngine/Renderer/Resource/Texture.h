@@ -15,6 +15,11 @@ struct TextureInformation {
   std::vector<unsigned int> row_counts_;
   std::vector<unsigned long long> row_byte_sizes_;
   unsigned long long byte_size_;
+  unsigned int getSubResrouceCount() const {
+    if (type_ == TextureType ::TEXTURE_TYPE_3D)
+      return mip_levels_;
+    return mip_levels_ * depth_;
+  }
 };
 class Texture : public Resource {
 private:
@@ -26,6 +31,7 @@ private:
   std::vector<TextureUsage> usages_;
   std::vector<RenderTargetUsage> render_target_usages_;
   std::vector<DepthStencilUsage> depth_stencil_usages_;
+
 public:
   Texture &operator=(Texture &ref) = delete;
   Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
@@ -37,7 +43,7 @@ public:
           const std::vector<TextureUsage> &usages,
           const std::vector<RenderTargetUsage> &render_target_usages,
           const std::vector<DepthStencilUsage> &depth_stencil_usages);
-  const TextureInformation & getTextureInformation() const {
+  const TextureInformation &getTextureInformation() const {
     return texture_information_;
   }
 };

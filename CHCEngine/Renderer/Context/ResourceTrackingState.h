@@ -11,13 +11,13 @@ namespace Context {
 
 class ResrouceTrackingState {
 private:
-  std::unordered_map<std::shared_ptr<Resource::Resource>, TrackingState> resource_states_;
-
+  std::unordered_map<std::shared_ptr<Resource::Resource>, TrackingState>
+      resource_states_;
 public:
   void resetAllTrackingState();
   // add apporiate transition to the transtions
   void addTransitionToList(std::vector<Transition> &transitions,
-      const std::shared_ptr<Resource::Resource>& resource,
+                           const std::shared_ptr<Resource::Resource> &resource,
                            unsigned int sub_resrouce_index,
                            ResourceState next_state,
                            ResourceTransitionFlag flag);

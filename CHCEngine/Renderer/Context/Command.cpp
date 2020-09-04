@@ -41,17 +41,17 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions,st
   for (int i = 0; i < transitions.size(); ++i) {
     barriers_[i].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barriers_[i].Flags =
-        convertToD3D12ResourceBarrierFlags(transitions[i].flag);
+        convertToD3D12ResourceBarrierFlags(transitions[i].flag_);
     barriers_[i].Transition.pResource =
-        transitions[i].resource->getGPUResource().Get();
+        transitions[i].resource_->getGPUResource().Get();
     barriers_[i].Transition.StateBefore =
-        convertToD3D12ResourceStates(transitions[i].before_state);
+        convertToD3D12ResourceStates(transitions[i].before_state_);
     barriers_[i].Transition.StateAfter =
-        convertToD3D12ResourceStates(transitions[i].after_state);
-    barriers_[i].Transition.Subresource = transitions[i].subresource_index;
+        convertToD3D12ResourceStates(transitions[i].after_state_);
+    barriers_[i].Transition.Subresource = transitions[i].subresource_index_;
     std::shared_ptr<Resource::Resource> temp =
-        std::move(transitions[i].resource);
-    referenced_resources_.emplace_back(std::move(transitions[i].resource));
+        std::move(transitions[i].resource_);
+    referenced_resources_.emplace_back(std::move(transitions[i].resource_));
   }
   unsigned int offset = static_cast<unsigned int>(transitions.size());
   for (unsigned int i  = 0; i< waits.size() ; ++i) {

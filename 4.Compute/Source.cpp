@@ -270,12 +270,16 @@ int main() {
                 THREADSIZE +
             1,
         1);
-
-
+    compute_context->resourceTransition(
+        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,      ResourceState::RESOURCE_STATE_COPY_DEST,true,ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN);
+    graphics->resourceTransition(
+        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+            ResourceState::RESOURCE_STATE_COPY_DEST,
+        false, ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->resourceTransition(
-              simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+              simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                   ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
           graph->resourceTransition(
