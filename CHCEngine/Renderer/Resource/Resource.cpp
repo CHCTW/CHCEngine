@@ -3,6 +3,7 @@
 #include "../D3D12Utilities.hpp"
 
 #include "Resource.h"
+#include "Texture.h"
 //#include "../Pipeline/BindLayout.h"
 
 namespace CHCEngine {
@@ -30,9 +31,9 @@ Resource::Resource(ComPtr<GPUResource> gpu_resource,
         upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
   }
 }
-Resource::Resource(
-    ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
-    ResourceInformation information,
+Resource::Resource(ComPtr<GPUResource> gpu_resource,
+                   ComPtr<GPUResource> upload_buffer,
+                   ResourceInformation information,
                    ResourceDescriptorRange &resource_desc_range)
     : gpu_resource_(gpu_resource),
       upload_buffer_(upload_buffer), information_{information},
@@ -44,25 +45,31 @@ Resource::Resource(
   }
 }
 GPUDescriptorHandle Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) {
-  if (index >= resource_descriptor_range_.bind_usage_descriptors_
-                   ->getSize()) {
+  if (index >= resource_descriptor_range_.bind_usage_descriptors_->getSize()) {
     throw std::exception("Invalid usage index, out of usage indices size");
   }
-  return resource_descriptor_range_.bind_usage_descriptors_
-      ->getGPUHandle(index);
+  return resource_descriptor_range_.bind_usage_descriptors_->getGPUHandle(
+      index);
 }
 CPUDescriptorHandle Resource::getCPUCBVSRVUAVUsagebyIndex(unsigned int index) {
-  if (index >= resource_descriptor_range_.copy_usage_descriptors_
-                   ->getSize()) {
+  if (index >= resource_descriptor_range_.copy_usage_descriptors_->getSize()) {
     throw std::exception("Invalid usage index, out of usage indices size");
   }
-  return resource_descriptor_range_.copy_usage_descriptors_
-      ->getHandle(index);
+  return resource_descriptor_range_.copy_usage_descriptors_->getHandle(index);
 }
 void Resource::setName(std::string_view name) {
   std::string temp(name);
   NAME_D3D12_OBJECT_STRING(gpu_resource_, temp);
   information_.name_ = name;
+}
+unsigned int Resource::getSubResrouceCount() const {
+  if (information_.type_ == ResourceType::RESOURCE_TYPE_GROUP)
+    return 0;
+  if (information_.type_ == ResourceType::RESOURCE_TYPE_TEXTURE) {
+    const Texture *t = static_cast<const Texture *>(this);
+    return t->getTextureInformation().getSubResrouceCount();
+  }
+  return 1;
 }
 } // namespace Resource
 } // namespace Renderer

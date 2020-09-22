@@ -3,9 +3,9 @@
 
 #include <wrl/client.h>
 
+#include "../DescriptorHeap.h"
 #include <string>
 #include <unordered_map>
-#include "../DescriptorHeap.h"
 
 using Microsoft::WRL::ComPtr;
 namespace CHCEngine {
@@ -41,20 +41,19 @@ struct ResourceDescriptorRange {
   std::shared_ptr<DescriptorRange> bind_usage_descriptors_ = nullptr;
 };
 
-
 class Resource {
   friend class Renderer;
   friend struct CHCEngine::Renderer::Context::ContextCommand;
   friend class CHCEngine::Renderer::Pipeline::BindLayout;
-  friend class ResourcePool; 
+  friend class ResourcePool;
   friend class Context::CopyContext;
   friend class ResourceGroup;
-  // should have atomic states for 
+  // should have atomic states for
   // 1. all subresources state - just one represent all
   // 2. specfic subresources state , if it's differ than all resources
   // the states only updated when submitted to queue
   // also need to think about start and end, this should only
-  // manually used 
+  // manually used
 protected:
   ComPtr<GPUResource> gpu_resource_;
   ResourceInformation information_;
@@ -63,7 +62,7 @@ protected:
   ComPtr<GPUResource> upload_buffer_;
   void *upload_buffer_map_pointer_ = nullptr;
   ResourceDescriptorRange resource_descriptor_range_;
-  const ComPtr<GPUResource> & getGPUResource() { return gpu_resource_; }
+  const ComPtr<GPUResource> &getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            const std::string &name, ResourceType type,
            ResourceUpdateType usage);
@@ -87,6 +86,8 @@ public:
   const std::string &getName() const { return information_.name_; }
   ResourceType getType() { return information_.type_; }
   ResourceInformation getInformation() { return information_; }
+  // 0 for group, 1 for buffer and swapchain
+  unsigned int getSubResrouceCount() const;
 };
 } // namespace Resource
 } // namespace Renderer

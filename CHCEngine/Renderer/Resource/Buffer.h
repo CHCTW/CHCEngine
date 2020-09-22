@@ -40,6 +40,7 @@ protected:
   std::shared_ptr<VertexBufferView> vertex_buffer_view_;
   std::shared_ptr<IndexBufferView> index_buffer_view_;
   std::vector<BufferUsage> usages_;
+
 public:
   Buffer &operator=(Buffer &ref) = delete;
   // Vertex Buffer Initialize
@@ -50,8 +51,8 @@ public:
   Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
          ResourceInformation information, BufferInformation buffer_information,
          std::shared_ptr<IndexBufferView> index_buffer_view);
-  // customer buffer 
-    Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
+  // customer buffer
+  Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
          ResourceInformation information, BufferInformation buffer_information,
          ResourceDescriptorRange &resource_desc_range,
          std::shared_ptr<VertexBufferView> vertex_buffer_view,

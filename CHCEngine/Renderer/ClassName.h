@@ -148,6 +148,13 @@ inline ResourceState operator|(const ResourceState &lhs,
       static_cast<std::underlying_type<ResourceState>::type>(lhs) |
       static_cast<std::underlying_type<ResourceState>::type>(rhs));
 }
+inline ResourceState operator&(const ResourceState &lhs,
+                               const ResourceState &rhs) {
+  return static_cast<ResourceState>(
+      static_cast<std::underlying_type<ResourceState>::type>(lhs) &
+      static_cast<std::underlying_type<ResourceState>::type>(rhs));
+}
+
 static unsigned int gen_read =
     static_cast<unsigned int>(ResourceState::RESOURCE_STATE_GENERIC_READ);
 // will return unknown if it can't merge, only read state can merge
@@ -159,6 +166,17 @@ inline ResourceState mergeIfPossible(ResourceState left_state,
   if ((left & gen_read) && (right & gen_read))
     return left_state | right_state;
   return merge;
+}
+inline bool needChange(const ResourceState &next,
+                       const ResourceState &current) {
+  // unknown always need to change
+  if (current == ResourceState::RESOURCE_STATE_UNKNOWN)
+    return true;
+  unsigned int left = static_cast<unsigned int>(next);
+  unsigned int right = static_cast<unsigned int>(current);
+  // basiclly describe it is a substate of current state
+  // actually one equal and reader state will get false
+  return !(left <= right && (left & right));
 }
 enum class ResourceTransitionFlag {
   RESOURCE_TRANSITION_FLAG_NONE = 0,
@@ -948,38 +966,14 @@ struct SubResourceState {
   ResourceState previous_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   ResourceState current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   bool isTransiting() { return !(previous_state_ == current_state_); }
+  bool operator==(const SubResourceState &rhs) const {
+    return previous_state_ == rhs.previous_state_ &&
+           current_state_ == rhs.current_state_;
+  }
+  bool operator!=(const SubResourceState &rhs) const { return !(*this == rhs); }
 };
-struct TrackingState {
-  unsigned int total_sub_resrouces_count_ = 1;
-  std::unordered_map<unsigned int, SubResourceState> sub_resrouces_states_;
-  /*TrackingState(unsigned int total_sub_resrouces_count)
-      : total_sub_resrouces_count_(total_sub_resrouces_count) {}*/
-  SubResourceState getSubResrouceState(unsigned int sub_resrouce_index) {
-    if (sub_resrouces_states_.count(sub_resrouce_index)) {
-      return sub_resrouces_states_[sub_resrouce_index];
-    }
-    return sub_resrouces_states_[all_subresrouce_index];
-  }
-  void setSubResrouceCount(unsigned int count) {
-    total_sub_resrouces_count_ = count;
-  }
-  // should have transition here also
-  void updateAllResrouceState(SubResourceState all_resource_state) {
-    sub_resrouces_states_.clear();
-    sub_resrouces_states_[all_subresrouce_index] = all_resource_state;
-  }
-  // same 
-  void updateSubResrouceState(unsigned int sub_resrouce_index,
-                           SubResourceState sub_state) {
-    if (sub_resrouce_index == all_subresrouce_index ||
-        total_sub_resrouces_count_==1)
-      sub_resrouces_states_.clear();
-    sub_resrouces_states_[sub_resrouce_index] = sub_state;
-  }
-  bool allSubResrouceSameState() {
-    return sub_resrouces_states_.size() == 1 &&
-           sub_resrouces_states_.count(all_subresrouce_index);
-  }
+struct TrackingSubResrouceState : public SubResourceState {
+  bool canChange = true;
 };
 
 } // namespace Renderer

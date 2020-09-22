@@ -31,7 +31,7 @@ Buffer::Buffer(ComPtr<GPUResource> gpu_resource,
     : Resource(gpu_resource, upload_buffer, information, resource_desc_range),
       buffer_information_(buffer_information),
       vertex_buffer_view_(vertex_buffer_view),
-      index_buffer_view_(index_buffer_view),usages_(usages_) {}
+      index_buffer_view_(index_buffer_view), usages_(usages_) {}
 const BufferInformation &Buffer::getBufferInformation() {
   return buffer_information_;
 }
