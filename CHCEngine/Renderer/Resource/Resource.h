@@ -62,6 +62,7 @@ protected:
   ComPtr<GPUResource> upload_buffer_;
   void *upload_buffer_map_pointer_ = nullptr;
   ResourceDescriptorRange resource_descriptor_range_;
+  std::vector<SubResourceState> sub_resource_states_;
   const ComPtr<GPUResource> &getGPUResource() { return gpu_resource_; }
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            const std::string &name, ResourceType type,

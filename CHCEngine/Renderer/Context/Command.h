@@ -18,14 +18,15 @@ class Buffer;
 struct AllocateSpace;
 class Texture;
 } // namespace Resource
-namespace Sampler
-{
+namespace Sampler {
 class Sampler;
 }
 namespace Context {
 class ContextPoolBase;
 class BaseFence;
 struct Transition {
+  /*Transition(std::shared_ptr<Resource::Resource> &resource)
+      : resource_(resource) {}*/
   std::shared_ptr<Resource::Resource> resource_;
   ResourceState before_state_;
   ResourceState after_state_;
@@ -35,7 +36,8 @@ struct Transition {
 struct UAVWait {
   std::shared_ptr<Resource::Resource> resource_;
 };
-using PendingTransitions = std::vector<Transition>[resrouce_transition_flag_count_];
+using PendingTransitions =
+    std::vector<Transition>[resrouce_transition_flag_count_];
 struct ContextCommandAllocator {
   friend class CHCEngine::Renderer::Renderer;
   CommandAllocatorState state_;
@@ -85,10 +87,11 @@ struct ContextCommand {
   ComPtr<BindSignature> graphics_bind_signature_;
   ComPtr<BindSignature> compute_bind_signature_;
   ComPtr<PipelineState> pipeline_state_;
-  ContextCommand(unsigned long long id, const ComPtr<CommandAllocator> &allocator,
-                const  ComPtr<CommandList> & list, std::weak_ptr<ContextPoolBase> owner)
-      : id_(id), allocator_(allocator), list_(list), owner_(owner) {
-  }
+  ContextCommand(unsigned long long id,
+                 const ComPtr<CommandAllocator> &allocator,
+                 const ComPtr<CommandList> &list,
+                 std::weak_ptr<ContextPoolBase> owner)
+      : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
   void free();
   void reset();
   void close();
@@ -99,9 +102,10 @@ struct ContextCommand {
   void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
                           unsigned long long data_byte_size,
                           unsigned long long offset);
-  void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
-                          unsigned long long data_byte_size,
-                          unsigned long long offset,
+  void
+  updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
+                     unsigned long long data_byte_size,
+                     unsigned long long offset,
                      std::shared_ptr<Resource::AllocateSpace> &allocate_space);
   void drawInstanced(unsigned int vertex_count, unsigned int instance_count,
                      unsigned int start_vertex_location,
@@ -115,18 +119,17 @@ struct ContextCommand {
   void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
   void setComputeBindSignature(ComPtr<BindSignature> bind_signature);
   void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
-                            unsigned int usage_index,
-                            unsigned int slot_index,
-                            BindType bind_type, bool direct_bind);
-  void bindComputeResource(std::shared_ptr<Resource::Resource> resource,
                             unsigned int usage_index, unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void bindComputeResource(std::shared_ptr<Resource::Resource> resource,
+                           unsigned int usage_index, unsigned int slot_index,
+                           BindType bind_type, bool direct_bind);
   void bindGraphicsSampler(std::shared_ptr<Sampler::Sampler> sampler,
-                            unsigned int usage_index, unsigned int slot_index
-                        );
+                           unsigned int usage_index, unsigned int slot_index);
 
   void setStaticDescriptorHeap();
-  void updateTextureRegion(std::shared_ptr<Resource::Texture> texture,
+  void updateTextureRegion(
+      std::shared_ptr<Resource::Texture> texture,
       const std::vector<D3D12_TEXTURE_COPY_LOCATION> &src_layouts,
       const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts);
   void updateTextureRegion(

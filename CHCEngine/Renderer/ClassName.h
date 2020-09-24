@@ -155,7 +155,7 @@ inline ResourceState operator&(const ResourceState &lhs,
       static_cast<std::underlying_type<ResourceState>::type>(rhs));
 }
 
-static unsigned int gen_read =
+static unsigned int gen_read_ =
     static_cast<unsigned int>(ResourceState::RESOURCE_STATE_GENERIC_READ);
 // will return unknown if it can't merge, only read state can merge
 inline ResourceState mergeIfPossible(ResourceState left_state,
@@ -163,9 +163,16 @@ inline ResourceState mergeIfPossible(ResourceState left_state,
   ResourceState merge = ResourceState::RESOURCE_STATE_UNKNOWN;
   unsigned int left = static_cast<unsigned int>(left_state);
   unsigned int right = static_cast<unsigned int>(right_state);
-  if ((left & gen_read) && (right & gen_read))
+  if ((left & gen_read_) && (right & gen_read_))
     return left_state | right_state;
   return merge;
+}
+inline bool isReadState(const ResourceState &state) {
+  if (state == ResourceState::RESOURCE_STATE_UNKNOWN)
+    return false;
+  unsigned int left = static_cast<unsigned int>(state);
+  unsigned int right = static_cast<unsigned int>(gen_read_);
+  return (left | right) > 0;
 }
 inline bool needChange(const ResourceState &next,
                        const ResourceState &current) {

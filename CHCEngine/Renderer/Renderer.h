@@ -149,7 +149,6 @@ public:
       const std::shared_ptr<ContextFence> &fence, uint64_t wait_value,
       const std::vector<std::shared_ptr<Context::Context>> &contexts);
 
-
   const std::shared_ptr<ContextFence> &waitFenceValueSubmitContexts(
       const std::shared_ptr<ContextFence> &wait_fence, uint64_t wait_value,
       const std::shared_ptr<ContextFence> &fence,
@@ -172,7 +171,7 @@ public:
     auto state = wait_fence->getStateAndExpectedValue();
     // the commands already finished executing, doesn't need to wait
     if (state.first == Context::FenceState::FENCE_STATE_IDLE) {
-      return submitContexts(fence,contexts);
+      return submitContexts(fence, contexts);
     }
     return waitFenceValueSubmitContexts(wait_fence, state.second, fence,
                                         contexts);
@@ -202,7 +201,7 @@ public:
   std::shared_ptr<Resource::Buffer> getVertexBuffer(
       unsigned int vertex_count,
       const std::vector<std::pair<std::string, DataFormat>> &attributes,
-      ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState initial_state = ResourceState::RESOURCE_STATE_COMMON,
       Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getVertexBuffer(vertex_count, attributes,
@@ -212,7 +211,7 @@ public:
   std::shared_ptr<Resource::Buffer> getIndexBuffer(
       unsigned int index_count,
       IndexFormat index_format = IndexFormat::INDEX_FORMAT_32_UINT,
-      ResourceState initial_state = ResourceState::RESOURCE_STATE_COPY_DEST,
+      ResourceState initial_state = ResourceState::RESOURCE_STATE_COMMON,
       Resource::ResourceUpdateType update_type =
           Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC) {
     return resource_pool_->getIndexBuffer(index_count, index_format,
@@ -278,7 +277,6 @@ public:
   std::shared_ptr<Pipeline::Pipeline>
   getComputePipeline(const Pipeline::Shader &shader,
                      const std::shared_ptr<BindLayout> &bind_layout);
-
 };
 
 } // namespace Renderer

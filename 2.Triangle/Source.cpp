@@ -113,9 +113,8 @@ int main() {
   // Pipeline::BindSlot dummyslot;
   // std::vector<Pipeline::BindFormat> v = {shset.getBindFormat("g_texture")};
 
-  std::vector<Pipeline::BindSlot> slots = {
-      Pipeline::BindSlot({shset.getBindFormat("Color"),
-                          shset.getBindFormat("SceneConstBuffer")})};
+  std::vector<Pipeline::BindSlot> slots = {Pipeline::BindSlot(
+      {shset.getBindFormat("Color"), shset.getBindFormat("SceneConstBuffer")})};
   auto bind_layout = renderer.getBindLayout(exsample);
   auto groups_bind_layout = renderer.getBindLayout(slots);
   bind_layout->setName("simple layout");
@@ -157,7 +156,6 @@ int main() {
 
   MipRange mips;
   mips.mips_start_level_ = 2;
-  
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();
@@ -199,7 +197,7 @@ int main() {
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    //copycxt->updateTexture(simple_texture, texture_data);
+    // copycxt->updateTexture(simple_texture, texture_data);
 
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
@@ -220,13 +218,7 @@ int main() {
           graph->setPrimitiveTopology(
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
-          /*graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_COMMON,
-              ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, true);*/
           graph->drawInstanced(3);
-         /* graph->resourceTransition(
-              buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-              ResourceState::RESOURCE_STATE_COMMON);*/
           graph->resourceTransition(
               renderer.getSwapChainBuffer(swap_chain_index),
               ResourceState::RESOURCE_STATE_RENDER_TARGET,
@@ -253,9 +245,10 @@ int main() {
             sign[2] = 1;
           copy->updateBuffer(buffer, tridata,
                              buffer->getBufferInformation().size_);
-        },false);
-    renderer.waitFenceSubmitContexts(graphics_fence,copy_fence, {copycxt});
-    renderer.waitFenceSubmitContexts(copy_fence,graphics_fence, {graphics});
+        },
+        false);
+    renderer.waitFenceSubmitContexts(graphics_fence, copy_fence, {copycxt});
+    renderer.waitFenceSubmitContexts(copy_fence, graphics_fence, {graphics});
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();
