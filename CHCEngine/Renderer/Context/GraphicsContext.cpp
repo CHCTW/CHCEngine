@@ -9,7 +9,8 @@ namespace Renderer {
 
 namespace Context {
 void GraphicsContext::clearRenderTarget(
-    std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer, Color color) {
+    const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer,
+    Color color) {
   float c[4] = {color.r, color.g, color.b, color.a};
   /*c[0] = color.r;
   c[1] = color.g;
@@ -86,8 +87,7 @@ void GraphicsContext::bindGraphicsSampler(
   }
   auto type = graphics_layout_->getFirstBindType(slot_index);
   if (type != BindType::BIND_TYPE_SIT_SAMPLER) {
-    throw std::exception(
-        "Error slot index, the slot should be for sampler");
+    throw std::exception("Error slot index, the slot should be for sampler");
   }
   context_command_->bindGraphicsSampler(sampler, 0, slot_index);
 }
@@ -114,9 +114,7 @@ void GraphicsContext::bindGraphicsSamplers(
   if (type != BindType::BIND_TYPE_SIT_SAMPLER) {
     throw std::exception("Error slot index, the slot should be for sampler");
   }
-  context_command_->bindGraphicsSampler(sampler_group,
-                                        start_index,
-                                        slot_index);
+  context_command_->bindGraphicsSampler(sampler_group, start_index, slot_index);
 }
 
 void GraphicsContext::bindGraphicsSamplers(
@@ -127,8 +125,7 @@ void GraphicsContext::bindGraphicsSamplers(
         "Need to set graphics bind layout first in this context");
   }
   unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
-  bindGraphicsSamplers(sampler_group, slot_index,start_index);
-
+  bindGraphicsSamplers(sampler_group, slot_index, start_index);
 }
 
 } // namespace Context

@@ -46,10 +46,6 @@ void Renderer::checkSupportFeatures() {
     throw std::exception("Shader Model 6.5 is not supported");
   }
 
-  //  need to wait for driver version over 450.56
-  //  https://developer.nvidia.com/directx
-  // can download here
-
   D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
   if (FAILED(device_->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7,
                                           &features, sizeof(features))) ||
@@ -335,7 +331,7 @@ Renderer::getGraphicsContext(std::function<void(GraphicsContext *)> callback,
 std::shared_ptr<ComputeContext>
 Renderer::getComputeContext(std::function<void(ComputeContext *)> callback,
                             bool async) {
-  return compute_pool_->getContext(callback,async);
+  return compute_pool_->getContext(callback, async);
 }
 std::shared_ptr<CopyContext>
 Renderer::getCopyContext(std::function<void(CopyContext *)> callback,
@@ -510,7 +506,7 @@ Renderer::getSamplerGroup(unsigned int size) {
   Sampler::SamplerDescriptorRange range;
   range.bind_usage_descriptors_ =
       shader_visible_sampler_heap_->allocateRange(size);
-  return std::make_shared<Sampler::SamplerGroup>(range,device_);
+  return std::make_shared<Sampler::SamplerGroup>(range, device_);
 }
 std::shared_ptr<Pipeline::Pipeline>
 Renderer::getComputePipeline(const Pipeline::Shader &shader,
@@ -519,9 +515,9 @@ Renderer::getComputePipeline(const Pipeline::Shader &shader,
   com_desc.CS = CD3DX12_SHADER_BYTECODE(shader.byte_code_.Get());
   com_desc.pRootSignature = bind_layout->bind_signature_.Get();
 
-    ComPtr<PipelineState> pipeline;
-  ThrowIfFailed(device_->CreateComputePipelineState(&com_desc,
-                                                      IID_PPV_ARGS(&pipeline)));
+  ComPtr<PipelineState> pipeline;
+  ThrowIfFailed(
+      device_->CreateComputePipelineState(&com_desc, IID_PPV_ARGS(&pipeline)));
 
   return std::make_shared<Pipeline::Pipeline>(
       pipeline, Pipeline::PipelineType::PIPELINE_TYPE_COMPUTE);

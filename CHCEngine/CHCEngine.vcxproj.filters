@@ -110,7 +110,7 @@
     <ClInclude Include="Renderer\Sampler\SamplerGroup.h">
       <Filter>Renderer\Sampler</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\Context\ResourceTrackingState.h">
+    <ClInclude Include="Renderer\Context\ContextResrouceState.h">
       <Filter>Renderer\Context</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,11 +209,9 @@
     <ClCompile Include="Renderer\Sampler\SamplerGroup.cpp">
       <Filter>Renderer\Sampler</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\Context\ResourceTrackingState.cpp">
+    <ClCompile Include="Renderer\Context\ContextResrouceState.cpp">
       <Filter>Renderer\Context</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer\Context\ResrouceTrakcingState.cpp" />
-    <ClCompile Include="Renderer\Context\ResourceTrakcingState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Window">

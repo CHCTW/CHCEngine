@@ -158,6 +158,7 @@ inline ResourceState operator&(const ResourceState &lhs,
 static unsigned int gen_read_ =
     static_cast<unsigned int>(ResourceState::RESOURCE_STATE_GENERIC_READ);
 // will return unknown if it can't merge, only read state can merge
+//  need to change , texture and buffer have different merge state
 inline ResourceState mergeIfPossible(ResourceState left_state,
                                      ResourceState right_state) {
   ResourceState merge = ResourceState::RESOURCE_STATE_UNKNOWN;
@@ -172,7 +173,7 @@ inline bool isReadState(const ResourceState &state) {
     return false;
   unsigned int left = static_cast<unsigned int>(state);
   unsigned int right = static_cast<unsigned int>(gen_read_);
-  return (left | right) > 0;
+  return (left & right) > 0;
 }
 inline bool needChange(const ResourceState &next,
                        const ResourceState &current) {
@@ -183,7 +184,7 @@ inline bool needChange(const ResourceState &next,
   unsigned int right = static_cast<unsigned int>(current);
   // basiclly describe it is a substate of current state
   // actually one equal and reader state will get false
-  return !(left <= right && (left & right));
+  return !((left & right) == right);
 }
 enum class ResourceTransitionFlag {
   RESOURCE_TRANSITION_FLAG_NONE = 0,
@@ -537,7 +538,7 @@ enum class ShaderType {
   SHADER_TYPE_DOMAIN,
   SHADER_TYPE_AMPLIFICATION,
   SHADER_TYPE_MESH,
-  SHADER_TYPE_ALL, // only for shader visiblity
+  SHADER_TYPE_ALL, // only for shader visibility
 };
 enum class BindType : unsigned {
   BIND_TYPE_SIT_CBUFFER = 0x01,
@@ -972,15 +973,16 @@ enum class TranstionState {
 struct SubResourceState {
   ResourceState previous_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   ResourceState current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  bool unUsed() {
+    return previous_state_ == ResourceState::RESOURCE_STATE_UNKNOWN ||
+           current_state_ == ResourceState::RESOURCE_STATE_UNKNOWN;
+  }
   bool isTransiting() { return !(previous_state_ == current_state_); }
   bool operator==(const SubResourceState &rhs) const {
     return previous_state_ == rhs.previous_state_ &&
            current_state_ == rhs.current_state_;
   }
   bool operator!=(const SubResourceState &rhs) const { return !(*this == rhs); }
-};
-struct TrackingSubResrouceState : public SubResourceState {
-  bool canChange = true;
 };
 
 } // namespace Renderer

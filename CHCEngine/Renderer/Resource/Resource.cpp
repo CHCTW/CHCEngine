@@ -57,6 +57,25 @@ CPUDescriptorHandle Resource::getCPUCBVSRVUAVUsagebyIndex(unsigned int index) {
   }
   return resource_descriptor_range_.copy_usage_descriptors_->getHandle(index);
 }
+
+std::vector<CHCEngine::Renderer::SubResourceState> &
+Resource::getSubResrouceStates() {
+  return sub_resource_states_;
+}
+
+bool Resource::isSubResroucesSameStates() {
+  if (sub_resource_states_.size() == 1)
+    return true;
+  if (sub_resource_states_.size() == 0)
+    return false;
+  auto first = sub_resource_states_[0];
+  for (auto const &s : sub_resource_states_) {
+    if (first != s)
+      return false;
+  }
+  return true;
+}
+
 void Resource::setName(std::string_view name) {
   std::string temp(name);
   NAME_D3D12_OBJECT_STRING(gpu_resource_, temp);

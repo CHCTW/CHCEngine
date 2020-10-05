@@ -14,6 +14,7 @@ namespace Context {
 struct ContextCommand;
 class GraphicsContext;
 class CopyContext;
+struct TrackingState;
 } // namespace Context
 namespace Pipeline {
 class BindLayout;
@@ -48,12 +49,8 @@ class Resource {
   friend class ResourcePool;
   friend class Context::CopyContext;
   friend class ResourceGroup;
-  // should have atomic states for
-  // 1. all subresources state - just one represent all
-  // 2. specfic subresources state , if it's differ than all resources
-  // the states only updated when submitted to queue
-  // also need to think about start and end, this should only
-  // manually used
+  friend struct Context::TrackingState;
+
 protected:
   ComPtr<GPUResource> gpu_resource_;
   ResourceInformation information_;
@@ -79,6 +76,8 @@ protected:
            ResourceDescriptorRange &resource_desc_range);
   GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index);
   CPUDescriptorHandle getCPUCBVSRVUAVUsagebyIndex(unsigned int index);
+  std::vector<SubResourceState> &getSubResrouceStates();
+  bool isSubResroucesSameStates();
 
 public:
   Resource &operator=(Resource &ref) = delete;

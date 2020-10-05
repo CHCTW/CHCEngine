@@ -191,7 +191,7 @@ public:
     return submitContexts({std::forward<ContextPTRClass>(context_list)...});
   }*/
 
-  std::shared_ptr<Resource::SwapChainBuffer>
+  const std::shared_ptr<Resource::SwapChainBuffer> &
   getSwapChainBuffer(int swap_chain_index) {
     return swap_chain_buffers_[swap_chain_index];
   }

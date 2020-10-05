@@ -10,25 +10,29 @@ namespace Resource {
 // in it self
 class SwapChainBuffer : public Resource {
   friend class Renderer;
- private:
+
+private:
   unsigned int width_;
   unsigned int height_;
   std::shared_ptr<DescriptorRange> descriptors_;
   SwapChainBuffer(ComPtr<GPUResource> gpu_resource,
                   std::shared_ptr<DescriptorRange> descriptors,
-                  const std::string& name, unsigned int width,
+                  const std::string &name, unsigned int width,
                   unsigned int height)
       : Resource(gpu_resource, name, ResourceType::RESOURCE_TYPE_SWAP_CHAIN,
                  ResourceUpdateType::RESOURCE_UPDATE_TYPE_NONE),
-        descriptors_(descriptors),
-        width_(width),
-        height_(height) {}
- public:
-  //SwapChainBuffer() = delete;
-  SwapChainBuffer(SwapChainBuffer& ref) = default;
-  SwapChainBuffer(SwapChainBuffer&& ref) = default;
+        descriptors_(descriptors), width_(width), height_(height) {
+    SubResourceState s = {ResourceState::RESOURCE_STATE_COMMON,
+                          ResourceState::RESOURCE_STATE_COMMON};
+    sub_resource_states_.resize(1, s);
+  }
+
+public:
+  // SwapChainBuffer() = delete;
+  SwapChainBuffer(SwapChainBuffer &ref) = default;
+  SwapChainBuffer(SwapChainBuffer &&ref) = default;
   CPUDescriptorHandle getDescriptor();
 };
-}  // namespace Resource
-}  // namespace Renderer
-}  // namespace CHCEngine
+} // namespace Resource
+} // namespace Renderer
+} // namespace CHCEngine

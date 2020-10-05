@@ -165,7 +165,7 @@ unsigned int getStrideSize(
     }
     if (vetex_attributes.count(p.first)) {
       throw std::exception(
-          (p.first + "have the same sematic name in one vertex attributes")
+          (p.first + "have the same semantic name in one vertex attributes")
               .c_str());
     }
     vetex_attributes[p.first] = std::make_pair(stride_size, p.second);
@@ -189,7 +189,7 @@ unsigned long long getVertexBufferAttributes(
     }
     if (vetex_attributes.count(p.first)) {
       throw std::exception(
-          (p.first + "have the same sematic name in one vertex attributes")
+          (p.first + "have the same semantic name in one vertex attributes")
               .c_str());
     }
     vetex_attributes[p.first] = std::make_pair(stride_size, p.second);
@@ -507,8 +507,9 @@ std::shared_ptr<DescriptorRange> getDSVTextureDesciptorRanges(
   unsigned int index = 0;
   for (auto &usage : usages) {
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc = {};
- 
-    dsv_desc.Format = convertToDXGIFormat(convertToDataFormat(usage.data_format_));
+
+    dsv_desc.Format =
+        convertToDXGIFormat(convertToDataFormat(usage.data_format_));
     dsv_desc.Flags = convertToD3D12DSVFlags(usage.depth_stencil_flag_);
     DataDimension dimension = usage.data_dimension_;
     if (dimension == DataDimension::DATA_DIMENSION_UNKNOWN)

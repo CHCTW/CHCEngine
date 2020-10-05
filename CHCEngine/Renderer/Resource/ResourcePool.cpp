@@ -249,7 +249,7 @@ std::shared_ptr<Buffer> ResourcePool::getBuffer(
 
   return std::make_shared<Buffer>(gpu_resource, upload_buffer, res_info,
                                   buffer_information, resource_range,
-                                  vertex_view, index_view,usages);
+                                  vertex_view, index_view, usages);
 }
 
 std::shared_ptr<Texture> ResourcePool::getTexture(
@@ -292,7 +292,7 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   if ((flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) &&
       ((flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) |
        (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS))) {
-    throw std::exception("Can't use depth stencil with rener target or "
+    throw std::exception("Can't use depth stencil with render target or "
                          "unordered access together");
   }
   if (!use_shader_resource_view &&
@@ -371,9 +371,10 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
                                  std::move(row_counts_vec),
                                  std::move(row_bytes_vec),
                                  required_size};
-  return std::make_shared<Texture>(
-      gpu_resource, upload_buffer, information, text_inf, resource_range,
-      rtv_range, dsv_range, usages, render_target_usages, depth_stencil_usages);
+  return std::make_shared<Texture>(gpu_resource, upload_buffer, information,
+                                   text_inf, resource_range, rtv_range,
+                                   dsv_range, usages, render_target_usages,
+                                   depth_stencil_usages, initial_state);
 }
 
 std::shared_ptr<ResourceGroup>

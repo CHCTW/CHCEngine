@@ -1,6 +1,7 @@
 #include "../ClassName.h"
 
 #include "Texture.h"
+#include <algorithm>
 namespace CHCEngine {
 namespace Renderer {
 namespace Resource {
@@ -13,13 +14,18 @@ Texture::Texture(ComPtr<GPUResource> gpu_resource,
                  std::shared_ptr<DescriptorRange> &dsv_range,
                  const std::vector<TextureUsage> &usages,
                  const std::vector<RenderTargetUsage> &render_target_usages,
-                 const std::vector<DepthStencilUsage> &depth_stencil_usages)
+                 const std::vector<DepthStencilUsage> &depth_stencil_usages,
+                 ResourceState initial_state)
     : Resource(gpu_resource, upload_buffer, information, resource_desc_range),
       texture_information_(std::move(texture_information)),
       render_target_descriptors_(std::move(rtv_range)),
       depth_stencil_descriptors_(std::move(dsv_range)), usages_(usages),
       render_target_usages_(render_target_usages),
-      depth_stencil_usages_(depth_stencil_usages) {}
+      depth_stencil_usages_(depth_stencil_usages) {
+  sub_resource_states_.resize(texture_information.getSubResrouceCount());
+  SubResourceState tracking{initial_state, initial_state};
+  std::fill(sub_resource_states_.begin(), sub_resource_states_.end(), tracking);
+}
 } // namespace Resource
 } // namespace Renderer
 } // namespace CHCEngine

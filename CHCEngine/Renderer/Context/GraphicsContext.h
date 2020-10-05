@@ -16,11 +16,10 @@ class Buffer;
 namespace Pipeline {
 class BindLayout;
 }
-namespace Sampler
-{
+namespace Sampler {
 class Sampler;
 class SamplerGroup;
-}
+} // namespace Sampler
 namespace Context {
 class GraphicsContext : public ComputeContext {
 protected:
@@ -38,7 +37,7 @@ public:
                   std::weak_ptr<ContextPoolBase> pool)
       : ComputeContext(type, context_command, pool) {}
   void clearRenderTarget(
-      std::shared_ptr<Resource::SwapChainBuffer> swap_chain_buffer,
+      const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer,
       Color color);
   void drawInstanced(unsigned int vertex_count, unsigned int instance_count = 1,
                      unsigned int start_vertex_location = 0,
@@ -51,29 +50,30 @@ public:
     setVertexBuffers({std::forward<T>(buffers)...});
   }
   void setPrimitiveTopology(PrimitiveTopology topology);
-  void
-  setRenderTarget(const std::shared_ptr<Resource::SwapChainBuffer>& swap_chain_buffer);
+  void setRenderTarget(
+      const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer);
   // unfinished, should also  bind the resrouce in the bind layout ,will add it
   // later
-  void setGraphicsBindLayout(const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
-  void bindGraphicsResource(const std::shared_ptr<Resource::Resource>& resource,
+  void setGraphicsBindLayout(
+      const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             unsigned int slot_index,
                             unsigned int usage_index = 0);
-  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> & resource,
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             const std::string &slot_name,
                             unsigned int usage_index = 0);
   void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &resource,
                            unsigned int slot_index);
   void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &sampler,
                            const std::string &slot_name);
-  void bindGraphicsSamplers(
-      const std::shared_ptr<Sampler::Sampler> &resource_group,
-      unsigned int slot_index, unsigned int start_index = 0);
+  void
+  bindGraphicsSamplers(const std::shared_ptr<Sampler::Sampler> &resource_group,
+                       unsigned int slot_index, unsigned int start_index = 0);
   void
   bindGraphicsSamplers(const std::shared_ptr<Sampler::Sampler> &sampler_group,
-                           const std::string &slot_name,unsigned int start_index = 0);
-
-  };
+                       const std::string &slot_name,
+                       unsigned int start_index = 0);
+};
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

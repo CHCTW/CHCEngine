@@ -53,8 +53,8 @@ calRootSignatureSize(const std::vector<Pipeline::BindSlot> &bind_layout) {
         if (formats[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER) {
           relax += 2;
           pack += 2;
-        } else {// only buffer can use pure disc
-          if (canUseDescriptor(formats[0].type_,formats[0].dimension_)) {
+        } else { // only buffer can use pure disc
+          if (canUseDescriptor(formats[0].type_, formats[0].dimension_)) {
             relax += 2;
             pack += 1;
           } else {
@@ -79,7 +79,9 @@ bool shouldUseTable(const Pipeline::BindSlot &slot, bool relax) {
     return true;
   if (slot.formats_[0].resource_count_ == 1) {
     if (slot.formats_[0].type_ == BindType::BIND_TYPE_SIT_CBUFFER ||
-        (canUseDescriptor(slot.formats_[0].type_, slot.formats_[0].dimension_) && relax)) {
+        (canUseDescriptor(slot.formats_[0].type_,
+                          slot.formats_[0].dimension_) &&
+         relax)) {
       return false;
     }
   }
@@ -92,8 +94,7 @@ void generateRootParameters(
     const std::vector<Pipeline::BindSlot> &bind_slots,
     std::vector<D3D12_ROOT_PARAMETER1> &RootParameters,
     std::vector<std::vector<D3D12_DESCRIPTOR_RANGE1>> &ranges,
-    std::vector<bool> &direct_binds,
-    bool relax) {
+    std::vector<bool> &direct_binds, bool relax) {
   RootParameters.resize(bind_slots.size());
   ranges.resize(bind_slots.size());
   for (int i = 0; i < bind_slots.size(); ++i) {
@@ -310,7 +311,8 @@ void fillRastersizer(D3D12_RASTERIZER_DESC &desc,
   if (rasterizer.conservative_rasterization_enable_)
     desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON;
 }
-void fillSampler(D3D12_SAMPLER_DESC& sampler, const Sampler::SamplerInformation& inf) {
+void fillSampler(D3D12_SAMPLER_DESC &sampler,
+                 const Sampler::SamplerInformation &inf) {
   sampler = {};
   sampler.Filter = convertToD3D12Filter(inf.filter_);
   sampler.AddressU = converToD3D12TextureAddressMode(inf.u_mode_);

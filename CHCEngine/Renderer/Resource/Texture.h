@@ -42,7 +42,8 @@ public:
           std::shared_ptr<DescriptorRange> &dsv_range,
           const std::vector<TextureUsage> &usages,
           const std::vector<RenderTargetUsage> &render_target_usages,
-          const std::vector<DepthStencilUsage> &depth_stencil_usages);
+          const std::vector<DepthStencilUsage> &depth_stencil_usages,
+          ResourceState initial_state);
   const TextureInformation &getTextureInformation() const {
     return texture_information_;
   }
