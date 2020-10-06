@@ -151,13 +151,54 @@ void ContextSubResrouceState::stateUpdate(
     stateUpdateInmutable(resource, next_state, split, index, transitions);
   }
 }
-void ContextResrouceState::udpateSameStates(uint32_t start_index) {
-  for (auto &s : context_sub_resrouce_states_) {
-    if (s != context_sub_resrouce_states_[start_index])
-      same_states_ = false;
+void ContextResrouceState::checkSameStates(uint32_t start_index) {
+  if (!same_states_) {
     same_states_ = true;
+    for (auto &s : context_sub_resrouce_states_) {
+      if (s != context_sub_resrouce_states_[start_index]) {
+        same_states_ = false;
+        break;
+      }
+    }
   }
 }
+void ContextResrouceState::stateUpateAllSubResource(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ResourceState next_state, bool split,
+    std::vector<Transition> &transitions) {
+  checkSameStates();
+  if (same_states_) {
+    auto all = context_sub_resrouce_states_[0];
+    all.stateUpdate(next_state, all_subresrouce_index, split, resource,
+                    transitions);
+    std::fill(context_sub_resrouce_states_.begin(),
+              context_sub_resrouce_states_.end(), all);
+  } else {
+    for (uint32_t i = 0; i < context_sub_resrouce_states_.size(); ++i) {
+      context_sub_resrouce_states_[i].stateUpdate(next_state, i, split,
+                                                  resource, transitions);
+    }
+  }
+  if (isReadState(next_state))
+    checkSameStates();
+  else
+    same_states_ = true;
+}
+void ContextResrouceState::stateUpdate(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ResourceState next_state, bool split, uint32_t index,
+    std::vector<Transition> &transitions) {
+  if (resource->getSubResrouceCount() == 1 || index == all_subresrouce_index) {
+    stateUpateAllSubResource(resource, next_state, split, transitions);
+  } else {
+    context_sub_resrouce_states_[index].stateUpdate(next_state, index, split,
+                                                    resource, transitions);
+    same_states_ = false;
+  }
+}
+void ContextResrouceState::resovleResrouceState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    std::vector<Transition> &transitions) {}
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

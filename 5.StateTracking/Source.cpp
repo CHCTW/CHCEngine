@@ -14,6 +14,7 @@ using CHCEngine::Renderer::Renderer;
 using CHCEngine::Renderer::ResourceState;
 using CHCEngine::Renderer::ResourceTransitionFlag;
 using CHCEngine::Renderer::ShaderType;
+using CHCEngine::Renderer::Context::ContextResrouceState;
 using CHCEngine::Renderer::Context::ContextSubResrouceState;
 using CHCEngine::Renderer::Context::Transition;
 using CHCEngine::Renderer::Pipeline::Shader;
@@ -150,6 +151,16 @@ int main() {
 
   auto color_buffer = renderer.getBuffer(
       3, sizeof(Color), {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV}});
+  MipRange mips;
+  // mips.mips_start_level_ = 2;
+  auto texture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_B8G8R8A8, 256, 256, 1,
+      5,
+      {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
+        .data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_range_ = mips}},
+      {{.data_format_ = DataFormat::DATA_FORMAT_B8G8R8A8_UNORM,
+        .mip_slice_ = 3}});
 
   /***trakcing test area**/
   std::vector<Transition> transitions;
@@ -159,6 +170,7 @@ int main() {
   dummy.current_state_ = ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
   dummy.previous_state_ = ResourceState::RESOURCE_STATE_COPY_DEST;
   ContextSubResrouceState track;
+  ContextResrouceState res_track(texture->getSubResrouceCount());
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
                     index, false, color_buffer, transitions);*/
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
@@ -169,7 +181,18 @@ int main() {
                     false, color_buffer, transitions);
   track.stateUpdate(ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE, index,
                     true, color_buffer, transitions);*/
-  track.resovleSubResrouceState(color_buffer, dummy, 0, pending_transitions);
+  // track.resovleSubResrouceState(color_buffer, dummy, 0,
+  // //pending_transitions);
+  res_track.stateUpdate(texture, ResourceState::RESOURCE_STATE_COPY_SOURCE,
+                        false, 0, transitions);
+  res_track.stateUpdate(texture,
+                        ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                        false, all_subresrouce_index, transitions);
+  res_track.stateUpdate(texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+                        false, all_subresrouce_index, transitions);
+  res_track.stateUpdate(texture,
+                        ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE, true,
+                        all_subresrouce_index, transitions);
 
   /***********************/
 
@@ -178,9 +201,6 @@ int main() {
   constant_buffer->setName("constant buffer");
   res_group->insertResource(0, color_buffer);
   res_group->insertResource(1, constant_buffer);
-
-  MipRange mips;
-  mips.mips_start_level_ = 2;
 
   auto copycontext = renderer.getGraphicsContext();
   copycontext->setStaticUsageHeap();

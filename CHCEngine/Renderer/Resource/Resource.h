@@ -15,6 +15,7 @@ struct ContextCommand;
 class GraphicsContext;
 class CopyContext;
 struct TrackingState;
+class ContextResrouceState;
 } // namespace Context
 namespace Pipeline {
 class BindLayout;
@@ -50,6 +51,7 @@ class Resource {
   friend class Context::CopyContext;
   friend class ResourceGroup;
   friend struct Context::TrackingState;
+  friend class Context::ContextResrouceState;
 
 protected:
   ComPtr<GPUResource> gpu_resource_;
