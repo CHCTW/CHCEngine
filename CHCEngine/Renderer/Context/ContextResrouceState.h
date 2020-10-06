@@ -10,16 +10,11 @@
 namespace CHCEngine {
 namespace Renderer {
 namespace Context {
-struct ContextSubResrouceState : public SubResourceState {
+class ContextSubResrouceState : public SubResourceState {
+private:
   ResourceState first_transition_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   bool mutable_ = true;
   bool merged_ = false;
-  bool operator!=(const ContextSubResrouceState &r) {
-    return previous_state_ == r.previous_state_ &&
-               current_state_ == r.current_state_ ||
-           first_transition_state_ != r.first_transition_state_ ||
-           mutable_ != mutable_ || merged_ != merged_;
-  }
   void addTransition(ResourceState before_state, ResourceState after_state,
                      uint32_t index, bool split,
                      const std::shared_ptr<Resource::Resource> &resource,
@@ -34,14 +29,39 @@ struct ContextSubResrouceState : public SubResourceState {
   void nextStateValidCheck(const std::shared_ptr<Resource::Resource> &resource,
                            ResourceState next_state, bool split,
                            uint32_t index);
-  void stateUpdate(ResourceState next_state, uint32_t index, bool split,
-                   const std::shared_ptr<Resource::Resource> &resource,
-                   std::vector<Transition> &transitions);
   void stateUpdateMutable(ResourceState next_state);
   void stateUpdateInmutable(const std::shared_ptr<Resource::Resource> &resource,
                             ResourceState next_state, bool split,
                             uint32_t index,
                             std::vector<Transition> &transitions);
+  bool
+  needResolveBufferState(const std::shared_ptr<Resource::Resource> &resource,
+                         SubResourceState &sub_resource_state);
+  void reset();
+
+public:
+  bool operator!=(const ContextSubResrouceState &r) const {
+    return previous_state_ == r.previous_state_ &&
+               current_state_ == r.current_state_ ||
+           first_transition_state_ != r.first_transition_state_ ||
+           mutable_ != mutable_ || merged_ != merged_;
+  }
+  void stateUpdate(ResourceState next_state, uint32_t index, bool split,
+                   const std::shared_ptr<Resource::Resource> &resource,
+                   std::vector<Transition> &transitions);
+  void
+  resovleSubResrouceState(const std::shared_ptr<Resource::Resource> &resource,
+                          SubResourceState &sub_resource_state, uint32_t index,
+                          std::vector<Transition> &transitions);
+};
+class ContextResrouceState {
+private:
+  std::vector<ContextSubResrouceState> context_sub_resrouce_states_;
+  bool same_states_ = true;
+  void udpateSameStates(uint32_t start_index = 0);
+
+public:
+  ContextResrouceState(uint32_t size) : context_sub_resrouce_states_(size){};
 };
 } // namespace Context
 } // namespace Renderer

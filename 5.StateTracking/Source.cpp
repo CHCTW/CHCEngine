@@ -153,16 +153,23 @@ int main() {
 
   /***trakcing test area**/
   std::vector<Transition> transitions;
+  std::vector<Transition> pending_transitions;
   uint32_t index = 0;
+  SubResourceState dummy;
+  dummy.current_state_ = ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+  dummy.previous_state_ = ResourceState::RESOURCE_STATE_COPY_DEST;
   ContextSubResrouceState track;
-  track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-                    index, false, color_buffer, transitions);
-  track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-                    index, false, color_buffer, transitions);
+  /*track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+                    index, false, color_buffer, transitions);*/
+  /*track.stateUpdate(ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+  index, false, color_buffer, transitions);
   track.stateUpdate(ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                    index, false, color_buffer, transitions);
+                    index, true, color_buffer, transitions);
   track.stateUpdate(ResourceState::RESOURCE_STATE_UNORDERED_ACCESS, index,
                     false, color_buffer, transitions);
+  track.stateUpdate(ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE, index,
+                    true, color_buffer, transitions);*/
+  track.resovleSubResrouceState(color_buffer, dummy, 0, pending_transitions);
 
   /***********************/
 

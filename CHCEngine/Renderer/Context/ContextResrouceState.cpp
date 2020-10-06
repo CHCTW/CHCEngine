@@ -51,7 +51,7 @@ void ContextSubResrouceState::nextStateValidCheck(
         "Can't add split transition with untraceable resource, at "
         "least need to use for once. Resource Name:";
     error += resource->getName();
-    error += "sub resource index : ";
+    error += ", sub resource index : ";
     error += std::to_string(index);
     throw std::exception(error.c_str());
   }
@@ -91,6 +91,51 @@ void ContextSubResrouceState::stateUpdateInmutable(
     previous_state_ = next_state;
   current_state_ = next_state;
 }
+bool ContextSubResrouceState::needResolveBufferState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    SubResourceState &sub_resource_state) {
+  // for buffer, if the state is buffer
+  // and unmerged, we leave to implicit promotion
+  if (!sub_resource_state.isTransiting() &&
+      sub_resource_state.current_state_ ==
+          ResourceState::RESOURCE_STATE_COMMON &&
+      !merged_)
+    return false;
+  return true;
+}
+void ContextSubResrouceState::reset() {
+  current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  previous_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  first_transition_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
+  mutable_ = true;
+  merged_ = false;
+}
+void ContextSubResrouceState::resovleSubResrouceState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    SubResourceState &sub_resource_state, uint32_t index,
+    std::vector<Transition> &transitions) {
+  if (!isTracked())
+    return;
+  // resolve transition state
+  if (sub_resource_state.isTransiting()) {
+    transitions.emplace_back(Transition{
+        resource, sub_resource_state.previous_state_,
+        sub_resource_state.current_state_,
+        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END, index});
+    sub_resource_state.previous_state_ = sub_resource_state.current_state_;
+  }
+  if (resource->getType() != Resource::ResourceType::RESOURCE_TYPE_BUFFER ||
+      needResolveBufferState(resource, sub_resource_state)) {
+    if (first_transition_state_ != sub_resource_state.current_state_) {
+      transitions.emplace_back(Transition{
+          resource, sub_resource_state.current_state_, first_transition_state_,
+          ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
+    }
+  }
+  sub_resource_state.current_state_ = current_state_;
+  sub_resource_state.previous_state_ = previous_state_;
+  reset();
+}
 void ContextSubResrouceState::stateUpdate(
     ResourceState next_state, uint32_t index, bool split,
     const std::shared_ptr<Resource::Resource> &resource,
@@ -100,9 +145,17 @@ void ContextSubResrouceState::stateUpdate(
   updateMutable(next_state, split);
   if (!needUpdate(next_state))
     return;
-  if (mutable_) {    stateUpdateMutable(next_state);
+  if (mutable_) {
+    stateUpdateMutable(next_state);
   } else {
     stateUpdateInmutable(resource, next_state, split, index, transitions);
+  }
+}
+void ContextResrouceState::udpateSameStates(uint32_t start_index) {
+  for (auto &s : context_sub_resrouce_states_) {
+    if (s != context_sub_resrouce_states_[start_index])
+      same_states_ = false;
+    same_states_ = true;
   }
 }
 } // namespace Context
