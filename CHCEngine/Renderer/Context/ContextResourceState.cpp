@@ -1,11 +1,11 @@
 #include "../ClassName.h"
 
-#include "ContextResrouceState.h"
+#include "ContextResourceState.h"
 
 namespace CHCEngine {
 namespace Renderer {
 namespace Context {
-void ContextSubResrouceState::addTransition(
+void ContextSubResourceState::addTransition(
     ResourceState before_state, ResourceState after_state, uint32_t index,
     bool split, const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
@@ -17,7 +17,7 @@ void ContextSubResrouceState::addTransition(
       Transition{resource, before_state, after_state, flag, index});
 }
 
-void ContextSubResrouceState::resolveSplitTransition(
+void ContextSubResourceState::resolveSplitTransition(
     uint32_t index, const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
   if (!isTracked() || !isTransiting())
@@ -28,21 +28,21 @@ void ContextSubResrouceState::resolveSplitTransition(
   previous_state_ = current_state_;
 
 } // namespace Context
-void ContextSubResrouceState::updateMutable(ResourceState next_state,
+void ContextSubResourceState::updateMutable(ResourceState next_state,
                                             bool split) {
   if (split || !isReadState(next_state) || isTransiting())
     mutable_ = false;
 }
-bool ContextSubResrouceState::isTracked() {
+bool ContextSubResourceState::isTracked() {
   if (current_state_ == ResourceState::RESOURCE_STATE_UNKNOWN)
     return false;
   return true;
 }
-bool ContextSubResrouceState::needUpdate(ResourceState next_state) {
+bool ContextSubResourceState::needUpdate(ResourceState next_state) {
   // when we need to update the
   return needChange(next_state, current_state_);
 }
-void ContextSubResrouceState::nextStateValidCheck(
+void ContextSubResourceState::nextStateValidCheck(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index) {
   if (split && !isTracked()) {
@@ -55,7 +55,7 @@ void ContextSubResrouceState::nextStateValidCheck(
     throw std::exception(error.c_str());
   }
 }
-void ContextSubResrouceState::stateUpdateMutable(ResourceState next_state) {
+void ContextSubResourceState::stateUpdateMutable(ResourceState next_state) {
   // when running to this line
   // some conditioning must be assumed
   // 1. next state and current state is one of the
@@ -73,7 +73,7 @@ void ContextSubResrouceState::stateUpdateMutable(ResourceState next_state) {
   previous_state_ = state;
   first_transition_state_ = state;
 }
-void ContextSubResrouceState::stateUpdateInmutable(
+void ContextSubResourceState::stateUpdateInmutable(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index,
     std::vector<Transition> &transitions) {
@@ -92,7 +92,7 @@ void ContextSubResrouceState::stateUpdateInmutable(
     previous_state_ = next_state;
   current_state_ = next_state;
 }
-bool ContextSubResrouceState::needResolveBufferState(
+bool ContextSubResourceState::needResolveDecayResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
     SubResourceState &sub_resource_state) {
   // for buffer, if the state is buffer
@@ -104,14 +104,14 @@ bool ContextSubResrouceState::needResolveBufferState(
     return false;
   return true;
 }
-void ContextSubResrouceState::reset() {
+void ContextSubResourceState::reset() {
   current_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   previous_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   first_transition_state_ = ResourceState::RESOURCE_STATE_UNKNOWN;
   mutable_ = true;
   merged_ = false;
 }
-void ContextSubResrouceState::resovleSubResrouceState(
+void ContextSubResourceState::resovleSubResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
     SubResourceState &sub_resource_state, uint32_t index,
     std::vector<Transition> &transitions) {
@@ -125,54 +125,58 @@ void ContextSubResrouceState::resovleSubResrouceState(
         ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END, index});
     sub_resource_state.previous_state_ = sub_resource_state.current_state_;
   }
-  if (resource->getType() != Resource::ResourceType::RESOURCE_TYPE_BUFFER ||
-      needResolveBufferState(resource, sub_resource_state)) {
+  if (!resource->isAutoDecay() ||
+      needResolveDecayResrouceState(resource, sub_resource_state)) {
     if (first_transition_state_ != sub_resource_state.current_state_) {
       transitions.emplace_back(Transition{
           resource, sub_resource_state.current_state_, first_transition_state_,
           ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
     }
   }
-  sub_resource_state.current_state_ = current_state_;
-  sub_resource_state.previous_state_ = previous_state_;
+  if (!resource->isAutoDecay()) {
+    sub_resource_state.current_state_ = current_state_;
+    sub_resource_state.previous_state_ = previous_state_;
+  }
   reset();
 }
-void ContextSubResrouceState::addPreviousState(
+void ContextSubResourceState::addPreviousState(
     const std::shared_ptr<Resource::Resource> &resource,
-    ContextSubResrouceState &previous_context_state, uint32_t index,
+    ContextSubResourceState &previous_context_state, uint32_t index,
     std::vector<Transition> &transitions) {
   // when do we need to add transition:
   // when previous and current state is tracked
-  if (previous_context_state.isTracked()) {
-    if (isTracked()) {
+  if (isTracked()) {
+    if (previous_context_state.isTracked()) {
       previous_context_state.resolveSplitTransition(index, resource,
                                                     transitions);
       // should have check for need transition here
       // cause to mutable state could merge
       if (mutable_ && previous_context_state.mutable_) {
-        first_transition_state_ =
+        previous_context_state.first_transition_state_ =
             first_transition_state_ |
             previous_context_state.first_transition_state_;
-        current_state_ = first_transition_state_;
-        previous_state_ = first_transition_state_;
+        previous_context_state.current_state_ =
+            previous_context_state.first_transition_state_;
+        previous_context_state.previous_state_ =
+            previous_context_state.first_transition_state_;
       } else if (previous_context_state.current_state_ !=
                  first_transition_state_) {
         transitions.emplace_back(Transition{
             resource, previous_context_state.current_state_,
             first_transition_state_,
             ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
-        first_transition_state_ =
-            previous_context_state.first_transition_state_;
+        previous_context_state.current_state_ = current_state_;
+        previous_context_state.previous_state_ = previous_state_;
       }
     } else {
       // when previous is tracked but no current,
       // just copy the state
-      *this = previous_context_state;
+      previous_context_state = *this;
     }
-    previous_context_state.reset();
+    reset();
   }
 }
-void ContextSubResrouceState::stateUpdate(
+void ContextSubResourceState::stateUpdate(
     ResourceState next_state, uint32_t index, bool split,
     const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
@@ -187,7 +191,7 @@ void ContextSubResrouceState::stateUpdate(
     stateUpdateInmutable(resource, next_state, split, index, transitions);
   }
 }
-void ContextResrouceState::checkSameStates(uint32_t start_index) {
+void ContextResourceState::checkSameStates(uint32_t start_index) {
   if (!same_states_) {
     same_states_ = true;
     for (auto &s : context_sub_resrouce_states_) {
@@ -198,7 +202,7 @@ void ContextResrouceState::checkSameStates(uint32_t start_index) {
     }
   }
 }
-void ContextResrouceState::stateUpateAllSubResource(
+void ContextResourceState::stateUpateAllSubResource(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split,
     std::vector<Transition> &transitions) {
@@ -220,13 +224,13 @@ void ContextResrouceState::stateUpateAllSubResource(
   else
     same_states_ = true;
 }
-void ContextResrouceState::resovleAllResrouceState(
+void ContextResourceState::resovleAllResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
   if (resource->isSubResroucesSameStates()) {
   }
 }
-void ContextResrouceState::stateUpdate(
+void ContextResourceState::stateUpdate(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index,
     std::vector<Transition> &transitions) {
@@ -238,7 +242,7 @@ void ContextResrouceState::stateUpdate(
     same_states_ = false;
   }
 }
-void ContextResrouceState::resovleResrouceState(
+void ContextResourceState::resovleResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
   auto &states = resource->getSubResrouceStates();
@@ -254,9 +258,9 @@ void ContextResrouceState::resovleResrouceState(
     }
   }
 }
-void ContextResrouceState::addPreviousState(
+void ContextResourceState::addPreviousState(
     const std::shared_ptr<Resource::Resource> &resource,
-    ContextResrouceState &previous_state,
+    ContextResourceState &previous_state,
     std::vector<Transition> &transitions) {
 
   if (same_states_ && previous_state.same_states_) {
@@ -266,6 +270,9 @@ void ContextResrouceState::addPreviousState(
     std::fill(context_sub_resrouce_states_.begin(),
               context_sub_resrouce_states_.end(),
               context_sub_resrouce_states_[0]);
+    std::fill(previous_state.context_sub_resrouce_states_.begin(),
+              previous_state.context_sub_resrouce_states_.end(),
+              previous_state.context_sub_resrouce_states_[0]);
   } else {
     for (uint32_t i = 0; i < context_sub_resrouce_states_.size(); ++i) {
       context_sub_resrouce_states_[i].addPreviousState(

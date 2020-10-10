@@ -33,6 +33,7 @@ private:
   std::vector<DepthStencilUsage> depth_stencil_usages_;
 
 public:
+  virtual bool isAutoDecay() { return depth_stencil_usages_.size() == 0; };
   Texture &operator=(Texture &ref) = delete;
   Texture(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
           ResourceInformation information,

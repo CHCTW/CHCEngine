@@ -1,13 +1,14 @@
 #include "../ClassName.h"
 
-#include "ComputeContext.h"
 #include "../Pipeline/Pipeline.h"
+#include "ComputeContext.h"
 
 namespace CHCEngine {
 namespace Renderer {
 namespace Context {
-void ComputeContext::setPipeline(const std::shared_ptr<Pipeline::Pipeline> &pipeline) {
-  if (type_ ==CommandType::COMMAND_TYPE_COMPUTE) {
+void ComputeContext::setPipeline(
+    const std::shared_ptr<Pipeline::Pipeline> &pipeline) {
+  if (type_ == CommandType::COMMAND_TYPE_COMPUTE) {
     if (pipeline->type_ == Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS) {
       throw std::exception("Only computer pipline can set in compute context");
     }
@@ -42,7 +43,6 @@ void ComputeContext::bindComputeResource(
   bool direct_bind = compute_layout_->isDirectBind(slot_index);
   auto type = compute_layout_->getFirstBindType(slot_index);
   bindComputeResource(resource, usage_index, slot_index, type, direct_bind);
-
 }
 void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,
@@ -72,8 +72,7 @@ void ComputeContext::resourceTransition(
   }
 }
 void ComputeContext::uavResourceWait(
-    const std::shared_ptr<Resource::Resource> & resource,
-    bool set_barrier) {
+    const std::shared_ptr<Resource::Resource> &resource, bool set_barrier) {
   UAVWait wait;
   wait.resource_ = resource;
   uav_waits_.emplace_back(std::move(wait));

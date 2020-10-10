@@ -288,6 +288,8 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
   }
   if (depth_stencil_usages.size()) {
     flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+  } else {
+    flags |= D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
   }
   if ((flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) &&
       ((flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) |

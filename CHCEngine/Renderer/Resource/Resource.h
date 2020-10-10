@@ -15,7 +15,7 @@ struct ContextCommand;
 class GraphicsContext;
 class CopyContext;
 struct TrackingState;
-class ContextResrouceState;
+class ContextResourceState;
 } // namespace Context
 namespace Pipeline {
 class BindLayout;
@@ -51,7 +51,7 @@ class Resource {
   friend class Context::CopyContext;
   friend class ResourceGroup;
   friend struct Context::TrackingState;
-  friend class Context::ContextResrouceState;
+  friend class Context::ContextResourceState;
 
 protected:
   ComPtr<GPUResource> gpu_resource_;
@@ -82,6 +82,7 @@ protected:
   bool isSubResroucesSameStates();
 
 public:
+  bool isAutoDecay() { return false; };
   Resource &operator=(Resource &ref) = delete;
   Resource() = delete;
   void setName(std::string_view name);

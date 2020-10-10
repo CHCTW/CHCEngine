@@ -24,9 +24,10 @@ void CopyContext::updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
   if (data_byte_size + offset > buffer->getBufferInformation().size_) {
     throw std::exception("Update data + offset is out of buffer range");
   }
-  // copy queue will auto decay to common, so not transiton will be used this context
-  if (type_!=CommandType::COMMAND_TYPE_COPY) {
-      flushBarriers();
+  // copy queue will auto decay to common, so not transiton will be used this
+  // context
+  if (type_ != CommandType::COMMAND_TYPE_COPY) {
+    flushBarriers();
   }
   if (buffer->getInformation().update_type_ ==
       Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
@@ -69,8 +70,7 @@ void CopyContext::updateTexture(
   auto inf = texture->getTextureInformation();
   auto update_type = texture->getInformation().update_type_;
   unsigned int array_size = inf.depth_;
-  if (inf.type_ == TextureType::TEXTURE_TYPE_3D)
-  {
+  if (inf.type_ == TextureType::TEXTURE_TYPE_3D) {
     array_size = 1;
     array_start_index = 0;
   }

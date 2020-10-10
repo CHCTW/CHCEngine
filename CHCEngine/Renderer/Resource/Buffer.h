@@ -42,6 +42,7 @@ protected:
   std::vector<BufferUsage> usages_;
 
 public:
+  virtual bool isAutoDecay() { return true; };
   Buffer &operator=(Buffer &ref) = delete;
   // Vertex Buffer Initialize
   Buffer(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,

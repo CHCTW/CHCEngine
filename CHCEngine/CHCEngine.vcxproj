@@ -56,7 +56,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../ClassName.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="Renderer\Context\ContextResrouceState.cpp">
+    <ClCompile Include="Renderer\Context\ContextResourceState.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../ClassName.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
@@ -97,7 +97,7 @@
     <ClInclude Include="Renderer\Context\Context.h" />
     <ClInclude Include="Renderer\Context\ContextPool.h" />
     <ClInclude Include="Renderer\Context\ContextQueue.h" />
-    <ClInclude Include="Renderer\Context\ContextResrouceState.h" />
+    <ClInclude Include="Renderer\Context\ContextResourceState.h" />
     <ClInclude Include="Renderer\Context\CopyContext.h" />
     <ClInclude Include="Renderer\Context\Fence.h" />
     <ClInclude Include="Renderer\Context\FencePool.h" />

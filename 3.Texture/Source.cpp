@@ -201,7 +201,8 @@ int main() {
       {{
           .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
           .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
-      }});
+      }},
+      {}, {});
   Sampler::SamplerInformation sample_set = {
       .u_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_WRAP,
       .v_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_MIRROR};
@@ -215,7 +216,7 @@ int main() {
   sampler_group->insertSampler(0, sampler);
 
   auto copycontext = renderer.getGraphicsContext();
-  copycontext->setStaticUsageHeap();
+  // copycontext->setStaticUsageHeap();
   copycontext->updateBuffer(color_buffer, colors,
                             color_buffer->getBufferInformation().size_);
 
@@ -224,10 +225,10 @@ int main() {
   copycontext->updateBuffer(buffer, &tridata,
                             buffer->getBufferInformation().size_);
   copycontext->updateTexture(simple_texture, texture_data);
-  copycontext->resourceTransition(
-      simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
-          ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+  /* copycontext->resourceTransition(
+       simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
+       ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+           ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);*/
   copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);

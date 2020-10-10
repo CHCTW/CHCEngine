@@ -4,7 +4,7 @@
 
 #include "CHCEngine.h"
 #include "Renderer/Context/Command.h"
-#include "Renderer/Context/ContextResrouceState.h"
+#include "Renderer/Context/ContextResourceState.h"
 #include "Renderer/Pipeline/Shader.h"
 #include <functional>
 
@@ -14,8 +14,8 @@ using CHCEngine::Renderer::Renderer;
 using CHCEngine::Renderer::ResourceState;
 using CHCEngine::Renderer::ResourceTransitionFlag;
 using CHCEngine::Renderer::ShaderType;
-using CHCEngine::Renderer::Context::ContextResrouceState;
-using CHCEngine::Renderer::Context::ContextSubResrouceState;
+using CHCEngine::Renderer::Context::ContextResourceState;
+using CHCEngine::Renderer::Context::ContextSubResourceState;
 using CHCEngine::Renderer::Context::Transition;
 using CHCEngine::Renderer::Pipeline::Shader;
 using CHCEngine::Renderer::Pipeline::ShaderSet;
@@ -170,10 +170,10 @@ int main() {
   SubResourceState dummy;
   dummy.current_state_ = ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
   dummy.previous_state_ = ResourceState::RESOURCE_STATE_COPY_DEST;
-  ContextSubResrouceState track;
-  ContextResrouceState res_track(texture->getSubResrouceCount());
-  ContextResrouceState next_res_track(texture->getSubResrouceCount());
-  ContextResrouceState buffer_track(buffer->getSubResrouceCount());
+  ContextSubResourceState track;
+  ContextResourceState res_track(texture->getSubResrouceCount());
+  ContextResourceState next_res_track(texture->getSubResrouceCount());
+  ContextResourceState buffer_track(buffer->getSubResrouceCount());
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
                     index, false, color_buffer, transitions);*/
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
