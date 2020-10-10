@@ -165,12 +165,15 @@ int main() {
   /***trakcing test area**/
   std::vector<Transition> transitions;
   std::vector<Transition> pending_transitions;
+  std::vector<Transition> next_pending_transitions;
   uint32_t index = 0;
   SubResourceState dummy;
   dummy.current_state_ = ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
   dummy.previous_state_ = ResourceState::RESOURCE_STATE_COPY_DEST;
   ContextSubResrouceState track;
   ContextResrouceState res_track(texture->getSubResrouceCount());
+  ContextResrouceState next_res_track(texture->getSubResrouceCount());
+  ContextResrouceState buffer_track(buffer->getSubResrouceCount());
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
                     index, false, color_buffer, transitions);*/
   /*track.stateUpdate(ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
@@ -187,12 +190,37 @@ int main() {
                         false, 0, transitions);
   res_track.stateUpdate(texture,
                         ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                        false, all_subresrouce_index, transitions);
-  res_track.stateUpdate(texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-                        false, all_subresrouce_index, transitions);
-  res_track.stateUpdate(texture,
-                        ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE, true,
-                        all_subresrouce_index, transitions);
+                        false, 1, transitions);
+
+  next_res_track.stateUpdate(
+      texture, ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE, false, 1,
+      transitions);
+
+  next_res_track.stateUpdate(texture,
+                             ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+                             false, 2, transitions);
+  next_res_track.stateUpdate(
+      texture, ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, false,
+      3, transitions);
+  next_res_track.stateUpdate(
+      texture, ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true, 3,
+      transitions);
+
+  buffer_track.stateUpdate(buffer, ResourceState::RESOURCE_STATE_INDEX_BUFFER,
+                           false, 0, transitions);
+  buffer_track.stateUpdate(
+      buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, false,
+      0, transitions);
+  buffer_track.stateUpdate(buffer,
+                           ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+                           false, 0, transitions);
+  buffer_track.stateUpdate(buffer,
+                           ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE,
+                           true, 0, transitions);
+
+  buffer_track.resovleResrouceState(buffer, pending_transitions);
+  next_res_track.addPreviousState(texture, res_track, next_pending_transitions);
+  next_res_track.resovleResrouceState(texture, pending_transitions);
 
   /***********************/
 

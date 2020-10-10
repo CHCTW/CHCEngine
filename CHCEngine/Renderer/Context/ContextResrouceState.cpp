@@ -18,8 +18,7 @@ void ContextSubResrouceState::addTransition(
 }
 
 void ContextSubResrouceState::resolveSplitTransition(
-    uint32_t index, bool split,
-    const std::shared_ptr<Resource::Resource> &resource,
+    uint32_t index, const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
   if (!isTracked() || !isTransiting())
     return;
@@ -82,9 +81,11 @@ void ContextSubResrouceState::stateUpdateInmutable(
   if (!isTracked()) {
     // untracked before, need to update first state
     first_transition_state_ = next_state;
+  } else {
+    // else, we need to add transition
+    addTransition(current_state_, next_state, index, split, resource,
+                  transitions);
   }
-  addTransition(current_state_, next_state, index, split, resource,
-                transitions);
   if (split)
     previous_state_ = current_state_;
   else
@@ -136,12 +137,47 @@ void ContextSubResrouceState::resovleSubResrouceState(
   sub_resource_state.previous_state_ = previous_state_;
   reset();
 }
+void ContextSubResrouceState::addPreviousState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ContextSubResrouceState &previous_context_state, uint32_t index,
+    std::vector<Transition> &transitions) {
+  // when do we need to add transition:
+  // when previous and current state is tracked
+  if (previous_context_state.isTracked()) {
+    if (isTracked()) {
+      previous_context_state.resolveSplitTransition(index, resource,
+                                                    transitions);
+      // should have check for need transition here
+      // cause to mutable state could merge
+      if (mutable_ && previous_context_state.mutable_) {
+        first_transition_state_ =
+            first_transition_state_ |
+            previous_context_state.first_transition_state_;
+        current_state_ = first_transition_state_;
+        previous_state_ = first_transition_state_;
+      } else if (previous_context_state.current_state_ !=
+                 first_transition_state_) {
+        transitions.emplace_back(Transition{
+            resource, previous_context_state.current_state_,
+            first_transition_state_,
+            ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
+        first_transition_state_ =
+            previous_context_state.first_transition_state_;
+      }
+    } else {
+      // when previous is tracked but no current,
+      // just copy the state
+      *this = previous_context_state;
+    }
+    previous_context_state.reset();
+  }
+}
 void ContextSubResrouceState::stateUpdate(
     ResourceState next_state, uint32_t index, bool split,
     const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
   nextStateValidCheck(resource, next_state, split, index);
-  resolveSplitTransition(index, split, resource, transitions);
+  resolveSplitTransition(index, resource, transitions);
   updateMutable(next_state, split);
   if (!needUpdate(next_state))
     return;
@@ -184,6 +220,12 @@ void ContextResrouceState::stateUpateAllSubResource(
   else
     same_states_ = true;
 }
+void ContextResrouceState::resovleAllResrouceState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    std::vector<Transition> &transitions) {
+  if (resource->isSubResroucesSameStates()) {
+  }
+}
 void ContextResrouceState::stateUpdate(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index,
@@ -198,7 +240,41 @@ void ContextResrouceState::stateUpdate(
 }
 void ContextResrouceState::resovleResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
-    std::vector<Transition> &transitions) {}
+    std::vector<Transition> &transitions) {
+  auto &states = resource->getSubResrouceStates();
+  if (same_states_ && resource->isSubResroucesSameStates()) {
+    auto first = states[0];
+    context_sub_resrouce_states_[0].resovleSubResrouceState(
+        resource, first, all_subresrouce_index, transitions);
+    std::fill(states.begin(), states.end(), first);
+  } else {
+    for (uint32_t i = 0; i < states.size(); ++i) {
+      context_sub_resrouce_states_[i].resovleSubResrouceState(
+          resource, states[i], i, transitions);
+    }
+  }
+}
+void ContextResrouceState::addPreviousState(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ContextResrouceState &previous_state,
+    std::vector<Transition> &transitions) {
+
+  if (same_states_ && previous_state.same_states_) {
+    context_sub_resrouce_states_[0].addPreviousState(
+        resource, previous_state.context_sub_resrouce_states_[0],
+        all_subresrouce_index, transitions);
+    std::fill(context_sub_resrouce_states_.begin(),
+              context_sub_resrouce_states_.end(),
+              context_sub_resrouce_states_[0]);
+  } else {
+    for (uint32_t i = 0; i < context_sub_resrouce_states_.size(); ++i) {
+      context_sub_resrouce_states_[i].addPreviousState(
+          resource, previous_state.context_sub_resrouce_states_[i], i,
+          transitions);
+    }
+    checkSameStates();
+  }
+}
 } // namespace Context
 } // namespace Renderer
 } // namespace CHCEngine

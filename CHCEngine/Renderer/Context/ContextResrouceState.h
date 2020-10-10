@@ -20,7 +20,7 @@ private:
                      const std::shared_ptr<Resource::Resource> &resource,
                      std::vector<Transition> &transitions);
   void
-  resolveSplitTransition(uint32_t index, bool split,
+  resolveSplitTransition(uint32_t index,
                          const std::shared_ptr<Resource::Resource> &resource,
                          std::vector<Transition> &transitions);
   void updateMutable(ResourceState next_state, bool split);
@@ -46,6 +46,8 @@ public:
            first_transition_state_ != r.first_transition_state_ ||
            mutable_ != mutable_ || merged_ != merged_;
   }
+  ContextSubResrouceState &
+  operator=(const ContextSubResrouceState &r) = default;
   void stateUpdate(ResourceState next_state, uint32_t index, bool split,
                    const std::shared_ptr<Resource::Resource> &resource,
                    std::vector<Transition> &transitions);
@@ -53,6 +55,9 @@ public:
   resovleSubResrouceState(const std::shared_ptr<Resource::Resource> &resource,
                           SubResourceState &sub_resource_state, uint32_t index,
                           std::vector<Transition> &transitions);
+  void addPreviousState(const std::shared_ptr<Resource::Resource> &resource,
+                        ContextSubResrouceState &previous_context_state,
+                        uint32_t index, std::vector<Transition> &transitions);
 };
 class ContextResrouceState {
 private:
@@ -63,6 +68,9 @@ private:
   stateUpateAllSubResource(const std::shared_ptr<Resource::Resource> &resource,
                            ResourceState next_state, bool split,
                            std::vector<Transition> &transitions);
+  void
+  resovleAllResrouceState(const std::shared_ptr<Resource::Resource> &resource,
+                          std::vector<Transition> &transitions);
 
 public:
   ContextResrouceState(uint32_t size) : context_sub_resrouce_states_(size){};
@@ -71,6 +79,9 @@ public:
                    std::vector<Transition> &transitions);
   void resovleResrouceState(const std::shared_ptr<Resource::Resource> &resource,
                             std::vector<Transition> &transitions);
+  void addPreviousState(const std::shared_ptr<Resource::Resource> &resource,
+                        ContextResrouceState &previous_state,
+                        std::vector<Transition> &transitions);
 };
 } // namespace Context
 } // namespace Renderer
