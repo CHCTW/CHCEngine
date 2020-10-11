@@ -24,8 +24,8 @@ const static std::unordered_map<ShaderType, const char *> targetchars{
     {ShaderType::SHADER_TYPE_MESH, "ms_6_5"}};
 
 Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
-               ShaderType type,bool from_file)
-    :  entry_point_(entry_point), type_(type) {
+               ShaderType type, bool from_file)
+    : entry_point_(entry_point), type_(type) {
   ComPtr<Blob> errors;
 
 #if defined(_DEBUG)
@@ -89,7 +89,7 @@ Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
     name = temp;
   }
 
-    D3D12_SHADER_DESC desc;
+  D3D12_SHADER_DESC desc;
   shader_reflection_->GetDesc(&desc);
   D3D12_SIGNATURE_PARAMETER_DESC input_desc;
   // std::unordered_map<std::string, InputFormat> table;
@@ -184,8 +184,11 @@ std::vector<BindFormat> Shader::getBindFormatsExclude(BindType types) const {
   }
   return res;
 }
-bool Shader::hasFormat(const std::string &name) { return resource_bind_table_.count(name); }
-const std::unordered_map<std::string, InputFormat> &Shader::getInputTable() const{
+bool Shader::hasFormat(const std::string &name) {
+  return resource_bind_table_.count(name);
+}
+const std::unordered_map<std::string, InputFormat> &
+Shader::getInputTable() const {
   return input_table_;
 }
 std::vector<OutputFormat> Shader::getOutputTable() const {

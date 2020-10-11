@@ -253,14 +253,11 @@ int main() {
     compute_context->bindComputeResource(constant_buffer,
                                          "SceneConstantBuffer");
     compute_context->bindComputeResource(simple_texture, "texts", 1);
+    auto [x, y, z] = compute_pipe->getComputeThreadSize();
     compute_context->dispatch(
-        (unsigned int)simple_texture->getTextureInformation().width_ /
-                THREADSIZE +
-            1,
-        (unsigned int)simple_texture->getTextureInformation().height_ /
-                THREADSIZE +
-            1,
-        1);
+        (uint32_t)simple_texture->getTextureInformation().width_ / x + 1,
+        (uint32_t)simple_texture->getTextureInformation().height_ / y + 1,
+        1 / z);
     compute_context->resourceTransition(
         simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
         ResourceState::RESOURCE_STATE_COPY_DEST, true,

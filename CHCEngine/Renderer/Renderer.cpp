@@ -514,13 +514,16 @@ Renderer::getComputePipeline(const Pipeline::Shader &shader,
   D3D12_COMPUTE_PIPELINE_STATE_DESC com_desc = {};
   com_desc.CS = CD3DX12_SHADER_BYTECODE(shader.byte_code_.Get());
   com_desc.pRootSignature = bind_layout->bind_signature_.Get();
-
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  shader.shader_reflection_->GetThreadGroupSize(&x, &y, &z);
   ComPtr<PipelineState> pipeline;
   ThrowIfFailed(
       device_->CreateComputePipelineState(&com_desc, IID_PPV_ARGS(&pipeline)));
 
   return std::make_shared<Pipeline::Pipeline>(
-      pipeline, Pipeline::PipelineType::PIPELINE_TYPE_COMPUTE);
+      pipeline, Pipeline::PipelineType::PIPELINE_TYPE_COMPUTE, x, y, z);
 }
 } // namespace Renderer
 } // namespace CHCEngine
