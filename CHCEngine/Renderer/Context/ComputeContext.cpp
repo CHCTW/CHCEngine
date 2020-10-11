@@ -71,6 +71,15 @@ void ComputeContext::resourceTransition(
     flushBarriers();
   }
 }
+void ComputeContext::resourceTransitionTo(
+    const std::shared_ptr<Resource::Resource> &resource,
+    ResourceState after_state, bool split_transition,
+    uint32_t subresource_index, bool set_barrier) {
+  updateContextResourceState(resource, after_state, split_transition,
+                             subresource_index);
+  if (set_barrier)
+    flushBarriers();
+}
 void ComputeContext::uavResourceWait(
     const std::shared_ptr<Resource::Resource> &resource, bool set_barrier) {
   UAVWait wait;

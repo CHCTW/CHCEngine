@@ -48,6 +48,13 @@ public:
                      ResourceTransitionFlag flag =
                          ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE,
                      unsigned int subresource_index = all_subresrouce_index);
+
+  void resourceTransitionTo(const std::shared_ptr<Resource::Resource> &resource,
+                            ResourceState after_state,
+                            bool split_transition = false,
+                            uint32_t subresource_index = all_subresrouce_index,
+                            bool set_barrier = false);
+
   void uavResourceWait(const std::shared_ptr<Resource::Resource> &resource,
                        bool set_barrier = false);
 };

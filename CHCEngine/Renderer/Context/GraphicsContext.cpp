@@ -38,6 +38,11 @@ void GraphicsContext::setScissor(const Pipeline::Scissor &scissor) {
 }
 void GraphicsContext::setVertexBuffers(
     const std::vector<std::shared_ptr<Resource::Buffer>> &buffers) {
+  for (auto &buffer : buffers) {
+    updateContextResourceState(
+        buffer, ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, false,
+        0);
+  }
   context_command_->setVertexBuffers(buffers);
 }
 void GraphicsContext::setPrimitiveTopology(PrimitiveTopology topology) {
