@@ -984,6 +984,20 @@ struct SubResourceState {
   }
   bool operator!=(const SubResourceState &rhs) const { return !(*this == rhs); }
 };
-
+inline ResourceState getStateFromBindTypeVisibility(BindType bind_type,
+                                                    ShaderType visibility) {
+  if (bind_type < BindType::BIND_TYPE_CBV_BOUND)
+    return ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+  if (bind_type < BindType::BIND_TYPE_SRV_BOUND) {
+    if (visibility == ShaderType::SHADER_TYPE_ALL)
+      return ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE;
+    if (visibility == ShaderType::SHADER_TYPE_PIXEL)
+      return ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    return ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+  }
+  if (bind_type < BindType::BIND_TYPE_UAV_BOUND)
+    return ResourceState::RESOURCE_STATE_UNORDERED_ACCESS;
+  return ResourceState::RESOURCE_STATE_UNKNOWN;
+}
 } // namespace Renderer
 } // namespace CHCEngine

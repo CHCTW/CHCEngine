@@ -18,6 +18,10 @@ protected:
   void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
                            unsigned int usage_index, unsigned int slot_index,
                            BindType bind_type, bool direct_bind);
+  void updateBindingResrouceState(
+      const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
+      uint32_t usage_index,
+      const std::shared_ptr<Pipeline::BindLayout> &layout);
 
 public:
   virtual ~ComputeContext() {

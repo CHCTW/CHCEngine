@@ -1,6 +1,7 @@
 #include "../ClassName.h"
 
 #include "../Pipeline/Pipeline.h"
+#include "../Resource/ResourceGroup.h"
 #include "ComputeContext.h"
 
 namespace CHCEngine {
@@ -10,7 +11,7 @@ void ComputeContext::setPipeline(
     const std::shared_ptr<Pipeline::Pipeline> &pipeline) {
   if (type_ == CommandType::COMMAND_TYPE_COMPUTE) {
     if (pipeline->type_ == Pipeline::PipelineType::PIPELINE_TYPE_GRAPHICS) {
-      throw std::exception("Only computer pipline can set in compute context");
+      throw std::exception("Only computer pipeline can set in compute context");
     }
   }
   context_command_->setPipelineState(pipeline->pipeline_state_);
@@ -26,6 +27,24 @@ void ComputeContext::bindComputeResource(
     bool direct_bind) {
   context_command_->bindComputeResource(resource, usage_index, slot_index,
                                         bind_type, direct_bind);
+}
+void ComputeContext::updateBindingResrouceState(
+    const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
+    uint32_t usage_index, const std::shared_ptr<Pipeline::BindLayout> &layout) {
+  auto &slot = layout->getBindSlot(slot_index);
+  // won't  update if there is unbound binding
+  if (slot.isUnbound)
+    return;
+  if (resource->getType() == Resource::ResourceType::RESOURCE_TYPE_GROUP) {
+    /* const std::shared_ptr<Resource::ResourceGroup> group =
+         std::static_pointer_cast<Resource::ResourceGroup>(resource);
+     uint32_t group_index = 0;
+     for (auto &format : slot.formats_) {
+       for (uint32_t i = 0; i < format.resource_count_; ++i) {
+         ++group_index;
+       }
+     }*/
+  }
 }
 /*void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,

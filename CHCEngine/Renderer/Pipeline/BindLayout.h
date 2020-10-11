@@ -15,7 +15,7 @@ namespace Renderer {
 namespace Context {
 class GraphicsContext;
 class ComputeContext;
-}
+} // namespace Context
 namespace Pipeline {
 // blind slot will have 1~many bind format, and will have
 // a name to get by bindlayout to get the index,
@@ -27,6 +27,9 @@ namespace Pipeline {
 struct BindSlot {
   std::string bind_slot_name_; //
   std::vector<BindFormat> formats_;
+  ShaderType visibility_;
+  uint32_t bind_count_ = 0;
+  bool isUnbound = false;
   // sampler can't stay in the same slot with other resource
   BindSlot() = delete;
   static bool checkAndMoveUnbound(std::vector<BindFormat> &formats);
@@ -35,25 +38,46 @@ struct BindSlot {
       : formats_(formats) {
     if (!checkAndMoveUnbound(formats_)) {
       formats_.clear();
-      throw std::exception("Samper with other resrouces/Root Constant with "
+      throw std::exception("Sampler with other resources/Root Constant with "
                            "others/More than one unbound binding");
     }
     if (formats.empty()) {
       throw std::exception("Need at least one BindFormat in vector");
     }
     bind_slot_name_ = bind_slot_name;
+    if (formats.size()) {
+      visibility_ = formats[0].visiblity_;
+      for (auto &format : formats_) {
+        if (format.visiblity_ != visibility_) {
+          visibility_ = ShaderType::SHADER_TYPE_ALL;
+        }
+        if (format.resource_count_ == 0)
+          isUnbound = true;
+        bind_count_ += format.resource_count_;
+      }
+    }
   }
 
   BindSlot(const std::vector<BindFormat> &formats) : formats_(formats) {
     if (!checkAndMoveUnbound(formats_)) {
       formats_.clear();
-      throw std::exception("Samper with other resrouces/Root Constant with "
+      throw std::exception("Sampler with other resources/Root Constant with "
                            "others/More than one unbound binding");
     }
     if (formats.empty()) {
-      throw std::exception("Need at least one Bindformat in vector");
+      throw std::exception("Need at least one Bind format in vector");
     }
     bind_slot_name_ = formats[0].name_;
+    if (formats.size()) {
+      visibility_ = formats[0].visiblity_;
+      for (auto &format : formats_) {
+        if (format.visiblity_ != visibility_)
+          visibility_ = ShaderType::SHADER_TYPE_ALL;
+        if (format.resource_count_ == 0)
+          isUnbound = true;
+        bind_count_ += format.resource_count_;
+      }
+    }
   }
   // std::shared_ptr<Resource::Resource> bind_resrouce_;
 };
@@ -84,9 +108,8 @@ public:
   // retrun a unsigned int  max if didn't find the name
   unsigned int getSlotIndex(const std::string &slot_name);
   bool isDirectBind(unsigned int slot_index) {
-    if (slot_index>=bind_layout_.size()) {
-      throw std::exception(
-          "Slot_index is out of bind_layout size");
+    if (slot_index >= bind_layout_.size()) {
+      throw std::exception("Slot_index is out of bind_layout size");
     }
     return direct_bind_[slot_index];
   }
@@ -97,6 +120,9 @@ public:
     return bind_layout_[slot_index].formats_[0].type_;
   }
   void setName(std::string_view name);
+  const BindSlot &getBindSlot(uint32_t index) const {
+    return bind_layout_[index];
+  }
 };
 
 } // namespace Pipeline

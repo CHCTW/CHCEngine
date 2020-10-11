@@ -11,9 +11,11 @@ struct ContextCommand;
 namespace Resource {
 class ResourceGroup : public Resource {
   friend struct Context::ContextCommand;
+
 private:
   ComPtr<Device> device_;
   std::vector<std::shared_ptr<Resource>> resources_;
+  std::vector<uint32_t> usage_indices_;
   std::shared_ptr<Resource> getResource(unsigned int index);
 
 public:
@@ -24,6 +26,8 @@ public:
   void insertResource(unsigned int insert_index,
                       std::shared_ptr<Resource> resource,
                       unsigned int usage_index = 0);
+  const std::shared_ptr<Resource> &getResrouce(uint32_t index) const;
+  uint32_t getUsageIndex(uint32_t index) const;
 };
 } // namespace Resource
 } // namespace Renderer

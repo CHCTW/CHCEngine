@@ -27,6 +27,9 @@ protected:
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             unsigned int usage_index, unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
+                            unsigned int slot_index,
+                            unsigned int usage_index = 0);
 
 public:
   ~GraphicsContext() {
@@ -56,9 +59,6 @@ public:
   // later
   void setGraphicsBindLayout(
       const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
-  void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
-                            unsigned int slot_index,
-                            unsigned int usage_index = 0);
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             const std::string &slot_name,
                             unsigned int usage_index = 0);

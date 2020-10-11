@@ -123,13 +123,10 @@ void generateRootParameters(
       direct_binds.push_back(true);
       continue;
     } else {
-      // use one format as one range , probally can have more better way
-      ShaderType current_type = bind_slots[i].formats_[0].visiblity_;
+      // use one format as one range , probably can have more better way
+      ShaderType current_type = bind_slots[i].visibility_;
       ranges[i].resize(bind_slots[i].formats_.size());
       for (unsigned int j = 0; j < bind_slots[i].formats_.size(); ++j) {
-        if (current_type != bind_slots[i].formats_[j].visiblity_) {
-          current_type = ShaderType::SHADER_TYPE_ALL;
-        }
         D3D12_DESCRIPTOR_RANGE1 r = {
             convertToD3D12DescriptorRangeType(bind_slots[i].formats_[j].type_),
             bind_slots[i].formats_[j].resource_count_,
@@ -151,7 +148,7 @@ void generateRootParameters(
       direct_binds.push_back(false);
     }
   }
-}
+} // namespace Renderer
 inline void fillShaderByteCodes(
     D3D12_GRAPHICS_PIPELINE_STATE_DESC &desc,
     const std::unordered_map<ShaderType, ComPtr<Blob>> &byte_codes) {
