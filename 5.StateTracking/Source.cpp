@@ -274,10 +274,6 @@ int main() {
 
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
@@ -292,10 +288,8 @@ int main() {
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(3);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT);
+          graph->setSwapChainToPresetState(
+              renderer.getSwapChainBuffer(swap_chain_index));
         },
         false);
     copycxt->recordCommands<CHCEngine::Renderer::Context::CopyContext>(

@@ -27,6 +27,8 @@ void CopyContext::updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
   // copy queue will auto decay to common, so not transiton will be used this
   // context
   if (type_ != CommandType::COMMAND_TYPE_COPY) {
+    updateContextResourceState(buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
+                               false, 0);
     flushBarriers();
   }
   if (buffer->getInformation().update_type_ ==
@@ -88,11 +90,32 @@ void CopyContext::updateTexture(
          " the texture depth is : " + std::to_string(inf.mip_levels_))
             .c_str());
   }
-  if (type_ != CommandType::COMMAND_TYPE_COPY) {
-    flushBarriers();
-  }
+
   array_count = (std::min)(array_count, array_size - array_start_index);
   mip_count = (std::min)(mip_count, inf.mip_levels_ - mip_start_level);
+
+  if (type_ != CommandType::COMMAND_TYPE_COPY) {
+    uint32_t total = array_count * mip_count;
+    if (total == texture->getSubResrouceCount()) {
+      updateContextResourceState(texture,
+                                 ResourceState::RESOURCE_STATE_COPY_DEST, false,
+                                 all_subresrouce_index);
+    } else {
+      // loop update every sub resource state
+      for (unsigned int i = array_start_index;
+           i < array_start_index + array_count; ++i) {
+        for (unsigned int j = mip_start_level; j < mip_start_level + mip_count;
+             ++j) {
+          unsigned int sub_index = i * inf.mip_levels_ + j;
+          updateContextResourceState(texture,
+                                     ResourceState::RESOURCE_STATE_COPY_DEST,
+                                     false, sub_index);
+        }
+      }
+    }
+    flushBarriers();
+  }
+
   // need to consider 3d texture
   std::vector<D3D12_TEXTURE_COPY_LOCATION> src_copy_layouts_(
       static_cast<unsigned long long>(array_count) *
@@ -154,8 +177,8 @@ void CopyContext::updateTexture(
               copy_pont, char_data, row_count, inf.row_byte_sizes_[sub_index],
               inf.foot_prints_[sub_index]);
         } else {
-          throw std::exception(
-              "Context Pool already deleted, can't get dynamic upload buffer");
+          throw std::exception("Context Pool already deleted, can't get "
+                               "dynamic upload buffer");
         }
       }
       ++copy_index;

@@ -22,8 +22,8 @@ private:
       : Resource(gpu_resource, name, ResourceType::RESOURCE_TYPE_SWAP_CHAIN,
                  ResourceUpdateType::RESOURCE_UPDATE_TYPE_NONE),
         descriptors_(descriptors), width_(width), height_(height) {
-    SubResourceState s = {ResourceState::RESOURCE_STATE_COMMON,
-                          ResourceState::RESOURCE_STATE_COMMON};
+    SubResourceState s = {ResourceState::RESOURCE_STATE_PRESENT,
+                          ResourceState::RESOURCE_STATE_PRESENT};
     sub_resource_states_.resize(1, s);
   }
 
@@ -32,6 +32,7 @@ public:
   SwapChainBuffer(SwapChainBuffer &ref) = default;
   SwapChainBuffer(SwapChainBuffer &&ref) = default;
   CPUDescriptorHandle getDescriptor();
+  virtual bool isAutoDecay() { return false; };
 };
 } // namespace Resource
 } // namespace Renderer

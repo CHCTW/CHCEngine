@@ -73,6 +73,8 @@ public:
   bindGraphicsSamplers(const std::shared_ptr<Sampler::Sampler> &sampler_group,
                        const std::string &slot_name,
                        unsigned int start_index = 0);
+  void setSwapChainToPresetState(
+      const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer);
 };
 } // namespace Context
 } // namespace Renderer

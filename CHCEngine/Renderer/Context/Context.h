@@ -77,11 +77,14 @@ protected:
   std::vector<UAVWait> uav_waits_;
   std::unordered_map<std::shared_ptr<Resource::Resource>, ContextResourceState>
       context_resource_states_;
+  // copy context won't do resource tracking or either transition
   void updateContextResourceState(
       const std::shared_ptr<Resource::Resource> &resource,
       ResourceState next_state, bool split, uint32_t index);
   // run either pending or previous when submit context
   void resolvePendingResourceState();
+  // combine state to previous context, generate needed transition
+  // and clean the state
   void resolvePreviousContextStateAndSelfClear(
       const std::shared_ptr<Context> &previours_context);
 

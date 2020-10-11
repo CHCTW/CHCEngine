@@ -229,7 +229,7 @@ int main() {
        simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
        ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
            ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);*/
-  copycontext->resourceTransition(
+  /*copycontext->resourceTransition(
       constant_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
@@ -237,7 +237,7 @@ int main() {
       ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
   copycontext->resourceTransition(
       color_buffer, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);
+      ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, true);*/
   renderer.submitContexts({copycontext})->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
@@ -261,10 +261,6 @@ int main() {
                                          auto swap_chain_index, auto frame) {
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET, true);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
@@ -279,10 +275,8 @@ int main() {
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(3);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT, true);
+          graph->setSwapChainToPresetState(
+              renderer.getSwapChainBuffer(swap_chain_index));
         },
         false);
     renderer.submitContexts(graphics_fence, {graphics});

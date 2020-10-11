@@ -1,8 +1,8 @@
+#include <atomic>
 #include <chrono>
 #include <iostream>
-#include <sstream>
 #include <mutex>
-#include <atomic>
+#include <sstream>
 #include <unordered_map>
 
 #include "CHCEngine.h"
@@ -19,8 +19,8 @@ using CHCEngine::Renderer::ResourceTransitionFlag;
 using CHCEngine::Renderer::ShaderType;
 using CHCEngine::Renderer::Pipeline::Shader;
 using CHCEngine::Renderer::Pipeline::ShaderSet;
-using CHCEngine::Window::Window;
 using CHCEngine::Window::Vector;
+using CHCEngine::Window::Window;
 using namespace CHCEngine::Renderer;
 
 int t = 0;
@@ -45,20 +45,17 @@ int main() {
   renderer.setSwapChain(window);
   window.setFrameTimeLowerBound(15000000);
 
-
   window.addMouseMoveCallback(
-      "update", [&](const Vector &position, const Vector &offset)
-      {
-          scene_data.mouse_x_ = position.X;
-          scene_data.mouse_y_ = position.Y;
-          need_update = true;
+      "update", [&](const Vector &position, const Vector &offset) {
+        scene_data.mouse_x_ = position.X;
+        scene_data.mouse_y_ = position.Y;
+        need_update = true;
       });
-  window.addFramebufferSizeCallback("frame change",[&](int width,int height)
-      {
-          scene_data.width_ = width;
-          scene_data.height_ = height;
-          need_update = true;
-      });
+  window.addFramebufferSizeCallback("frame change", [&](int width, int height) {
+    scene_data.width_ = width;
+    scene_data.height_ = height;
+    need_update = true;
+  });
   std::string code = "struct PSInput\
   {\
     float4 position : SV_POSITION;\
@@ -90,8 +87,7 @@ int main() {
 
   auto compute_bind = computeshader.getBindFormats(BindType::BIND_TYPE_SIT_ALL);
 
-  auto compute_bind_layout =
-      renderer.getBindLayout(compute_bind);
+  auto compute_bind_layout = renderer.getBindLayout(compute_bind);
   auto compute_pipe =
       renderer.getComputePipeline(computeshader, compute_bind_layout);
 
@@ -104,9 +100,7 @@ int main() {
   // pixel| non_pixel when binding....
   // this could be better when we have auto transition
   std::vector<Pipeline::BindSlot> slots = {
-      Pipeline::BindSlot({
-                          shset.getBindFormat("simple_texture")}),
-      {sample}};
+      Pipeline::BindSlot({shset.getBindFormat("simple_texture")}), {sample}};
   auto bind_layout = renderer.getBindLayout(exsample);
   auto groups_bind_layout = renderer.getBindLayout(slots);
   bind_layout->setName("simple layout");
@@ -123,7 +117,6 @@ int main() {
            {"UV", DataFormat::DATA_FORMAT_R32G32_FLOAT}});
   buffer->setName("custom vertex buffer");
 
-
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> frame_count_buffer =
       renderer.getVertexBuffer(
           1, {{"POSITION", DataFormat::DATA_FORMAT_R32_UINT}},
@@ -132,12 +125,9 @@ int main() {
   frame_count_buffer->setName("frame count buffer");
 
   float tridata[] = {
-      -1.0f,  1.0f, 0.0f,   0.0f,
-      1.0f, -1.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 1.0f,      
-      1.0f, 1.0f,  1.0f, 0.0f, 
-      1.0f,  -1.0f, 1.0f, 1.0f,
-      -1.0f, 1.0f, 0.0f, 0.0f, 
+      -1.0f, 1.0f,  0.0f, 0.0f, 1.0f,  -1.0f, 1.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  1.0f,  1.0f, 0.0f,
+      1.0f,  -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,  0.0f, 0.0f,
   };
 
   Color colors[3] = {
@@ -189,8 +179,8 @@ int main() {
       {{.data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT}});
 
   auto simple_texture = renderer.getTexture(
-      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 800, 800, 1,
-      1,
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R32G32B32A32, 800,
+      800, 1, 1,
       {{
            .usage_ = ResourceUsage::RESOURCE_USAGE_SRV,
            .data_format_ = DataFormat::DATA_FORMAT_R32G32B32A32_FLOAT,
@@ -219,8 +209,7 @@ int main() {
                             buffer->getBufferInformation().size_);
   copycontext->resourceTransition(
       simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
-      ResourceState::RESOURCE_STATE_UNORDERED_ACCESS
-      );
+      ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
   renderer.submitContexts({copycontext})->waitComplete();
 
   std::shared_ptr<CHCEngine::Renderer::Resource::Buffer> index_buffer =
@@ -244,48 +233,48 @@ int main() {
   auto update_copy_context = renderer.getCopyContext();
   auto update_copy_fence = renderer.getContextFence();
 
-
-  window.addLoopCallback("loop_start", [&](auto duration, uint64_t frame_) {
-    if (need_update)
-    {
-        std::lock_guard<std::mutex> lock(update_record_mutex);
-            update_copy_context->updateBuffer(constant_buffer,&scene_data,sizeof(scene_data));
-            need_update = false;
-            execute_update = true;
-        
-    }
-
-  },CHCEngine::Window::LoopCallbackType::LOOP_CALLBACK_TYPE_END);
-
+  window.addLoopCallback(
+      "loop_start",
+      [&](auto duration, uint64_t frame_) {
+        if (need_update) {
+          std::lock_guard<std::mutex> lock(update_record_mutex);
+          update_copy_context->updateBuffer(constant_buffer, &scene_data,
+                                            sizeof(scene_data));
+          need_update = false;
+          execute_update = true;
+        }
+      },
+      CHCEngine::Window::LoopCallbackType::LOOP_CALLBACK_TYPE_END);
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
     compute_context->setPipeline(compute_pipe);
     compute_context->setComputeBindLayout(compute_bind_layout);
-    compute_context->bindComputeResource(constant_buffer,"SceneConstantBuffer");
+    compute_context->bindComputeResource(constant_buffer,
+                                         "SceneConstantBuffer");
     compute_context->bindComputeResource(simple_texture, "texts", 1);
     compute_context->dispatch(
-        (unsigned int)simple_texture->getTextureInformation().width_ / THREADSIZE + 1,
+        (unsigned int)simple_texture->getTextureInformation().width_ /
+                THREADSIZE +
+            1,
         (unsigned int)simple_texture->getTextureInformation().height_ /
                 THREADSIZE +
             1,
         1);
     compute_context->resourceTransition(
-        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,      ResourceState::RESOURCE_STATE_COPY_DEST,true,ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN);
+        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+        ResourceState::RESOURCE_STATE_COPY_DEST, true,
+        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN);
     graphics->resourceTransition(
         simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-            ResourceState::RESOURCE_STATE_COPY_DEST,
-        false, ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);
+        ResourceState::RESOURCE_STATE_COPY_DEST, false,
+        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->resourceTransition(
               simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
               ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                   ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_PRESENT,
-              ResourceState::RESOURCE_STATE_RENDER_TARGET);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
@@ -302,31 +291,27 @@ int main() {
           graph->drawInstanced(6);
           graph->resourceTransition(
               simple_texture,
-                  ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
-            ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-        ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
-          graph->resourceTransition(
-              renderer.getSwapChainBuffer(swap_chain_index),
-              ResourceState::RESOURCE_STATE_RENDER_TARGET,
-              ResourceState::RESOURCE_STATE_PRESENT);
+              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+                  ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
+          graph->setSwapChainToPresetState(
+              renderer.getSwapChainBuffer(swap_chain_index));
         },
         false);
     {
-         std::lock_guard<std::mutex> lock(update_record_mutex);
-         if (execute_update)
-         {
-             renderer.waitFenceSubmitContexts(graphics_fence,update_copy_fence,{update_copy_context});
-            renderer.waitFenceSubmitContexts(update_copy_fence, compute_fence,
-                                     {compute_context});
-            execute_update = false;
-         }
-         else
-         {
-             renderer.waitFenceSubmitContexts(graphics_fence, compute_fence,
-                                     {compute_context});
-         }
+      std::lock_guard<std::mutex> lock(update_record_mutex);
+      if (execute_update) {
+        renderer.waitFenceSubmitContexts(graphics_fence, update_copy_fence,
+                                         {update_copy_context});
+        renderer.waitFenceSubmitContexts(update_copy_fence, compute_fence,
+                                         {compute_context});
+        execute_update = false;
+      } else {
+        renderer.waitFenceSubmitContexts(graphics_fence, compute_fence,
+                                         {compute_context});
+      }
     }
-    renderer.waitFenceSubmitContexts(compute_fence,graphics_fence, {graphics});
+    renderer.waitFenceSubmitContexts(compute_fence, graphics_fence, {graphics});
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

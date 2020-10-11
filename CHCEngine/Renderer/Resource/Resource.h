@@ -82,7 +82,7 @@ protected:
   bool isSubResroucesSameStates();
 
 public:
-  bool isAutoDecay() { return false; };
+  virtual bool isAutoDecay() { return false; };
   Resource &operator=(Resource &ref) = delete;
   Resource() = delete;
   void setName(std::string_view name);

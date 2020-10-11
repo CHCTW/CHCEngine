@@ -16,6 +16,8 @@ void GraphicsContext::clearRenderTarget(
   c[1] = color.g;
   c[2] = color.b;
   c[3] = color.a;*/
+  updateContextResourceState(
+      swap_chain_buffer, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, 0);
   flushBarriers();
   context_command_->clearSwapChainBuffer(swap_chain_buffer->getDescriptor(), c);
 }
@@ -126,6 +128,12 @@ void GraphicsContext::bindGraphicsSamplers(
   }
   unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
   bindGraphicsSamplers(sampler_group, slot_index, start_index);
+}
+
+void GraphicsContext::setSwapChainToPresetState(
+    const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer) {
+  updateContextResourceState(swap_chain_buffer,
+                             ResourceState::RESOURCE_STATE_PRESENT, false, 0);
 }
 
 } // namespace Context

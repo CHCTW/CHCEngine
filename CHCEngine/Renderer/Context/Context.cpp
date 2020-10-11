@@ -37,6 +37,8 @@ void Context::flushBarriers() {
 void Context::updateContextResourceState(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index) {
+  if (type_ == CommandType::COMMAND_TYPE_COPY)
+    return;
   if (!context_resource_states_.count(resource)) {
     context_resource_states_.emplace(
         resource, ContextResourceState(resource->getSubResrouceCount()));

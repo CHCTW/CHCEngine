@@ -44,11 +44,13 @@ public:
     for (int i = 0; i < submit_context.size(); ++i) {
       submit_context[i]->waitRecordingDone();
       submit_context[i]->closeContext();
-      execute_commands[count] = std::move(submit_context[i]->context_command_);
-      ++count;
-      if (submit_context[i]->pending_transition_command_)
+      if (submit_context[i]->pending_transition_command_) {
+
         execute_commands[count] =
             std::move(submit_context[i]->pending_transition_command_);
+        ++count;
+      }
+      execute_commands[count] = std::move(submit_context[i]->context_command_);
       ++count;
       submit_context[i]->resetContextCommand();
     }
@@ -80,11 +82,13 @@ public:
     for (int i = 0; i < submit_context.size(); ++i) {
       submit_context[i]->waitRecordingDone();
       submit_context[i]->closeContext();
-      execute_commands[count] = std::move(submit_context[i]->context_command_);
-      ++count;
-      if (submit_context[i]->pending_transition_command_)
+      if (submit_context[i]->pending_transition_command_) {
+
         execute_commands[count] =
             std::move(submit_context[i]->pending_transition_command_);
+        ++count;
+      }
+      execute_commands[count] = std::move(submit_context[i]->context_command_);
       ++count;
       submit_context[i]->resetContextCommand();
     }
