@@ -73,6 +73,9 @@ void GraphicsContext::bindGraphicsResource(
   }
   bool direct_bind = graphics_layout_->isDirectBind(slot_index);
   auto type = graphics_layout_->getFirstBindType(slot_index);
+  updateBindingResrouceState(resource, slot_index, 0, usage_index,
+                             graphics_layout_);
+  flushBarriers();
   bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
 }
 void GraphicsContext::bindGraphicsResource(

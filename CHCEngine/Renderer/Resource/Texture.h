@@ -26,11 +26,28 @@ private:
   friend struct Context::ContextCommand;
   TextureInformation texture_information_;
   friend class Context::CopyContext;
+  friend class Context::ComputeContext;
   std::shared_ptr<DescriptorRange> render_target_descriptors_;
   std::shared_ptr<DescriptorRange> depth_stencil_descriptors_;
   std::vector<TextureUsage> usages_;
   std::vector<RenderTargetUsage> render_target_usages_;
   std::vector<DepthStencilUsage> depth_stencil_usages_;
+  std::vector<std::vector<uint32_t>> usage_sub_resources_indices_;
+  std::vector<std::vector<uint32_t>> render_target_sub_resources_indices_;
+  std::vector<std::vector<uint32_t>> depth_stencil_sub_resources_indices_;
+
+  const std::vector<uint32_t> &
+  getUsageSubResourceIndices(uint32_t index) const {
+    return usage_sub_resources_indices_[index];
+  }
+  const std::vector<uint32_t> &
+  getRenderTargetSubResourceIndices(uint32_t index) const {
+    return render_target_sub_resources_indices_[index];
+  }
+  const std::vector<uint32_t> &
+  getDepthStencilSubResourceIndices(uint32_t index) const {
+    return depth_stencil_sub_resources_indices_[index];
+  }
 
 public:
   virtual bool isAutoDecay() { return depth_stencil_usages_.size() == 0; };

@@ -31,7 +31,7 @@ struct BufferInformation {
 };
 // won't have any creation here, all creation is done in the resource pool,
 // according to what it needs it will generate the proper needs field;
-// goint to have more different type here, vertex,index,counter.....
+// going to have more different type here, vertex,index,counter.....
 class Buffer : public Resource {
 protected:
   friend struct Context::ContextCommand;
@@ -62,6 +62,12 @@ public:
 
   const BufferInformation &getBufferInformation();
   BufferType getBufferType();
+  const BufferUsage &getBufferUsage(uint32_t index) const {
+    if (index >= usages_.size()) {
+      throw std::exception(" Access buffer usage our of usage vector size");
+    }
+    return usages_[index];
+  }
 };
 } // namespace Resource
 

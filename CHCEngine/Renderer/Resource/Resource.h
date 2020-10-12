@@ -14,6 +14,7 @@ namespace Context {
 struct ContextCommand;
 class GraphicsContext;
 class CopyContext;
+class ComputeContext;
 struct TrackingState;
 class ContextResourceState;
 } // namespace Context

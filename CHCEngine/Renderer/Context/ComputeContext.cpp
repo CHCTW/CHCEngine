@@ -2,6 +2,7 @@
 
 #include "../Pipeline/Pipeline.h"
 #include "../Resource/ResourceGroup.h"
+#include "../Resource/Texture.h"
 #include "ComputeContext.h"
 
 namespace CHCEngine {
@@ -30,22 +31,66 @@ void ComputeContext::bindComputeResource(
 }
 void ComputeContext::updateBindingResrouceState(
     const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
-    uint32_t usage_index, const std::shared_ptr<Pipeline::BindLayout> &layout) {
-  auto &slot = layout->getBindSlot(slot_index);
-  // won't  update if there is unbound binding
-  if (slot.isUnbound)
-    return;
-  if (resource->getType() == Resource::ResourceType::RESOURCE_TYPE_GROUP) {
-    /* const std::shared_ptr<Resource::ResourceGroup> group =
-         std::static_pointer_cast<Resource::ResourceGroup>(resource);
-     uint32_t group_index = 0;
-     for (auto &format : slot.formats_) {
-       for (uint32_t i = 0; i < format.resource_count_; ++i) {
-         ++group_index;
-       }
-     }*/
+    uint32_t format_index, uint32_t usage_index,
+    const std::shared_ptr<Pipeline::BindLayout> &layout) {
+  switch (resource->getType()) {
+  case Resource::ResourceType::RESOURCE_TYPE_BUFFER:
+    updateBindingBufferState(resource, slot_index, format_index, usage_index,
+                             layout);
+    break;
+  case Resource::ResourceType::RESOURCE_TYPE_TEXTURE:
+    updateBindingTextureState(resource, slot_index, format_index, usage_index,
+                              layout);
+    break;
+  case Resource::ResourceType::RESOURCE_TYPE_GROUP:
+    const auto &slot = layout->getBindSlot(slot_index);
+    Resource::ResourceGroup *group =
+        static_cast<Resource::ResourceGroup *>(resource.get());
+    uint32_t group_index = 0;
+    for (uint32_t f = 0; f < slot.formats_.size(); ++f) {
+      for (uint32_t i = 0; i < slot.formats_[f].resource_count_; ++i) {
+        const auto res = group->getResrouce(group_index);
+        uint32_t u_index = group->getUsageIndex(group_index);
+        updateBindingResrouceState(res, slot_index, f, u_index, layout);
+        ++group_index;
+      }
+    }
+    break;
   }
 }
+
+void ComputeContext::updateBindingBufferState(
+    const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
+    uint32_t format_index, uint32_t usage_index,
+    const std::shared_ptr<Pipeline::BindLayout> &layout) {
+  BindType type = layout->getBindSlot(slot_index).formats_[format_index].type_;
+  ShaderType visibility = layout->getBindSlot(slot_index).visibility_;
+  // const auto &buffer = std::static_pointer_cast<Resource::Buffer>(resource);
+  /*if (!checkBindTypeUsageType(type,
+                              buffer->getBufferUsage(usage_index).usage_)) {
+                              //D3D12 will issue warning here, maybe don't need
+  to check
+
+  }*/
+  auto state = getStateFromBindTypeVisibility(type, visibility);
+  updateContextResourceState(resource, state, false, 0);
+}
+
+void ComputeContext::updateBindingTextureState(
+    const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
+    uint32_t format_index, uint32_t usage_index,
+    const std::shared_ptr<Pipeline::BindLayout> &layout) {
+  BindType type = layout->getBindSlot(slot_index).formats_[format_index].type_;
+  ShaderType visibility = layout->getBindSlot(slot_index).visibility_;
+  Resource::Texture *texture = static_cast<Resource::Texture *>(resource.get());
+  auto state = getStateFromBindTypeVisibility(type, visibility);
+  const auto &sub_resource_list =
+      texture->getUsageSubResourceIndices(usage_index);
+  for (auto i : sub_resource_list) {
+    updateContextResourceState(resource, state, false, i);
+  }
+}
+
 /*void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,
     unsigned int usage_index, unsigned int slot_index,
@@ -61,6 +106,8 @@ void ComputeContext::bindComputeResource(
   }
   bool direct_bind = compute_layout_->isDirectBind(slot_index);
   auto type = compute_layout_->getFirstBindType(slot_index);
+  updateBindingResrouceState(resource, slot_index, 0, usage_index,
+                             compute_layout_);
   bindComputeResource(resource, usage_index, slot_index, type, direct_bind);
 }
 void ComputeContext::bindComputeResource(

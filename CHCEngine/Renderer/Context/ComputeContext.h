@@ -20,7 +20,16 @@ protected:
                            BindType bind_type, bool direct_bind);
   void updateBindingResrouceState(
       const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
-      uint32_t usage_index,
+      uint32_t format_index, uint32_t usage_index,
+      const std::shared_ptr<Pipeline::BindLayout> &layout);
+  void
+  updateBindingBufferState(const std::shared_ptr<Resource::Resource> &resource,
+                           uint32_t slot_index, uint32_t format_index,
+                           uint32_t usage_index,
+                           const std::shared_ptr<Pipeline::BindLayout> &layout);
+  void updateBindingTextureState(
+      const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
+      uint32_t format_index, uint32_t usage_index,
       const std::shared_ptr<Pipeline::BindLayout> &layout);
 
 public:

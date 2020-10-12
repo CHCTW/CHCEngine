@@ -248,35 +248,34 @@ int main() {
 
   renderer.addLoopCallback("Render", [&](Renderer &renderer, auto duration,
                                          auto swap_chain_index, auto frame) {
-    compute_context->setPipeline(compute_pipe);
-    compute_context->setComputeBindLayout(compute_bind_layout);
-    compute_context->bindComputeResource(constant_buffer,
-                                         "SceneConstantBuffer");
-    compute_context->bindComputeResource(simple_texture, "texts", 1);
+    graphics->setPipeline(compute_pipe);
+    graphics->setComputeBindLayout(compute_bind_layout);
+    graphics->bindComputeResource(constant_buffer, "SceneConstantBuffer");
+    graphics->bindComputeResource(simple_texture, "texts", 1);
     auto [x, y, z] = compute_pipe->getComputeThreadSize();
-    compute_context->dispatch(
+    graphics->dispatch(
         (uint32_t)simple_texture->getTextureInformation().width_ / x + 1,
         (uint32_t)simple_texture->getTextureInformation().height_ / y + 1,
         1 / z);
-    compute_context->resourceTransition(
+    /*graphics->resourceTransition(
         simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
         ResourceState::RESOURCE_STATE_COPY_DEST, true,
         ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN);
     graphics->resourceTransition(
         simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
         ResourceState::RESOURCE_STATE_COPY_DEST, false,
-        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);
+        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);*/
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
-          graph->resourceTransition(
-              simple_texture, ResourceState::RESOURCE_STATE_COPY_DEST,
-              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
-                  ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
+
           graph->setPipeline(pipeline);
           graph->setGraphicsBindLayout(groups_bind_layout);
+          /*graph->resourceTransition(
+              simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
+              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);*/
           graph->bindGraphicsResource(simple_texture, "simple_texture");
           graph->bindGraphicsSamplers(sampler_group, "simple_sampler");
           graph->setVertexBuffers(buffer);
@@ -286,11 +285,11 @@ int main() {
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(6);
-          graph->resourceTransition(
+          /*graph->resourceTransition(
               simple_texture,
               ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                   ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);
+              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);*/
           graph->setSwapChainToPresetState(
               renderer.getSwapChainBuffer(swap_chain_index));
         },
@@ -300,15 +299,19 @@ int main() {
       if (execute_update) {
         renderer.waitFenceSubmitContexts(graphics_fence, update_copy_fence,
                                          {update_copy_context});
-        renderer.waitFenceSubmitContexts(update_copy_fence, compute_fence,
-                                         {compute_context});
+        /*renderer.waitFenceSubmitContexts(update_copy_fence, compute_fence,
+                                         {compute_context});*/
+        renderer.waitFenceSubmitContexts(update_copy_fence, graphics_fence,
+                                         {graphics});
         execute_update = false;
       } else {
-        renderer.waitFenceSubmitContexts(graphics_fence, compute_fence,
-                                         {compute_context});
+        /* renderer.waitFenceSubmitContexts(graphics_fence, compute_fence,
+                                          {compute_context});*/
+        renderer.submitContexts(graphics_fence, {graphics});
       }
     }
-    renderer.waitFenceSubmitContexts(compute_fence, graphics_fence, {graphics});
+    /*renderer.waitFenceSubmitContexts(compute_fence, graphics_fence,
+     * {graphics});*/
     renderer.presentSwapChain();
   });
   renderer.waitUntilWindowClose();

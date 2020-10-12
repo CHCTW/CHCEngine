@@ -205,10 +205,14 @@ Renderer::Renderer()
   heap_sizes_[DescriptorType::DESCRIPTOR_TYPE_SAMPLER] = SAMPLER_HEAP_SIZE;
 
 #if defined(_DEBUG)
-  ComPtr<ID3D12Debug> debub_controller;
+  ComPtr<ID3D12Debug1> debub_controller;
   if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debub_controller)))) {
     debub_controller->EnableDebugLayer();
-
+    // SetEnableGPUD
+    // debub_controller->
+    debub_controller->SetEnableGPUBasedValidation(true);
+    debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
+    // debub_controller->
     // Enable additional debug layers.
     dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
   } else {
@@ -424,7 +428,6 @@ Renderer::getBindLayout(const std::vector<Pipeline::BindSlot> &bind_slots) {
   version_sig_desc.Desc_1_1.NumParameters =
       static_cast<unsigned int>(RootParameters.size());
   version_sig_desc.Desc_1_1.pParameters = RootParameters.data();
-
   ComPtr<ID3DBlob> signature;
   ComPtr<ID3DBlob> error;
   ComPtr<BindSignature> bind_signature;

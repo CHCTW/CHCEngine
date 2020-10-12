@@ -153,7 +153,7 @@ int main() {
   constant_buffer->setName("constant buffer");
 
   MipRange mips;
-  mips.mips_start_level_ = 2;
+  // mips.mips_start_level_ = 2;
   SubTexturesRange textue_range;
 
   auto texture = renderer.getTexture(

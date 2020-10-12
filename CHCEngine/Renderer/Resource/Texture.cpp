@@ -25,6 +25,37 @@ Texture::Texture(ComPtr<GPUResource> gpu_resource,
   sub_resource_states_.resize(texture_information.getSubResrouceCount());
   SubResourceState tracking{initial_state, initial_state};
   std::fill(sub_resource_states_.begin(), sub_resource_states_.end(), tracking);
+  auto sub_resource_counts_ = this->getSubResrouceCount();
+  usage_sub_resources_indices_.resize(usages_.size());
+  render_target_sub_resources_indices_.resize(render_target_usages_.size());
+  depth_stencil_sub_resources_indices_.resize(depth_stencil_usages_.size());
+  for (uint32_t i = 0; i < usages_.size(); ++i) {
+    getSubResourceList(usage_sub_resources_indices_[i], usages_[i],
+                       texture_information_.mip_levels_,
+                       texture_information_.depth_);
+    if (usage_sub_resources_indices_[i].size() == sub_resource_counts_) {
+      usage_sub_resources_indices_[i] = {all_subresrouce_index};
+    }
+  }
+
+  for (uint32_t i = 0; i < render_target_usages_.size(); ++i) {
+    getRenderTargetSubResourceList(
+        render_target_sub_resources_indices_[i], render_target_usages_[i],
+        texture_information_.mip_levels_, texture_information_.depth_);
+    if (render_target_sub_resources_indices_[i].size() ==
+        sub_resource_counts_) {
+      render_target_sub_resources_indices_[i] = {all_subresrouce_index};
+    }
+  }
+  for (uint32_t i = 0; i < depth_stencil_usages_.size(); ++i) {
+    geDepthStencilSubResourceList(
+        depth_stencil_sub_resources_indices_[i], depth_stencil_usages_[i],
+        texture_information_.mip_levels_, texture_information_.depth_);
+    if (depth_stencil_sub_resources_indices_[i].size() ==
+        sub_resource_counts_) {
+      depth_stencil_sub_resources_indices_[i] = {all_subresrouce_index};
+    }
+  }
 }
 } // namespace Resource
 } // namespace Renderer

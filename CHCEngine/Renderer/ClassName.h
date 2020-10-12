@@ -3,6 +3,7 @@
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
@@ -830,25 +831,27 @@ struct TextureUsage {
   unsigned int plane_slice_ = 0;
 };
 
-inline void getSubResourceList(std::vector<unsigned int> &list,
-                               TextureUsage &usage, unsigned int mip_levels) {
+inline void getSubResourceList(std::vector<uint32_t> &list, TextureUsage &usage,
+                               uint32_t mip_levels, uint32_t depth_size) {
+  unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
+  unsigned int array_size =
+      (std::min)(usage.sub_texture_ranges_.count_, depth_size - array_start);
   if (usage.usage_ == ResourceUsage::RESOURCE_USAGE_SRV) {
-    unsigned int array_size = usage.sub_texture_ranges_.count_;
-    unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
     if (usage.data_dimension_ == DataDimension::DATA_DIMENSION_TEXTURE3D) {
       array_size = 1;
       array_start = 0;
     }
+    uint32_t total_levels =
+        (std::min)(usage.mip_range_.mips_count_,
+                   mip_levels - usage.mip_range_.mips_start_level_);
     for (unsigned int i = 0; i < array_size; ++i) {
-      for (unsigned int j = 0; j < usage.mip_range_.mips_count_; ++j) {
+      for (unsigned int j = 0; j < total_levels; ++j) {
         unsigned int index = (i + array_start) * mip_levels + j +
                              usage.mip_range_.mips_start_level_;
         list.push_back(index);
       }
     }
   } else {
-    unsigned int array_size = usage.sub_texture_ranges_.count_;
-    unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
     if (usage.data_dimension_ == DataDimension::DATA_DIMENSION_TEXTURE3D) {
       array_size = 1;
       array_start = 0;
@@ -866,6 +869,22 @@ struct RenderTargetUsage {
   SubTexturesRange sub_texture_ranges_;
   unsigned int plane_slice_ = 0;
 };
+inline void getRenderTargetSubResourceList(std::vector<uint32_t> &list,
+                                           RenderTargetUsage &usage,
+                                           uint32_t mip_levels,
+                                           uint32_t depth_size) {
+  unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
+  unsigned int array_size =
+      (std::min)(usage.sub_texture_ranges_.count_, depth_size - array_start);
+  if (usage.data_dimension_ == DataDimension::DATA_DIMENSION_TEXTURE3D) {
+    array_size = 1;
+    array_start = 0;
+  }
+  for (unsigned int i = 0; i < array_size; ++i) {
+    unsigned int index = (i + array_start) * mip_levels + usage.mip_slice_;
+    list.push_back(index);
+  }
+}
 
 static const std::vector<RenderTargetUsage> empty_render_target_usage;
 struct DepthStencilUsage {
@@ -878,6 +897,19 @@ struct DepthStencilUsage {
   DepthStencilFlags depth_stencil_flag_ =
       DepthStencilFlags::DEPTH_SENCIL_FLAG_NONE;
 };
+inline void geDepthStencilSubResourceList(std::vector<uint32_t> &list,
+                                          DepthStencilUsage &usage,
+                                          uint32_t mip_levels,
+                                          uint32_t depth_size) {
+  unsigned int array_start = usage.sub_texture_ranges_.array_start_index_;
+  unsigned int array_size =
+      (std::min)(usage.sub_texture_ranges_.count_, depth_size - array_start);
+  for (unsigned int i = 0; i < array_size; ++i) {
+    unsigned int index = (i + array_start) * mip_levels + usage.mip_slice_;
+    list.push_back(index);
+  }
+}
+
 static const std::vector<DepthStencilUsage> empty_depth_stencil_usage;
 using TextureFootPrint = D3D12_PLACED_SUBRESOURCE_FOOTPRINT;
 static unsigned long long texture_subresouce_offset_aligment = 512U;
@@ -986,18 +1018,34 @@ struct SubResourceState {
 };
 inline ResourceState getStateFromBindTypeVisibility(BindType bind_type,
                                                     ShaderType visibility) {
-  if (bind_type < BindType::BIND_TYPE_CBV_BOUND)
+  BindUsage usage = getUsage(bind_type);
+  if (usage == BindUsage::BIND_USAGE_CBV)
     return ResourceState::RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-  if (bind_type < BindType::BIND_TYPE_SRV_BOUND) {
+  if (usage == BindUsage::BIND_USAGE_SRV) {
     if (visibility == ShaderType::SHADER_TYPE_ALL)
       return ResourceState::RESOURCE_STATE_ALL_SHADER_RESOURCE;
     if (visibility == ShaderType::SHADER_TYPE_PIXEL)
       return ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
     return ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
   }
-  if (bind_type < BindType::BIND_TYPE_UAV_BOUND)
+  if (usage == BindUsage::BIND_USAGE_UAV)
     return ResourceState::RESOURCE_STATE_UNORDERED_ACCESS;
   return ResourceState::RESOURCE_STATE_UNKNOWN;
+}
+inline bool checkBindTypeUsageType(BindType bind_type, ResourceUsage usage) {
+  // BindUsage
+  BindUsage bind_usage = getUsage(bind_type);
+  switch (bind_usage) {
+  case BindUsage::BIND_USAGE_CBV:
+    return usage == ResourceUsage::RESOURCE_USAGE_CBV;
+  case BindUsage::BIND_USAGE_SRV:
+    return usage == ResourceUsage::RESOURCE_USAGE_SRV;
+  case BindUsage::BIND_USAGE_UAV:
+    return usage == ResourceUsage::RESOURCE_USAGE_UAV;
+  case BindUsage::BIND_USAGE_SAMPLER:
+    return usage == ResourceUsage::RESOURCE_USAGE_SAMPLER;
+  }
+  return false;
 }
 } // namespace Renderer
 } // namespace CHCEngine

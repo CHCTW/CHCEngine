@@ -119,7 +119,7 @@ void generateRootParameters(
       parameter.Descriptor.ShaderRegister = bind_slots[i].formats_[0].point_;
       parameter.Descriptor.RegisterSpace = bind_slots[i].formats_[0].space_;
       // use default setting
-      parameter.Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_NONE;
+      parameter.Descriptor.Flags = D3D12_ROOT_DESCRIPTOR_FLAG_DATA_VOLATILE;
       direct_binds.push_back(true);
       continue;
     } else {
