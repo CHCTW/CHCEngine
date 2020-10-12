@@ -75,6 +75,14 @@ void GraphicsContext::bindGraphicsResource(
   auto type = graphics_layout_->getFirstBindType(slot_index);
   updateBindingResrouceState(resource, slot_index, 0, usage_index,
                              graphics_layout_);
+  // so... before binding the resource, it request the resource
+  // to be the right, state....
+  //  approach: all binding are deferred before the real
+  // draw call or dispatch...
+  // there will be flush bindings so the debug layer won't cry
+
+  // putting flush barrier here to flush before real bind recourse
+  // just as temporary code
   flushBarriers();
   bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
 }
