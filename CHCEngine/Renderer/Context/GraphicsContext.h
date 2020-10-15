@@ -30,6 +30,7 @@ protected:
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             unsigned int slot_index,
                             unsigned int usage_index = 0);
+  void flushGraphicsBindings();
 
 public:
   ~GraphicsContext() {

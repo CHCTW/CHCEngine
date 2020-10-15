@@ -34,6 +34,7 @@ public:
         ++total_commands_count;
     }
     submit_context[0]->resolvePendingResourceState();
+    submit_context[0]->addReferenceResrouceFromTracking();
     if (submit_context[0]->pending_transition_command_)
       total_commands_count += 2;
     else
@@ -72,6 +73,7 @@ public:
         ++total_commands_count;
     }
     submit_context[0]->resolvePendingResourceState();
+    submit_context[0]->addReferenceResrouceFromTracking();
     if (submit_context[0]->pending_transition_command_)
       total_commands_count += 2;
     else

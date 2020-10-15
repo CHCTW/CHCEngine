@@ -41,7 +41,7 @@ void ResourceGroup::insertResource(unsigned int insert_index,
   usage_indices_[insert_index] = usage_index;
 }
 const std::shared_ptr<Resource> &
-ResourceGroup::getResrouce(uint32_t index) const {
+ResourceGroup::getResource(uint32_t index) const {
   if (index >= resources_.size()) {
     throw std::exception("Index is out of resource group size!");
   }

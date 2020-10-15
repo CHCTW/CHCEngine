@@ -26,7 +26,7 @@ public:
   void insertResource(unsigned int insert_index,
                       std::shared_ptr<Resource> resource,
                       unsigned int usage_index = 0);
-  const std::shared_ptr<Resource> &getResrouce(uint32_t index) const;
+  const std::shared_ptr<Resource> &getResource(uint32_t index) const;
   uint32_t getUsageIndex(uint32_t index) const;
 };
 } // namespace Resource

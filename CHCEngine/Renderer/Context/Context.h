@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -28,6 +29,13 @@ class BindLayout;
 }
 namespace Context {
 class ContextPoolBase;
+struct ResrouceBindDescriptor {
+  const Resource::Resource *resource_;
+  uint32_t usage_index_;
+  uint32_t slot_index_;
+  BindType bind_type_;
+  bool direct_bind_;
+};
 // the base class, context will have  three level inheritance
 // copy->compute->graphics : copy context only will have copy command
 // bundle shold be the same as graphics so might inheritance from graphics
@@ -59,6 +67,8 @@ protected:
   std::shared_ptr<ContextCommand> pending_transition_command_;
   std::shared_ptr<Pipeline::BindLayout> graphics_layout_;
   std::shared_ptr<Pipeline::BindLayout> compute_layout_;
+  std::queue<ResrouceBindDescriptor> graphics_bind_descriptors_;
+  std::queue<ResrouceBindDescriptor> compute_bind_descriptors_;
   std::thread context_thread_;
   std::mutex wait_mutex_;
   std::atomic<ContextState> state_;
@@ -87,6 +97,7 @@ protected:
   // and clean the state
   void resolvePreviousContextStateAndSelfClear(
       const std::shared_ptr<Context> &previours_context);
+  void addReferenceResrouceFromTracking();
 
 public:
   void waitRecordingDone();

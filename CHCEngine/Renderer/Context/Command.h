@@ -24,6 +24,7 @@ class Sampler;
 namespace Context {
 class ContextPoolBase;
 class BaseFence;
+class ContextResourceState;
 struct Transition {
   /*Transition(std::shared_ptr<Resource::Resource> &resource)
       : resource_(resource) {}*/
@@ -121,9 +122,17 @@ struct ContextCommand {
   void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,
                             unsigned int usage_index, unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void bindGraphicsResource(const Resource::Resource *resource,
+                            unsigned int usage_index, unsigned int slot_index,
+                            BindType bind_type, bool direct_bind);
+
   void bindComputeResource(std::shared_ptr<Resource::Resource> resource,
                            unsigned int usage_index, unsigned int slot_index,
                            BindType bind_type, bool direct_bind);
+  void bindComputeResource(const Resource::Resource *resource,
+                           unsigned int usage_index, unsigned int slot_index,
+                           BindType bind_type, bool direct_bind);
+
   void bindGraphicsSampler(std::shared_ptr<Sampler::Sampler> sampler,
                            unsigned int usage_index, unsigned int slot_index);
 
@@ -138,6 +147,9 @@ struct ContextCommand {
       const std::vector<D3D12_TEXTURE_COPY_LOCATION> &dst_layouts,
       std::vector<std::shared_ptr<Resource::AllocateSpace>> &spaces);
   void dispatch(unsigned int x, unsigned int y, unsigned int z);
+  void referenceTrackingResrouce(
+      std::unordered_map<std::shared_ptr<Resource::Resource>,
+                         ContextResourceState> &context_resource_states);
 };
 } // namespace Context
 } // namespace Renderer

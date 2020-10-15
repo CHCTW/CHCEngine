@@ -1,6 +1,8 @@
 #pragma once
 #include "CopyContext.h"
 
+#include <queue>
+
 namespace CHCEngine {
 namespace Renderer {
 class Renderer;
@@ -31,6 +33,7 @@ protected:
       const std::shared_ptr<Resource::Resource> &resource, uint32_t slot_index,
       uint32_t format_index, uint32_t usage_index,
       const std::shared_ptr<Pipeline::BindLayout> &layout);
+  void flushComputeBindings();
 
 public:
   virtual ~ComputeContext() {

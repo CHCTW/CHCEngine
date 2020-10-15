@@ -25,7 +25,9 @@ void GraphicsContext::drawInstanced(unsigned int vertex_count,
                                     unsigned int instance_count,
                                     unsigned int start_vertex_location,
                                     unsigned int start_instance_location) {
+
   flushBarriers();
+  flushGraphicsBindings();
   context_command_->drawInstanced(vertex_count, instance_count,
                                   start_vertex_location,
                                   start_instance_location);
@@ -50,6 +52,8 @@ void GraphicsContext::setPrimitiveTopology(PrimitiveTopology topology) {
 }
 void GraphicsContext::setRenderTarget(
     const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer) {
+  updateContextResourceState(
+      swap_chain_buffer, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, 0);
   context_command_->setRenderTarget(swap_chain_buffer->getDescriptor());
 }
 void GraphicsContext::setGraphicsBindLayout(
@@ -83,8 +87,22 @@ void GraphicsContext::bindGraphicsResource(
 
   // putting flush barrier here to flush before real bind recourse
   // just as temporary code
-  flushBarriers();
-  bindGraphicsResource(resource, usage_index, slot_index, type, direct_bind);
+  // btw the volatile range flag will cause not track the resource
+  // flushBarriers();
+
+  graphics_bind_descriptors_.push(
+      {resource.get(), usage_index, slot_index, type, direct_bind});
+  /*bindGraphicsResource(resource, usage_index, slot_index, type,
+   * direct_bind);*/
+}
+void GraphicsContext::flushGraphicsBindings() {
+  while (graphics_bind_descriptors_.size()) {
+    auto &bind = graphics_bind_descriptors_.front();
+    context_command_->bindGraphicsResource(bind.resource_, bind.usage_index_,
+                                           bind.slot_index_, bind.bind_type_,
+                                           bind.direct_bind_);
+    graphics_bind_descriptors_.pop();
+  }
 }
 void GraphicsContext::bindGraphicsResource(
     const std::shared_ptr<Resource::Resource> &resource,

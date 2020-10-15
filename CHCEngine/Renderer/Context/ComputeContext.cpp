@@ -19,6 +19,8 @@ void ComputeContext::setPipeline(
 }
 void ComputeContext::setComputeBindLayout(
     const std::shared_ptr<Pipeline::BindLayout> &bind_layout) {
+  while (compute_bind_descriptors_.size())
+    compute_bind_descriptors_.pop();
   compute_layout_ = bind_layout;
   context_command_->setComputeBindSignature(bind_layout->bind_signature_);
 }
@@ -44,12 +46,14 @@ void ComputeContext::updateBindingResrouceState(
     break;
   case Resource::ResourceType::RESOURCE_TYPE_GROUP:
     const auto &slot = layout->getBindSlot(slot_index);
-    Resource::ResourceGroup *group =
+    const Resource::ResourceGroup *group =
         static_cast<Resource::ResourceGroup *>(resource.get());
+    updateContextResourceState(resource, ResourceState::RESOURCE_STATE_UNKNOWN,
+                               false, 0);
     uint32_t group_index = 0;
     for (uint32_t f = 0; f < slot.formats_.size(); ++f) {
       for (uint32_t i = 0; i < slot.formats_[f].resource_count_; ++i) {
-        const auto res = group->getResrouce(group_index);
+        const auto &res = group->getResource(group_index);
         uint32_t u_index = group->getUsageIndex(group_index);
         updateBindingResrouceState(res, slot_index, f, u_index, layout);
         ++group_index;
@@ -91,6 +95,16 @@ void ComputeContext::updateBindingTextureState(
   }
 }
 
+void ComputeContext::flushComputeBindings() {
+  while (compute_bind_descriptors_.size()) {
+    auto &bind = compute_bind_descriptors_.front();
+    context_command_->bindComputeResource(bind.resource_, bind.usage_index_,
+                                          bind.slot_index_, bind.bind_type_,
+                                          bind.direct_bind_);
+    compute_bind_descriptors_.pop();
+  }
+}
+
 /*void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,
     unsigned int usage_index, unsigned int slot_index,
@@ -108,7 +122,9 @@ void ComputeContext::bindComputeResource(
   auto type = compute_layout_->getFirstBindType(slot_index);
   updateBindingResrouceState(resource, slot_index, 0, usage_index,
                              compute_layout_);
-  bindComputeResource(resource, usage_index, slot_index, type, direct_bind);
+  compute_bind_descriptors_.push(
+      {resource.get(), usage_index, slot_index, type, direct_bind});
+  /*bindComputeResource(resource, usage_index, slot_index, type, direct_bind);*/
 }
 void ComputeContext::bindComputeResource(
     const std::shared_ptr<Resource::Resource> &resource,
@@ -125,6 +141,7 @@ void ComputeContext::setStaticUsageHeap() {
 }
 void ComputeContext::dispatch(unsigned int x, unsigned int y, unsigned int z) {
   flushBarriers();
+  flushComputeBindings();
   context_command_->dispatch(x, y, z);
 }
 void ComputeContext::resourceTransition(

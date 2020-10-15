@@ -234,6 +234,8 @@ void ContextResourceState::stateUpdate(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index,
     std::vector<Transition> &transitions) {
+  if (resource->getType() == Resource::ResourceType::RESOURCE_TYPE_GROUP)
+    return;
   if (resource->getSubResrouceCount() == 1 || index == all_subresrouce_index) {
     stateUpateAllSubResource(resource, next_state, split, transitions);
   } else {
@@ -245,6 +247,8 @@ void ContextResourceState::stateUpdate(
 void ContextResourceState::resovleResrouceState(
     const std::shared_ptr<Resource::Resource> &resource,
     std::vector<Transition> &transitions) {
+  if (resource->getType() == Resource::ResourceType::RESOURCE_TYPE_GROUP)
+    return;
   auto &states = resource->getSubResrouceStates();
   if (same_states_ && resource->isSubResroucesSameStates()) {
     auto first = states[0];
@@ -262,7 +266,8 @@ void ContextResourceState::addPreviousState(
     const std::shared_ptr<Resource::Resource> &resource,
     ContextResourceState &previous_state,
     std::vector<Transition> &transitions) {
-
+  if (resource->getType() == Resource::ResourceType::RESOURCE_TYPE_GROUP)
+    return;
   if (same_states_ && previous_state.same_states_) {
     context_sub_resrouce_states_[0].addPreviousState(
         resource, previous_state.context_sub_resrouce_states_[0],

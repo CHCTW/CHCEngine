@@ -20,6 +20,10 @@ void Context::resetContextCommand() {
   context_command_ = used_pool->getContextCommand();
   context_resource_states_.clear();
   pending_transition_command_.reset();
+  while (compute_bind_descriptors_.size())
+    compute_bind_descriptors_.pop();
+  while (graphics_bind_descriptors_.size())
+    graphics_bind_descriptors_.pop();
 }
 
 void Context::closeContext() {
@@ -37,12 +41,12 @@ void Context::flushBarriers() {
 void Context::updateContextResourceState(
     const std::shared_ptr<Resource::Resource> &resource,
     ResourceState next_state, bool split, uint32_t index) {
-  if (type_ == CommandType::COMMAND_TYPE_COPY)
-    return;
   if (!context_resource_states_.count(resource)) {
     context_resource_states_.emplace(
         resource, ContextResourceState(resource->getSubResrouceCount()));
   }
+  if (type_ == CommandType::COMMAND_TYPE_COPY)
+    return;
   context_resource_states_[resource].stateUpdate(resource, next_state, split,
                                                  index, transitions_);
 }
@@ -63,6 +67,7 @@ void Context::resolvePendingResourceState() {
       pending_transition_command_->close();
     }
   }
+  context_command_->referenceTrackingResrouce(context_resource_states_);
 }
 void Context::resolvePreviousContextStateAndSelfClear(
     const std::shared_ptr<Context> &previours_context) {
@@ -88,6 +93,9 @@ void Context::resolvePreviousContextStateAndSelfClear(
       pending_transition_command_->close();
     }
   }
+}
+void Context::addReferenceResrouceFromTracking() {
+  context_command_->referenceTrackingResrouce(context_resource_states_);
 }
 void Context::waitRecordingDone() {
   try {

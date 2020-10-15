@@ -44,14 +44,16 @@ Resource::Resource(ComPtr<GPUResource> gpu_resource,
         upload_buffer_->Map(0, &readRange, &upload_buffer_map_pointer_));
   }
 }
-GPUDescriptorHandle Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) {
+GPUDescriptorHandle
+Resource::getCBVSRVUAVUsagebyIndex(unsigned int index) const {
   if (index >= resource_descriptor_range_.bind_usage_descriptors_->getSize()) {
     throw std::exception("Invalid usage index, out of usage indices size");
   }
   return resource_descriptor_range_.bind_usage_descriptors_->getGPUHandle(
       index);
 }
-CPUDescriptorHandle Resource::getCPUCBVSRVUAVUsagebyIndex(unsigned int index) {
+CPUDescriptorHandle
+Resource::getCPUCBVSRVUAVUsagebyIndex(unsigned int index) const {
   if (index >= resource_descriptor_range_.copy_usage_descriptors_->getSize()) {
     throw std::exception("Invalid usage index, out of usage indices size");
   }

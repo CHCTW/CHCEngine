@@ -77,8 +77,8 @@ protected:
   Resource(ComPtr<GPUResource> gpu_resource, ComPtr<GPUResource> upload_buffer,
            ResourceInformation information,
            ResourceDescriptorRange &resource_desc_range);
-  GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index);
-  CPUDescriptorHandle getCPUCBVSRVUAVUsagebyIndex(unsigned int index);
+  GPUDescriptorHandle getCBVSRVUAVUsagebyIndex(unsigned int index) const;
+  CPUDescriptorHandle getCPUCBVSRVUAVUsagebyIndex(unsigned int index) const;
   std::vector<SubResourceState> &getSubResrouceStates();
   bool isSubResroucesSameStates();
 
@@ -89,7 +89,7 @@ public:
   void setName(std::string_view name);
   const std::string &getName() const { return information_.name_; }
   ResourceType getType() { return information_.type_; }
-  ResourceInformation getInformation() { return information_; }
+  ResourceInformation getInformation() const { return information_; }
   // 0 for group, 1 for buffer and swapchain
   unsigned int getSubResrouceCount() const;
 };
