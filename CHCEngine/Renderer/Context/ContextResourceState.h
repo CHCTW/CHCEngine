@@ -2,7 +2,6 @@
 #include "../ClassName.h"
 
 #include "../Resource/Resource.h"
-#include "Command.h"
 
 #include <algorithm>
 #include <memory>

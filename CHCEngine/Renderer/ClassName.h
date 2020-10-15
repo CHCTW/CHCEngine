@@ -1047,5 +1047,17 @@ inline bool checkBindTypeUsageType(BindType bind_type, ResourceUsage usage) {
   }
   return false;
 }
+namespace Resource {
+class Resource;
+}
+struct Transition {
+  /*Transition(std::shared_ptr<Resource::Resource> &resource)
+      : resource_(resource) {}*/
+  Resource::Resource *resource_;
+  ResourceState before_state_;
+  ResourceState after_state_;
+  ResourceTransitionFlag flag_;
+  unsigned int subresource_index_;
+};
 } // namespace Renderer
 } // namespace CHCEngine

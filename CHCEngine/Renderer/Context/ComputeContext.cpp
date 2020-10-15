@@ -149,7 +149,7 @@ void ComputeContext::resourceTransition(
     ResourceState before_state, ResourceState after_state, bool set_barrier,
     ResourceTransitionFlag flag, unsigned int subresource_index) {
   transitions_.push_back(
-      {resource, before_state, after_state, flag, subresource_index});
+      {resource.get(), before_state, after_state, flag, subresource_index});
   if (set_barrier) {
     flushBarriers();
   }

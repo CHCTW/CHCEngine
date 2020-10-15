@@ -28,6 +28,7 @@ void ContextCommand::free() {
     reset();
     use_owner->freeContextCommand(id_);
   }
+  context_resource_states_.clear();
 }
 
 void ContextCommand::reset() {
@@ -52,8 +53,8 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions,
     barriers_[i].Transition.StateAfter =
         convertToD3D12ResourceStates(transitions[i].after_state_);
     barriers_[i].Transition.Subresource = transitions[i].subresource_index_;
-    std::shared_ptr<Resource::Resource> temp =
-        std::move(transitions[i].resource_);
+    /*std::shared_ptr<Resource::Resource> temp =
+        std::move(transitions[i].resource_);*/
     // referenced_resources_.emplace_back(std::move(transitions[i].resource_));
   }
   unsigned int offset = static_cast<unsigned int>(transitions.size());
@@ -310,9 +311,10 @@ void ContextCommand::dispatch(unsigned int x, unsigned int y, unsigned int z) {
 void ContextCommand::referenceTrackingResrouce(
     std::unordered_map<std::shared_ptr<Resource::Resource>,
                        ContextResourceState> &context_resource_states) {
-  for (auto &p : context_resource_states) {
+  context_resource_states_ = std::move(context_resource_states);
+  /*for (auto &p : context_resource_states) {
     referenced_resources_.emplace_back(p.first);
-  }
+  }*/
 }
 } // namespace Context
 } // namespace Renderer

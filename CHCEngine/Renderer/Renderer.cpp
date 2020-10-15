@@ -17,6 +17,7 @@
 #include "Context/Command.h"
 #include "D3D12Convert.h"
 #include "D3D12Utilities.hpp"
+#include "Resource/SwapChainBuffer.h"
 #include "Utilities.hpp"
 static D3D12_FEATURE_DATA_ROOT_SIGNATURE root_signature_feature = {};
 using CHCEngine::Renderer::Context::GraphicsContext;

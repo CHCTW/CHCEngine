@@ -257,14 +257,6 @@ int main() {
         (uint32_t)simple_texture->getTextureInformation().width_ / x + 1,
         (uint32_t)simple_texture->getTextureInformation().height_ / y + 1,
         1 / z);
-    /*graphics->resourceTransition(
-        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-        ResourceState::RESOURCE_STATE_COPY_DEST, true,
-        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN);
-    graphics->resourceTransition(
-        simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-        ResourceState::RESOURCE_STATE_COPY_DEST, false,
-        ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END);*/
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
           graph->clearRenderTarget(
@@ -273,9 +265,6 @@ int main() {
 
           graph->setPipeline(pipeline);
           graph->setGraphicsBindLayout(groups_bind_layout);
-          /*graph->resourceTransition(
-              simple_texture, ResourceState::RESOURCE_STATE_UNORDERED_ACCESS,
-              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE, true);*/
           graph->bindGraphicsResource(simple_texture, "simple_texture");
           graph->bindGraphicsSamplers(sampler_group, "simple_sampler");
           graph->setVertexBuffers(buffer);
@@ -285,11 +274,6 @@ int main() {
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
           graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(6);
-          /*graph->resourceTransition(
-              simple_texture,
-              ResourceState::RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
-                  ResourceState::RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-              ResourceState::RESOURCE_STATE_UNORDERED_ACCESS);*/
           graph->setSwapChainToPresetState(
               renderer.getSwapChainBuffer(swap_chain_index));
         },

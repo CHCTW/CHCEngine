@@ -14,7 +14,7 @@ void ContextSubResourceState::addTransition(
   if (split)
     flag = ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_BEGIN;
   transitions.emplace_back(
-      Transition{resource, before_state, after_state, flag, index});
+      Transition{resource.get(), before_state, after_state, flag, index});
 }
 
 void ContextSubResourceState::resolveSplitTransition(
@@ -23,7 +23,7 @@ void ContextSubResourceState::resolveSplitTransition(
   if (!isTracked() || !isTransiting())
     return;
   transitions.emplace_back(
-      Transition{resource, previous_state_, current_state_,
+      Transition{resource.get(), previous_state_, current_state_,
                  ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END, index});
   previous_state_ = current_state_;
 
@@ -120,7 +120,7 @@ void ContextSubResourceState::resovleSubResrouceState(
   // resolve transition state
   if (sub_resource_state.isTransiting()) {
     transitions.emplace_back(Transition{
-        resource, sub_resource_state.previous_state_,
+        resource.get(), sub_resource_state.previous_state_,
         sub_resource_state.current_state_,
         ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_END, index});
     sub_resource_state.previous_state_ = sub_resource_state.current_state_;
@@ -129,7 +129,8 @@ void ContextSubResourceState::resovleSubResrouceState(
       needResolveDecayResrouceState(resource, sub_resource_state)) {
     if (first_transition_state_ != sub_resource_state.current_state_) {
       transitions.emplace_back(Transition{
-          resource, sub_resource_state.current_state_, first_transition_state_,
+          resource.get(), sub_resource_state.current_state_,
+          first_transition_state_,
           ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
     }
   }
@@ -162,7 +163,7 @@ void ContextSubResourceState::addPreviousState(
       } else if (previous_context_state.current_state_ !=
                  first_transition_state_) {
         transitions.emplace_back(Transition{
-            resource, previous_context_state.current_state_,
+            resource.get(), previous_context_state.current_state_,
             first_transition_state_,
             ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
         previous_context_state.current_state_ = current_state_;

@@ -15,6 +15,8 @@ private:
   unsigned int width_;
   unsigned int height_;
   std::shared_ptr<DescriptorRange> descriptors_;
+
+public:
   SwapChainBuffer(ComPtr<GPUResource> gpu_resource,
                   std::shared_ptr<DescriptorRange> descriptors,
                   const std::string &name, unsigned int width,
@@ -26,8 +28,6 @@ private:
                           ResourceState::RESOURCE_STATE_PRESENT};
     sub_resource_states_.resize(1, s);
   }
-
-public:
   // SwapChainBuffer() = delete;
   SwapChainBuffer(SwapChainBuffer &ref) = default;
   SwapChainBuffer(SwapChainBuffer &&ref) = default;

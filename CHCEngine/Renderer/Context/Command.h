@@ -3,6 +3,7 @@
 #include <wrl/client.h>
 
 #include "../ClassName.h"
+#include "ContextResourceState.h"
 using Microsoft::WRL::ComPtr;
 namespace CHCEngine {
 namespace Renderer {
@@ -25,15 +26,6 @@ namespace Context {
 class ContextPoolBase;
 class BaseFence;
 class ContextResourceState;
-struct Transition {
-  /*Transition(std::shared_ptr<Resource::Resource> &resource)
-      : resource_(resource) {}*/
-  std::shared_ptr<Resource::Resource> resource_;
-  ResourceState before_state_;
-  ResourceState after_state_;
-  ResourceTransitionFlag flag_;
-  unsigned int subresource_index_;
-};
 struct UAVWait {
   std::shared_ptr<Resource::Resource> resource_;
 };
@@ -88,6 +80,8 @@ struct ContextCommand {
   ComPtr<BindSignature> graphics_bind_signature_;
   ComPtr<BindSignature> compute_bind_signature_;
   ComPtr<PipelineState> pipeline_state_;
+  std::unordered_map<std::shared_ptr<Resource::Resource>, ContextResourceState>
+      context_resource_states_;
   ContextCommand(unsigned long long id,
                  const ComPtr<CommandAllocator> &allocator,
                  const ComPtr<CommandList> &list,
