@@ -90,9 +90,11 @@ void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
 void ContextCommand::updateBufferRegion(
     std::shared_ptr<Resource::Buffer> buffer, void const *data,
     unsigned long long data_byte_size, unsigned long long offset) {
-  memcpy(buffer->upload_buffer_map_pointer_, data, data_byte_size);
+  char *map_point = (char *)buffer->upload_buffer_map_pointer_;
+  map_point += offset;
+  memcpy(map_point, data, data_byte_size);
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
-                          buffer->upload_buffer_.Get(), 0, data_byte_size);
+                          buffer->upload_buffer_.Get(), offset, data_byte_size);
   // referenced_resources_.emplace_back(std::move(buffer));
 }
 void ContextCommand::updateBufferRegion(
