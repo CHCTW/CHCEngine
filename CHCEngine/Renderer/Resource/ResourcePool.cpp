@@ -258,7 +258,8 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
     const std::vector<TextureUsage> &usages,
     const std::vector<RenderTargetUsage> &render_target_usages,
     const std::vector<DepthStencilUsage> &depth_stencil_usages,
-    ResourceState initial_state, ResourceUpdateType update_type) {
+    const DefaultClearValue &clear_value, ResourceState initial_state,
+    ResourceUpdateType update_type) {
   if (usages.empty() && render_target_usages.empty() &&
       depth_stencil_usages.empty()) {
     throw std::exception("No usages, invalid texture create");
@@ -301,10 +302,43 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
       (flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
     flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
   ComPtr<GPUResource> upload_buffer = nullptr;
-  ComPtr<GPUResource> gpu_resource = createTexture(
-      device_, convertToD3D12ResourceDimension(texture_type),
-      convertToDXGIFormat(convertToDataFormat(raw_format)), width, height,
-      depth, HeapType::HEAP_TYPE_DEFAULT, mip_levels, initial_state, flags);
+  D3D12_CLEAR_VALUE temp = {};
+  D3D12_CLEAR_VALUE *clear = nullptr;
+  DefaultClearValue c = clear_value;
+  if (flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) {
+    if (clear_value.type_ ==
+            DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_COLOR ||
+        clear_value.type_ ==
+            DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_UNKNOWN) {
+
+      clear = &temp;
+      c.type_ = DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_COLOR;
+      temp.Format = convertToDXGIFormat(render_target_usages[0].data_format_);
+      temp.Color[0] = clear_value.color_.r;
+      temp.Color[1] = clear_value.color_.g;
+      temp.Color[2] = clear_value.color_.b;
+      temp.Color[3] = clear_value.color_.a;
+    }
+  }
+  if (flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) {
+    if (clear_value.type_ ==
+            DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_DEPTH_STENCIL ||
+        clear_value.type_ ==
+            DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_UNKNOWN) {
+
+      clear = &temp;
+      c.type_ = DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_DEPTH_STENCIL;
+      temp.Format = convertToDXGIFormat(
+          convertToDataFormat(depth_stencil_usages[0].data_format_));
+      temp.DepthStencil.Depth = clear_value.depth_stencil_value_.Depth;
+      temp.DepthStencil.Stencil = clear_value.depth_stencil_value_.Stencil;
+    }
+  }
+  ComPtr<GPUResource> gpu_resource =
+      createTexture(device_, convertToD3D12ResourceDimension(texture_type),
+                    convertToDXGIFormat(convertToDataFormat(raw_format)), width,
+                    height, depth, HeapType::HEAP_TYPE_DEFAULT, mip_levels,
+                    clear, initial_state, flags);
 
   if (usages.size()) {
     resource_range.copy_usage_descriptors_ = getSRVUAVTextureDesciptorRanges(
@@ -372,7 +406,8 @@ std::shared_ptr<Texture> ResourcePool::getTexture(
                                  std::move(foot_print_vec),
                                  std::move(row_counts_vec),
                                  std::move(row_bytes_vec),
-                                 required_size};
+                                 required_size,
+                                 c};
   return std::make_shared<Texture>(gpu_resource, upload_buffer, information,
                                    text_inf, resource_range, rtv_range,
                                    dsv_range, usages, render_target_usages,

@@ -92,7 +92,9 @@ struct ContextCommand {
   void close();
   void resrourceTransition(std::vector<Transition> &transitions,
                            std::vector<UAVWait> &waits);
-  void clearSwapChainBuffer(CPUDescriptorHandle handle, const float *color);
+  void clearRenderTarget(CPUDescriptorHandle handle, const float *color);
+  void clearDepthStencil(CPUDescriptorHandle handle, float depth_value,
+                         uint8_t stencil_value, bool depth, bool stencil);
   void setPipelineState(ComPtr<PipelineState> pipeline_state);
   void updateBufferRegion(std::shared_ptr<Resource::Buffer>, void const *data,
                           unsigned long long data_byte_size,
@@ -111,6 +113,8 @@ struct ContextCommand {
       const std::vector<std::shared_ptr<Resource::Buffer>> &buffers);
   void setTopology(PrimitiveTopology topology);
   void setRenderTarget(CPUDescriptorHandle handle);
+  void setRenderTarget(CPUDescriptorHandle *handles, uint32_t count,
+                       CPUDescriptorHandle *depth_stencil_handle);
   void setGraphicsBindSignature(ComPtr<BindSignature> bind_signature);
   void setComputeBindSignature(ComPtr<BindSignature> bind_signature);
   void bindGraphicsResource(std::shared_ptr<Resource::Resource> resource,

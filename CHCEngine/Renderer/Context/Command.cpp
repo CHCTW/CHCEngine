@@ -68,9 +68,20 @@ void ContextCommand::resrourceTransition(std::vector<Transition> &transitions,
   list_->ResourceBarrier(static_cast<unsigned int>(barriers_.size()),
                          barriers_.data());
 }
-void ContextCommand::clearSwapChainBuffer(CPUDescriptorHandle handle,
-                                          const float *color) {
+void ContextCommand::clearRenderTarget(CPUDescriptorHandle handle,
+                                       const float *color) {
   list_->ClearRenderTargetView(handle, color, 0, nullptr);
+}
+void ContextCommand::clearDepthStencil(CPUDescriptorHandle handle,
+                                       float depth_value, uint8_t stencil_value,
+                                       bool depth, bool stencil) {
+  D3D12_CLEAR_FLAGS flag = {};
+  if (depth)
+    flag |= D3D12_CLEAR_FLAGS::D3D12_CLEAR_FLAG_DEPTH;
+  if (stencil)
+    flag |= D3D12_CLEAR_FLAGS::D3D12_CLEAR_FLAG_STENCIL;
+  list_->ClearDepthStencilView(handle, flag, depth_value, stencil_value, 0,
+                               nullptr);
 }
 void ContextCommand::setPipelineState(ComPtr<PipelineState> pipeline_state) {
   list_->SetPipelineState(pipeline_state.Get());
@@ -122,6 +133,11 @@ void ContextCommand::setTopology(PrimitiveTopology topology) {
 }
 void ContextCommand::setRenderTarget(CPUDescriptorHandle handle) {
   list_->OMSetRenderTargets(1, &handle, false, nullptr);
+}
+void ContextCommand::setRenderTarget(
+    CPUDescriptorHandle *handles, uint32_t count,
+    CPUDescriptorHandle *depth_stencil_handle) {
+  list_->OMSetRenderTargets(count, handles, false, depth_stencil_handle);
 }
 void ContextCommand::setGraphicsBindSignature(
     ComPtr<BindSignature> bind_signature) {

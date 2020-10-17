@@ -30,7 +30,9 @@ public:
   DepthStencilSetup() = default;
   // this will use the foramt to auto turn on/off depth/stencil
   DepthStencilSetup(DataFormat depth_stencil_formats);
-  explicit DepthStencilSetup(bool depth_enable) : depth_enable_(depth_enable) {}
+  DepthStencilSetup(bool depth_enable, DataFormat depth_stencil_formats)
+      : depth_enable_(depth_enable),
+        depth_stencil_formats_(depth_stencil_formats) {}
   void setDepthEnable(bool depth_enable) { depth_enable_ = depth_enable; }
   void setStencilEnable(bool stencil_enable) {
     stencil_enable_ = stencil_enable;
@@ -51,6 +53,8 @@ public:
   DataFormat getFormat() const { return depth_stencil_formats_; }
 };
 static const DepthStencilSetup default_depth_stencil_setup_;
+static const DepthStencilSetup
+    depth_16_write_stencil_setup_(true, DataFormat::DATA_FORMAT_D16_UNORM);
 } // namespace Pipeline
 } // namespace Renderer
 } // namespace CHCEngine

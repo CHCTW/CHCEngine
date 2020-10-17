@@ -202,10 +202,10 @@ namespace Resource {
 class Resource;
 };
 struct Color {
-  float r;
-  float g;
-  float b;
-  float a;
+  float r = 0.0;
+  float g = 0.0;
+  float b = 0.0;
+  float a = 0.0;
 };
 using VertexBufferView = D3D12_VERTEX_BUFFER_VIEW;
 using IndexBufferView = D3D12_INDEX_BUFFER_VIEW;
@@ -1059,5 +1059,30 @@ struct Transition {
   ResourceTransitionFlag flag_;
   unsigned int subresource_index_;
 };
+// unkown, decide by the texture type
+// with rtv, have 0,0,0,0 value
+// with dsv, have 1,0 value
+enum class DefaultClearValueType {
+  DEFAULT_CLEAR_VALUE_TYPE_COLOR,
+  DEFAULT_CLEAR_VALUE_TYPE_DEPTH_STENCIL,
+  DEFAULT_CLEAR_VALUE_TYPE_UNKNOWN,
+};
+using DepthStencilValue = D3D12_DEPTH_STENCIL_VALUE;
+static const DepthStencilValue depth_1_stencil_0_value_ = {1.0, 0};
+struct DefaultClearValue {
+  DefaultClearValueType type_ =
+      DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_UNKNOWN;
+  DefaultClearValue() : color_(){};
+  DefaultClearValue(Color color)
+      : color_(color),
+        type_(DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_COLOR) {}
+  DefaultClearValue(DepthStencilValue value)
+      : depth_stencil_value_(value),
+        type_(DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_DEPTH_STENCIL) {}
+  Color color_;
+  DepthStencilValue depth_stencil_value_;
+};
+static const DefaultClearValue
+    default_depth_stencil_clear_value(depth_1_stencil_0_value_);
 } // namespace Renderer
 } // namespace CHCEngine

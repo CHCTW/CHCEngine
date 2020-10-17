@@ -51,7 +51,8 @@ createBuffer(const ComPtr<Device> &device, UINT64 size, HeapType heap_type,
 ComPtr<GPUResource>
 createTexture(const ComPtr<Device> &device, D3D12_RESOURCE_DIMENSION dimension,
               DXGI_FORMAT format, UINT64 width, UINT height, UINT depth,
-              HeapType heap_type, UINT mip_levels, ResourceState initial_state,
+              HeapType heap_type, UINT mip_levels,
+              D3D12_CLEAR_VALUE *clear_value, ResourceState initial_state,
               D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
               UINT sample_count = 1, UINT sample_quality = 0) {
   ComPtr<GPUResource> res;
@@ -77,7 +78,7 @@ createTexture(const ComPtr<Device> &device, D3D12_RESOURCE_DIMENSION dimension,
 
   ThrowIfFailed(device->CreateCommittedResource(
       &heap_property, D3D12_HEAP_FLAG_NONE, &desc,
-      convertToD3D12ResourceStates(initial_state), nullptr,
+      convertToD3D12ResourceStates(initial_state), clear_value,
       IID_PPV_ARGS(&res)));
   return res;
 }

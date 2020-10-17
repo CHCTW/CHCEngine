@@ -2,6 +2,7 @@
 
 #include "../Pipeline/Pipeline.h"
 #include "../Resource/SwapChainBuffer.h"
+#include "../Resource/Texture.h"
 #include "GraphicsContext.h"
 
 namespace CHCEngine {
@@ -19,7 +20,94 @@ void GraphicsContext::clearRenderTarget(
   updateContextResourceState(
       swap_chain_buffer, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, 0);
   flushBarriers();
-  context_command_->clearSwapChainBuffer(swap_chain_buffer->getDescriptor(), c);
+  context_command_->clearRenderTarget(swap_chain_buffer->getDescriptor(), c);
+}
+void GraphicsContext::clearRenderTarget(
+    const std::shared_ptr<Resource::Texture> &render_target, Color color,
+    uint32_t render_target_usage_index) {
+
+  float c[4] = {color.r, color.g, color.b, color.a};
+  updateRenderTargetTextureState(render_target, render_target_usage_index);
+  flushBarriers();
+  context_command_->clearRenderTarget(
+      render_target->getRenderTargetDescriptor(render_target_usage_index), c);
+}
+void GraphicsContext::clearRenderTarget(
+    const std::shared_ptr<Resource::Texture> &render_target,
+    uint32_t render_target_usage_index) {
+  updateRenderTargetTextureState(render_target, render_target_usage_index);
+  flushBarriers();
+
+  const auto &inf = render_target->getTextureInformation();
+  if (inf.default_clear_value_.type_ !=
+      DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_COLOR) {
+    std::string error =
+        "Didn't setup default render target clear value, Texture Name: ";
+    error += render_target->getInformation().name_;
+    throw std::exception(error.c_str());
+  }
+  float c[4] = {
+      inf.default_clear_value_.color_.r, inf.default_clear_value_.color_.g,
+      inf.default_clear_value_.color_.b, inf.default_clear_value_.color_.a};
+  context_command_->clearRenderTarget(
+      render_target->getRenderTargetDescriptor(render_target_usage_index), c);
+}
+void GraphicsContext::clearDepth(
+    const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+    float value, uint32_t depth_stencil_usage_index) {
+  updateDepthStencilTextureState(depth_stencil_texture,
+                                 depth_stencil_usage_index, true);
+  flushBarriers();
+  context_command_->clearDepthStencil(
+      depth_stencil_texture->getDepthStencilDescriptor(
+          depth_stencil_usage_index),
+      value, 0, true, false);
+}
+void GraphicsContext::clearStencil(
+    const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+    uint8_t value, uint32_t depth_stencil_usage_index) {
+  updateDepthStencilTextureState(depth_stencil_texture,
+                                 depth_stencil_usage_index, true);
+  flushBarriers();
+  context_command_->clearDepthStencil(
+      depth_stencil_texture->getDepthStencilDescriptor(
+          depth_stencil_usage_index),
+      0, value, false, true);
+}
+void GraphicsContext::clearDepthStencil(
+    const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+    float depth_value, uint8_t stencil_value,
+    uint32_t depth_stencil_usage_index) {
+  updateDepthStencilTextureState(depth_stencil_texture,
+                                 depth_stencil_usage_index, true);
+  flushBarriers();
+  context_command_->clearDepthStencil(
+      depth_stencil_texture->getDepthStencilDescriptor(
+          depth_stencil_usage_index),
+      depth_value, stencil_value, true, true);
+}
+void GraphicsContext::clearDepthStencil(
+    const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+    uint32_t depth_stencil_usage_index) {
+  updateDepthStencilTextureState(depth_stencil_texture,
+                                 depth_stencil_usage_index, true);
+  flushBarriers();
+  const auto &inf = depth_stencil_texture->getTextureInformation();
+  auto format = convertToDataFormat(
+      depth_stencil_texture->depth_stencil_usages_[0].data_format_);
+  if (inf.default_clear_value_.type_ !=
+      DefaultClearValueType::DEFAULT_CLEAR_VALUE_TYPE_DEPTH_STENCIL) {
+    std::string error =
+        "Didn't setup default depth stencil clear value, Texture Name: ";
+    error += depth_stencil_texture->getInformation().name_;
+    throw std::exception(error.c_str());
+  }
+  context_command_->clearDepthStencil(
+      depth_stencil_texture->getDepthStencilDescriptor(
+          depth_stencil_usage_index),
+      inf.default_clear_value_.depth_stencil_value_.Depth,
+      inf.default_clear_value_.depth_stencil_value_.Stencil,
+      hasDepthFormat(format), hasStencilFormat(format));
 }
 void GraphicsContext::drawInstanced(unsigned int vertex_count,
                                     unsigned int instance_count,
@@ -56,6 +144,45 @@ void GraphicsContext::setRenderTarget(
       swap_chain_buffer, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, 0);
   context_command_->setRenderTarget(swap_chain_buffer->getDescriptor());
 }
+void GraphicsContext::setRenderTarget(
+    const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer,
+    const std::shared_ptr<Resource::Texture> &depth_texture,
+    uint32_t depth_stencil_index, bool write) {
+  updateContextResourceState(
+      swap_chain_buffer, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, 0);
+  updateDepthStencilTextureState(depth_texture, depth_stencil_index, write);
+  context_command_->setRenderTarget(
+      &swap_chain_buffer->getDescriptor(), 1,
+      &depth_texture->getDepthStencilDescriptor(depth_stencil_index));
+}
+void GraphicsContext::setRenderTarget(
+    const std::vector<RenderTargetSetting> &render_target_settings,
+    const std::shared_ptr<Resource::Texture> &depth_texture,
+    uint32_t depth_stencil_index, bool write) {
+  uint32_t total = 0;
+  CPUDescriptorHandle handles[8];
+  for (const auto &r : render_target_settings) {
+    for (uint32_t i = 0; i < r.usage_size; ++i) {
+      updateRenderTargetTextureState(r.texture_, r.usage_indices[i]);
+      handles[i] = r.texture_->getRenderTargetDescriptor(r.usage_indices[i]);
+      ++total;
+      if (total >= 8u) {
+        throw std::exception("Set too many render target, It only support 8 "
+                             "render targets maximum!");
+      }
+    }
+  }
+  if (depth_texture) {
+    updateDepthStencilTextureState(depth_texture, depth_stencil_index, write);
+    context_command_->setRenderTarget(
+        handles, total,
+        &depth_texture->getDepthStencilDescriptor(depth_stencil_index));
+  } else {
+    context_command_->setRenderTarget(handles, total, nullptr);
+  }
+  // context_command_->setRenderTarget(handles,total,)
+}
+
 void GraphicsContext::setGraphicsBindLayout(
     const std::shared_ptr<Pipeline::BindLayout> &bind_layout) {
   graphics_layout_ = bind_layout;
@@ -102,6 +229,27 @@ void GraphicsContext::flushGraphicsBindings() {
                                            bind.slot_index_, bind.bind_type_,
                                            bind.direct_bind_);
     graphics_bind_descriptors_.pop();
+  }
+}
+void GraphicsContext::updateRenderTargetTextureState(
+    const std::shared_ptr<Resource::Texture> &texture, uint32_t usage_index) {
+  const auto &sub_resource_list =
+      texture->getRenderTargetSubResourceIndices(usage_index);
+  for (auto i : sub_resource_list) {
+    updateContextResourceState(
+        texture, ResourceState::RESOURCE_STATE_RENDER_TARGET, false, i);
+  }
+}
+void GraphicsContext::updateDepthStencilTextureState(
+    const std::shared_ptr<Resource::Texture> &texture, uint32_t usage_index,
+    bool write) {
+  const auto &sub_resource_list =
+      texture->getDepthStencilSubResourceIndices(usage_index);
+  auto state = ResourceState::RESOURCE_STATE_DEPTH_READ;
+  if (write)
+    state = ResourceState::RESOURCE_STATE_DEPTH_WRITE;
+  for (auto i : sub_resource_list) {
+    updateContextResourceState(texture, state, false, i);
   }
 }
 void GraphicsContext::bindGraphicsResource(

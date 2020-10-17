@@ -15,6 +15,7 @@ struct TextureInformation {
   std::vector<unsigned int> row_counts_;
   std::vector<unsigned long long> row_byte_sizes_;
   unsigned long long byte_size_;
+  DefaultClearValue default_clear_value_;
   unsigned int getSubResrouceCount() const {
     if (type_ == TextureType ::TEXTURE_TYPE_3D)
       return mip_levels_;
@@ -27,6 +28,7 @@ private:
   TextureInformation texture_information_;
   friend class Context::CopyContext;
   friend class Context::ComputeContext;
+  friend class Context::GraphicsContext;
   std::shared_ptr<DescriptorRange> render_target_descriptors_;
   std::shared_ptr<DescriptorRange> depth_stencil_descriptors_;
   std::vector<TextureUsage> usages_;
@@ -47,6 +49,29 @@ private:
   const std::vector<uint32_t> &
   getDepthStencilSubResourceIndices(uint32_t index) const {
     return depth_stencil_sub_resources_indices_[index];
+  }
+  CPUDescriptorHandle getRenderTargetDescriptor(uint32_t index) const {
+    if (index >= render_target_descriptors_->getSize()) {
+      std::string error = "Render Target Index out of Boundary : ";
+      error += std::to_string(index);
+      error += "  ,Texture Name : " + information_.name_;
+      error += "  ,Render Target Usage Size : " +
+               std::to_string(render_target_descriptors_->getSize());
+      throw std::exception();
+    }
+    return render_target_descriptors_->getHandle(index);
+  }
+
+  CPUDescriptorHandle getDepthStencilDescriptor(uint32_t index) const {
+    if (index >= depth_stencil_descriptors_->getSize()) {
+      std::string error = "Render Target Index out of Boundary : ";
+      error += std::to_string(index);
+      error += "  ,Texture Name : " + information_.name_;
+      error += "  ,Render Target Usage Size : " +
+               std::to_string(depth_stencil_descriptors_->getSize());
+      throw std::exception();
+    }
+    return depth_stencil_descriptors_->getHandle(index);
   }
 
 public:

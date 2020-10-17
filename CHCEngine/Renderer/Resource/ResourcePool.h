@@ -4,8 +4,8 @@
 
 #include "../DescriptorHeap.h"
 #include "Buffer.h"
-#include "Texture.h"
 #include "ResourceGroup.h"
+#include "Texture.h"
 #include <mutex>
 #include <unordered_map>
 
@@ -50,7 +50,7 @@ public:
                                          ResourceState initial_state,
                                          ResourceUpdateType update_type);
   // all usage for buffer and texture should going to buffer and texture
-  // this helps on auto resoruce transition, with  bind format and usage 
+  // this helps on auto resoruce transition, with  bind format and usage
   // index, we can percisely generate all the resouce transisiton
   // need to think about delay transition, this should be open for
   // user, so they can optimize the pipeline
@@ -66,7 +66,8 @@ public:
              unsigned int mip_levels, const std::vector<TextureUsage> &usages,
              const std::vector<RenderTargetUsage> &render_target_usages,
              const std::vector<DepthStencilUsage> &depth_stencil_usages,
-      ResourceState initial_state, ResourceUpdateType update_type);
+             const DefaultClearValue &clear_value, ResourceState initial_state,
+             ResourceUpdateType update_type);
   std::shared_ptr<ResourceGroup> getResrouceGroup(unsigned int size);
 };
 

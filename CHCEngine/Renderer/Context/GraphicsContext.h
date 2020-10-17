@@ -12,6 +12,7 @@ namespace Resource {
 class SwapChainBuffer;
 class DynamicBuffer;
 class Buffer;
+class Texture;
 } // namespace Resource
 namespace Pipeline {
 class BindLayout;
@@ -21,6 +22,12 @@ class Sampler;
 class SamplerGroup;
 } // namespace Sampler
 namespace Context {
+struct RenderTargetSetting {
+  const std::shared_ptr<Resource::Texture> &texture_;
+  uint32_t usage_indices[8] = {0};
+  uint32_t usage_size = 1;
+};
+static const std::shared_ptr<Resource::Texture> dummy_depth_texture = nullptr;
 class GraphicsContext : public ComputeContext {
 protected:
   friend class Renderer;
@@ -31,6 +38,11 @@ protected:
                             unsigned int slot_index,
                             unsigned int usage_index = 0);
   void flushGraphicsBindings();
+  void updateRenderTargetTextureState(
+      const std::shared_ptr<Resource::Texture> &texture, uint32_t usage_index);
+  void updateDepthStencilTextureState(
+      const std::shared_ptr<Resource::Texture> &texture, uint32_t usage_index,
+      bool write);
 
 public:
   ~GraphicsContext() {
@@ -43,6 +55,27 @@ public:
   void clearRenderTarget(
       const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer,
       Color color);
+  void
+  clearRenderTarget(const std::shared_ptr<Resource::Texture> &render_target,
+                    Color color, uint32_t render_target_usage_index = 0);
+  void
+  clearRenderTarget(const std::shared_ptr<Resource::Texture> &render_target,
+                    uint32_t render_target_usage_index = 0);
+
+  void
+  clearDepth(const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+             float value, uint32_t depth_stencil_usage_index = 0);
+  void
+  clearStencil(const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+               uint8_t value, uint32_t depth_stencil_usage_index = 0);
+  void clearDepthStencil(
+      const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+      float depth_value, uint8_t stencil_value,
+      uint32_t depth_stencil_usage_index = 0);
+  // use the default clear value, faster, but need to predefine
+  void clearDepthStencil(
+      const std::shared_ptr<Resource::Texture> &depth_stencil_texture,
+      uint32_t depth_stencil_usage_index = 0);
   void drawInstanced(unsigned int vertex_count, unsigned int instance_count = 1,
                      unsigned int start_vertex_location = 0,
                      unsigned int start_instance_location = 0);
@@ -56,6 +89,16 @@ public:
   void setPrimitiveTopology(PrimitiveTopology topology);
   void setRenderTarget(
       const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer);
+  void setRenderTarget(
+      const std::shared_ptr<Resource::SwapChainBuffer> &swap_chain_buffer,
+      const std::shared_ptr<Resource::Texture> &depth_texture,
+      uint32_t depth_stencil_index = 0, bool write = true);
+  void setRenderTarget(
+      const std::vector<RenderTargetSetting> &render_target_settings,
+      const std::shared_ptr<Resource::Texture> &depth_texture =
+          dummy_depth_texture,
+      uint32_t depth_stencil_index = 0, bool write = true);
+
   // unfinished, should also  bind the resrouce in the bind layout ,will add it
   // later
   void setGraphicsBindLayout(

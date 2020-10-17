@@ -40,7 +40,7 @@ int main() {
   SamplerState simple_sampler : register(s1);\
   PSInput VSMain(uint id: SV_VertexID, float2 position : POSITION, float2 uv : UV) {\
     PSInput result;\
-    result.position = float4(position, 1.0, 1.0);\
+    result.position = float4(position, 0.5, 1.0);\
     result.color = (Color[id].xyz+scenecolor.xyz)/2.0;\
     result.uv = uv;\
     return result;\
@@ -206,6 +206,11 @@ int main() {
   Sampler::SamplerInformation sample_set = {
       .u_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_WRAP,
       .v_mode_ = TextureAddressMode::TEXTURE_ADDRESS_MODE_MIRROR};
+
+  auto depth_dexture = renderer.getTexture(
+      TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R16,
+      window.getFrameSize().X, window.getFrameSize().Y, 1, 1, {}, {},
+      {{.data_format_ = DepthStencilFormat::DEPTH_STENCIL_FORMAT_D16_UNORM}});
   res_group->insertResource(0, color_buffer);
   res_group->insertResource(1, constant_buffer);
   res_group->insertResource(2, simple_texture);
@@ -245,7 +250,8 @@ int main() {
 
   auto pipeline = renderer.getGraphicsPipeline(
       shset, {buffer->getBufferInformation().vetex_attributes_},
-      groups_bind_layout);
+      groups_bind_layout, Pipeline::default_render_setup_,
+      Pipeline::depth_16_write_stencil_setup_);
   pipeline->setName("simple pipeline");
 
   auto graphics = renderer.getGraphicsContext();
@@ -261,9 +267,12 @@ int main() {
                                          auto swap_chain_index, auto frame) {
     graphics->recordCommands<CHCEngine::Renderer::Context::GraphicsContext>(
         [&](CHCEngine::Renderer::Context::GraphicsContext *graph) {
+          graph->clearDepthStencil(depth_dexture);
           graph->clearRenderTarget(
               renderer.getSwapChainBuffer(swap_chain_index),
               {0.1f, 0.6f, 0.7f, 0.0f});
+          graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index),
+                                 depth_dexture);
           graph->setPipeline(pipeline);
           graph->setGraphicsBindLayout(groups_bind_layout);
           graph->bindGraphicsResource(res_group, "Color");
@@ -273,7 +282,6 @@ int main() {
           graph->setScissor(scissor);
           graph->setPrimitiveTopology(
               PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-          graph->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
           graph->drawInstanced(3);
           graph->setSwapChainToPresetState(
               renderer.getSwapChainBuffer(swap_chain_index));
