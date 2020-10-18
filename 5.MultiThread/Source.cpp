@@ -36,15 +36,16 @@ struct Quad {
 #define PI 3.14159265f
 std::default_random_engine generator;
 std::uniform_real_distribution<float> angle_distribution(0.0f, PI * 2);
-std::uniform_real_distribution<float> magnitue_distribution(0.0001f, 0.005f);
+std::uniform_real_distribution<float> magnitue_distribution(0.0001f, 0.0005f);
 std::uniform_real_distribution<float> z_distribution(0.0f, 0.9999f);
+std::uniform_real_distribution<float> xy_distribution(-0.9999f, 0.9999f);
 std::uniform_real_distribution<float> color_distribution(0.0f, 0.9999f);
 
 int main() {
 
   CHCEngine::Window::Window window;
   window.openWindow("Multi Thread", width, height);
-  window.setFrameTimeLowerBound(15000000);
+  // window.setFrameTimeLowerBound(30000000);
   // initial quads
   std::vector<Quad> quads(quad_count);
   std::vector<CircleColor> colors(quad_count);
@@ -69,6 +70,17 @@ int main() {
   renderer.initializeDevice();
   renderer.setSwapChain(window);
   // uint64_t nano_delta = 1000000;
+
+  // find out why there are inconsit update issue
+  // should when use dynamic resourse, only have one
+  // upload buffer, however, since we could record several
+  // update buffe commands, which means the data in upload
+  // buffer can be correpted,
+  // using static will always allocate new chunck, so it's fine
+  // but since every same type context use the same upload buffer
+  // it will be slow, I am going to give every context a dynamic
+  // upload buffer, dynamic resource will have same upload buffer count
+  // with swap chain
   auto position_buffer = renderer.getBuffer(
       quad_count, sizeof(Position),
       {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV}},
@@ -110,8 +122,8 @@ int main() {
   Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
   auto update = [&](Quad &quad, uint64_t nano_delta) {
-    quad.position_.x_ += quad.velocity_.x_ * nano_delta / 10000000;
-    quad.position_.y_ += quad.velocity_.y_ * nano_delta / 10000000;
+    quad.position_.x_ += quad.velocity_.x_ * nano_delta / 1000000;
+    quad.position_.y_ += quad.velocity_.y_ * nano_delta / 1000000;
     if (quad.position_.x_ >= 1.0 && quad.velocity_.x_ > 0.0)
       quad.velocity_.x_ *= -1.0;
     if (quad.position_.y_ >= 1.0 && quad.velocity_.y_ > 0.0)
@@ -164,6 +176,9 @@ int main() {
         }
         {
           std::lock_guard<std::mutex> lock(queue_mutex);
+          if (copy_updates_queue_.size() > 3) {
+            copy_updates_queue_.pop();
+          }
           copy_updates_queue_.emplace(copy_contexts);
         }
       });
@@ -242,9 +257,11 @@ int main() {
           // record next 2 frame record
           // take advantage with multi threading record
           // when submit context, it will wait until the
-          // record done, we can have cpu record and gpu work overlap
+          // record done,
+          // we can have cpu record and gpu work overlap
           // put record before submit, by a little time since we might
-          // have to copy context from queue
+          // have to copy context from queue, high latency but low frame time
+          // approach
           uint32_t next = (swap_chain_index + 2u) % 3u;
           for (uint32_t i = 0; i < quad_draw_thrad_count; ++i) {
             uint32_t end = start + offset;
@@ -260,15 +277,16 @@ int main() {
 
           {
             std::lock_guard<std::mutex> lock(queue_mutex);
-            while (copy_updates_queue_.size()) {
+            // std::cout << copy_updates_queue_.size() << std::endl;
+            if (copy_updates_queue_.size()) {
               copy_contexts[next] = copy_updates_queue_.front();
               copy_updates_queue_.pop();
             }
           }
-          if (copy_contexts[swap_chain_index].size()) {
+          if (copy_contexts[next].size()) {
             renderer.waitFenceSubmitContexts(graphics_fences[next],
                                              copy_fences[swap_chain_index],
-                                             copy_contexts[swap_chain_index]);
+                                             copy_contexts[next]);
             copy_contexts[swap_chain_index].clear();
 
             renderer.waitFenceSubmitContexts(
