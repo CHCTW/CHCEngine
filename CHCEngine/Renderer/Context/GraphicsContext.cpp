@@ -272,7 +272,7 @@ void GraphicsContext::bindGraphicsConstants(const void *data,
         "Need to set graphics bind layout first in this context");
   }
   unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
-  bindGraphicsConstants(data, slot_index, num_32bit_constant, constant_offset);
+  bindGraphicsConstants(data, num_32bit_constant, slot_index, constant_offset);
 }
 
 void GraphicsContext::bindGraphicsConstants(const void *data,

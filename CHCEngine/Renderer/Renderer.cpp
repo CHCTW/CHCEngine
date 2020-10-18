@@ -211,8 +211,8 @@ Renderer::Renderer()
     debub_controller->EnableDebugLayer();
     // SetEnableGPUD
     // debub_controller->
-    // debub_controller->SetEnableGPUBasedValidation(true);
-    // debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
+    debub_controller->SetEnableGPUBasedValidation(true);
+    debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
     // debub_controller->
     // Enable additional debug layers.
     dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
@@ -300,6 +300,9 @@ void Renderer::presentSwapChain() {
 void Renderer::waitUntilWindowClose() {
   if (loop_thread_.joinable())
     loop_thread_.join();
+  for (unsigned int i = 0; i < swap_chain_count_; ++i) {
+    swap_chain_present_fence_[i]->waitComplete();
+  }
 }
 bool Renderer::addLoopCallback(std::string name, RenderLoopCallback callback) {
   if (checkLoopCallbackAndAdd(name)) {

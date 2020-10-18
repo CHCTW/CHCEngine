@@ -145,7 +145,7 @@ void ComputeContext::bindComputeConstants(const void *data,
         "Need to set compute bind layout first in this context");
   }
   unsigned int slot_index = compute_layout_->getSlotIndex(slot_name);
-  bindComputeConstants(data, slot_index, num_32bit_constant, constant_offset);
+  bindComputeConstants(data, num_32bit_constant, slot_index, constant_offset);
 }
 void ComputeContext::bindComputeConstants(const void *data,
                                           uint32_t num_32bit_constant,

@@ -1,4 +1,5 @@
 #include "../ClassName.h"
+
 #include "FencePool.h"
 
 #include "../D3D12Utilities.hpp"
@@ -6,6 +7,10 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Context {
 static unsigned int fence_begin_size = 10;
+void FencePool::waitAllBaseFence() {
+  for (auto &f : fence_pool_)
+    f->wait();
+}
 FencePool::FencePool(ComPtr<Device> device) : device_(std::move(device)) {
   /*for (unsigned int i = 0; i < fence_begin_size; ++i) {
     ComPtr<Fence> fence;
@@ -38,8 +43,7 @@ std::shared_ptr<ContextFence> FencePool::getContextFence() {
       std::make_shared<BaseFence>(fence, index, weak_from_this()));
   available_list_.emplace_back(index);
   return std::make_shared<ContextFence>(fence_pool_[fence_pool_.size() - 1]);
-  
 }
-}  // namespace Context
-}  // namespace Renderer
-}  // namespace CHCEngine
+} // namespace Context
+} // namespace Renderer
+} // namespace CHCEngine
