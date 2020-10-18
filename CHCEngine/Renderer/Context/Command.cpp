@@ -216,6 +216,13 @@ void ContextCommand::bindGraphicsResource(const Resource::Resource *resource,
     }
   }
 }
+void ContextCommand::bindGraphicsConstants(const void *data,
+                                           uint32_t slot_index,
+                                           uint32_t constant_count,
+                                           uint32_t constant_buffer_offset) {
+  list_->SetGraphicsRoot32BitConstants(slot_index, constant_count, data,
+                                       constant_buffer_offset);
+}
 void ContextCommand::bindComputeResource(
     std::shared_ptr<Resource::Resource> resource, unsigned int usage_index,
     unsigned int slot_index, BindType bind_type, bool direct_bind) {
@@ -278,6 +285,12 @@ void ContextCommand::bindComputeResource(const Resource::Resource *resource,
       break;
     }
   }
+}
+void ContextCommand::bindComputeConstants(const void *data, uint32_t slot_index,
+                                          uint32_t constant_count,
+                                          uint32_t constant_buffer_offset) {
+  list_->SetComputeRoot32BitConstants(slot_index, constant_count, data,
+                                      constant_buffer_offset);
 }
 void ContextCommand::bindGraphicsSampler(
     std::shared_ptr<Sampler::Sampler> sampler, unsigned int usage_index,

@@ -1,4 +1,5 @@
 #include "CHCEngine.h"
+#include "QuadHlslCompat.h"
 #include <algorithm>
 #include <functional>
 #include <mutex>
@@ -7,9 +8,9 @@
 
 const static uint32_t width = 800;
 const static uint32_t height = 600;
-const static uint32_t quad_count = 500;
+const static uint32_t quad_count = 1000;
 const static uint32_t quad_update_thrad_count = 4;
-const static uint32_t quad_draw_thrad_count = 4;
+const static uint32_t quad_draw_thrad_count = 16;
 
 using CHCEngine::Renderer::BindType;
 using CHCEngine::Renderer::DataFormat;
@@ -23,11 +24,6 @@ using CHCEngine::Window::Vector;
 using CHCEngine::Window::Window;
 using namespace CHCEngine::Renderer;
 
-struct Position {
-  float x_ = 0.0;
-  float y_ = 0.0;
-  float z_ = 0.0;
-};
 struct Velocity {
   float x_ = 0.0;
   float y_ = 0.0;
@@ -52,6 +48,9 @@ int main() {
   for (auto &quad : quads) {
     auto speed = magnitue_distribution(generator);
     auto angle = angle_distribution(generator);
+    quad.position_.x_ = 0.0f;
+    quad.position_.y_ = 0.0f;
+    quad.position_.z_ = 0.0f;
     quad.velocity_.x_ = cos(angle) * speed;
     quad.velocity_.y_ = sin(angle) * speed;
     quad.position_.z_ = z_distribution(generator);
@@ -74,10 +73,27 @@ int main() {
       -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,  1.0f,  1.0f, 0.0f,
       1.0f,  -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,  0.0f, 0.0f,
   };
+  auto initial_copy = renderer.getCopyContext();
+  initial_copy->updateBuffer(vertex_buffer, quaddata, sizeof(float) * 24);
+  renderer.submitContexts({initial_copy})->waitComplete();
+
+  // pipeline
+  Shader ps("quad.hlsl", "PSMain", ShaderType::SHADER_TYPE_PIXEL, true);
+  Shader vs("quad.hlsl", "VSMain", ShaderType::SHADER_TYPE_VERTEX, true);
+  ShaderSet quad_shader_set(std::vector<Shader>{vs, ps}, {"IndexConstant"});
+  auto quad_bind_layout = renderer.getBindLayout(
+      quad_shader_set.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
+  auto quad_pipeline = renderer.getGraphicsPipeline(
+      quad_shader_set,
+      {vertex_buffer->getBufferInformation().vetex_attributes_},
+      quad_bind_layout);
+  Pipeline::Viewport view_port(window.getFrameSize().X,
+                               window.getFrameSize().Y);
+  Pipeline::Scissor scissor(window.getFrameSize().X, window.getFrameSize().Y);
 
   auto update = [&](Quad &quad, uint64_t nano_delta) {
-    quad.position_.x_ += quad.velocity_.x_ * nano_delta / 1000000;
-    quad.position_.y_ += quad.velocity_.y_ * nano_delta / 1000000;
+    quad.position_.x_ += quad.velocity_.x_ * nano_delta / 10000000;
+    quad.position_.y_ += quad.velocity_.y_ * nano_delta / 10000000;
     if (quad.position_.x_ >= 1.0 && quad.velocity_.x_ > 0.0)
       quad.velocity_.x_ *= -1.0;
     if (quad.position_.y_ >= 1.0 && quad.velocity_.y_ > 0.0)
@@ -99,9 +115,6 @@ int main() {
     }
   };
 
-  auto initial_copy = renderer.getCopyContext();
-  initial_copy->updateBuffer(vertex_buffer, quaddata, sizeof(float) * 24);
-  renderer.submitContexts({initial_copy})->waitComplete();
   std::mutex queue_mutex;
   std::queue<std::vector<std::shared_ptr<Context::Context>>>
       copy_updates_queue_;
@@ -146,22 +159,65 @@ int main() {
       TextureType::TEXTURE_TYPE_2D, RawFormat::RAW_FORMAT_R16, width, height, 1,
       1, {}, {},
       {{.data_format_ = DepthStencilFormat::DEPTH_STENCIL_FORMAT_D16_UNORM}});
-  std::vector<std::vector<std::shared_ptr<Context::GraphicsContext>>> contexts(
-      3u);
+  std::vector<std::vector<std::shared_ptr<Context::GraphicsContext>>>
+      graphic_contexts(3u);
+  std::vector<std::vector<std::shared_ptr<Context::Context>>>
+      submit_graphic_contexts(3u);
   std::vector<std::shared_ptr<Context::ContextFence>> graphics_fences(3u);
   std::shared_ptr<Context::ContextFence> copy_fence;
   copy_fence = renderer.getContextFence();
   for (uint32_t i = 0; i < 3; ++i) {
     graphics_fences[i] = renderer.getContextFence();
     for (uint32_t j = 0; j < quad_draw_thrad_count; ++j) {
-      contexts[i].emplace_back(renderer.getGraphicsContext());
+      graphic_contexts[i].emplace_back(renderer.getGraphicsContext());
+      submit_graphic_contexts[i].push_back(graphic_contexts[i].back());
     }
   }
+  auto context_record = [&](GraphicsContext *graphic, uint32_t context_index,
+                            uint32_t start, uint32_t end,
+                            uint32_t swap_chain_index) {
+    if (context_index == 0) {
+      graphic->clearRenderTarget(renderer.getSwapChainBuffer(swap_chain_index),
+                                 {0.1f, 0.6f, 0.7f, 0.0f});
+    }
+    graphic->setPipeline(quad_pipeline);
+    graphic->setViewport(view_port);
+    graphic->setScissor(scissor);
+    graphic->setRenderTarget(renderer.getSwapChainBuffer(swap_chain_index));
+    graphic->setGraphicsBindLayout(quad_bind_layout);
+    graphic->bindGraphicsResource(position_buffer, "positions");
+    graphic->setVertexBuffers(vertex_buffer);
+    graphic->setPrimitiveTopology(
+        PrimitiveTopology::PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    for (uint32_t i = start; i < end; ++i) {
+      graphic->bindGraphicsConstants(&i, 1, "IndexConstant");
+      graphic->drawInstanced(6);
+    }
+    if (context_index == quad_draw_thrad_count - 1) {
+      graphic->setSwapChainToPresetState(
+          renderer.getSwapChainBuffer(swap_chain_index));
+    }
+  };
+  uint32_t offset =
+      (quad_count + (quad_draw_thrad_count - 1)) / quad_draw_thrad_count;
   renderer.addLoopCallback(
       "render loop",
       [&](Renderer &renderer,
           std::chrono::duration<long long, std::nano> const &delta,
           unsigned int swap_chain_index, unsigned long long const &frame) {
+        // uint32_t offset = 16;
+        uint32_t start = 0;
+        uint32_t end = offset;
+        for (uint32_t i = 0; i < quad_draw_thrad_count; ++i) {
+          graphic_contexts[swap_chain_index][i]
+              ->recordCommands<Context::GraphicsContext>(
+                  std::bind(context_record, std::placeholders::_1, i, start,
+                            end, swap_chain_index),
+                  true);
+          start += offset;
+          end += offset;
+          end = (std::min)(end, quad_count);
+        }
         std::vector<std::shared_ptr<Context::Context>> copy_contexts;
         {
           std::lock_guard<std::mutex> lock(queue_mutex);
@@ -171,8 +227,15 @@ int main() {
           }
         }
         if (copy_contexts.size()) {
-          copy_fence->waitComplete();
+
           renderer.submitContexts(copy_fence, copy_contexts);
+          renderer.waitFenceSubmitContexts(
+              copy_fence, graphics_fences[swap_chain_index],
+              submit_graphic_contexts[swap_chain_index]);
+        } else {
+
+          renderer.submitContexts(graphics_fences[swap_chain_index],
+                                  submit_graphic_contexts[swap_chain_index]);
         }
         renderer.presentSwapChain();
       });

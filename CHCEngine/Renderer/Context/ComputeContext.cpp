@@ -136,6 +136,34 @@ void ComputeContext::bindComputeResource(
   unsigned int slot_index = compute_layout_->getSlotIndex(slot_name);
   bindComputeResource(resource, slot_index, usage_index);
 }
+void ComputeContext::bindComputeConstants(const void *data,
+                                          uint32_t num_32bit_constant,
+                                          const std::string &slot_name,
+                                          uint32_t constant_offset) {
+  if (!compute_layout_) {
+    throw std::exception(
+        "Need to set compute bind layout first in this context");
+  }
+  unsigned int slot_index = compute_layout_->getSlotIndex(slot_name);
+  bindComputeConstants(data, slot_index, num_32bit_constant, constant_offset);
+}
+void ComputeContext::bindComputeConstants(const void *data,
+                                          uint32_t num_32bit_constant,
+                                          uint32_t slot_index,
+                                          uint32_t constant_offset) {
+  if (!compute_layout_) {
+    throw std::exception(
+        "Need to set compute bind layout first in this context");
+  }
+  auto total =
+      compute_layout_->getBindSlot(slot_index).formats_[0].resource_count_;
+  if (num_32bit_constant + constant_offset > total) {
+    throw std::exception("Bind Compute Constants bind too many constants or "
+                         "have too large offset");
+  }
+  context_command_->bindComputeConstants(data, slot_index, num_32bit_constant,
+                                         constant_offset);
+}
 void ComputeContext::setStaticUsageHeap() {
   context_command_->setStaticDescriptorHeap();
 }

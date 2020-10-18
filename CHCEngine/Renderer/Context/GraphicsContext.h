@@ -99,13 +99,19 @@ public:
           dummy_depth_texture,
       uint32_t depth_stencil_index = 0, bool write = true);
 
-  // unfinished, should also  bind the resrouce in the bind layout ,will add it
+  // unfinished, should also  bind the resource in the bind layout ,will add it
   // later
   void setGraphicsBindLayout(
       const std::shared_ptr<Pipeline::BindLayout> &bind_layout);
   void bindGraphicsResource(const std::shared_ptr<Resource::Resource> &resource,
                             const std::string &slot_name,
                             unsigned int usage_index = 0);
+  void bindGraphicsConstants(const void *data, uint32_t num_32bit_constant,
+                             const std::string &slot_name,
+                             uint32_t constant_offset = 0);
+  void bindGraphicsConstants(const void *data, uint32_t num_32bit_constant,
+                             uint32_t slot_index, uint32_t constant_offset = 0);
+
   void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &resource,
                            unsigned int slot_index);
   void bindGraphicsSampler(const std::shared_ptr<Sampler::Sampler> &sampler,

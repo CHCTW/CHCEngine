@@ -7,6 +7,7 @@
 
 #include "../D3D12Convert.h"
 #include "../D3D12Utilities.hpp"
+#include <unordered_set>
 
 namespace CHCEngine {
 namespace Renderer {
@@ -24,17 +25,23 @@ const static std::unordered_map<ShaderType, const char *> targetchars{
     {ShaderType::SHADER_TYPE_MESH, "ms_6_5"}};
 
 Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
-               ShaderType type, bool from_file)
+               ShaderType type, bool from_file,
+               const std::vector<std::string> &compute_root_constant_names)
     : entry_point_(entry_point), type_(type) {
   ComPtr<Blob> errors;
-
+  if (compute_root_constant_names.size() &&
+      type != ShaderType::SHADER_TYPE_COMPUTE) {
+    throw std::exception(
+        "Only compute shader can set root constant while loading shader!");
+  }
 #if defined(_DEBUG)
   // Enable better shader debugging with the graphics debugging tools.
-  UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION |
+  UINT compileFlags = D3DCOMPILE_DEBUG |
                       D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES |
                       D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
 #else
   UINT compileFlags = D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES |
+                      D3DCOMPILE_SKIP_OPTIMIZATION |
                       D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
 #endif
   if (!from_file) {
@@ -66,6 +73,8 @@ Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
 
   std::string name;
   unsigned int index = 0;
+  std::unordered_set<std::string> root_names_(
+      compute_root_constant_names.begin(), compute_root_constant_names.end());
   while (true) {
     D3D12_SHADER_INPUT_BIND_DESC inputdesc;
     inputdesc.Name = "";
@@ -82,6 +91,15 @@ Shader::Shader(std::string const &code_or_file, std::string const &entry_point,
           inputdesc.BindPoint,
           inputdesc.Space,
       };
+      if (root_names_.count(temp)) {
+        auto size = getConstantBufferSizeByName(temp);
+        if (size != 0) {
+          resource_bind_table_[temp].type_ =
+              BindType::BIND_TYPE_SIT_ROOT_CONSTANT;
+          resource_bind_table_[temp].resource_count_ = size / 4;
+          root_names_.erase(temp);
+        }
+      }
     } else {
       break;
     }
@@ -187,6 +205,26 @@ std::vector<BindFormat> Shader::getBindFormatsExclude(BindType types) const {
 bool Shader::hasFormat(const std::string &name) {
   return resource_bind_table_.count(name);
 }
+// size always has alignment with 32bytes
+uint32_t Shader::getConstantBufferSizeByName(const std::string &name) const {
+  if (!resource_bind_table_.count(name))
+    return 0;
+  if (resource_bind_table_.at(name).type_ != BindType::BIND_TYPE_SIT_CBUFFER)
+    return 0;
+  auto const_buffer = shader_reflection_->GetConstantBufferByName(name.c_str());
+
+  // probably can have more specific binding in future
+
+  D3D12_SHADER_BUFFER_DESC desc;
+  const_buffer->GetDesc(&desc);
+  /*for (uint32_t i = 0; i < desc.Variables; ++i) {
+    D3D12_SHADER_VARIABLE_DESC var_desc;
+    auto var = const_buffer->GetVariableByIndex(i);
+    var->GetDesc(&var_desc);
+
+  }*/
+  return desc.Size;
+}
 const std::unordered_map<std::string, InputFormat> &
 Shader::getInputTable() const {
   return input_table_;
@@ -220,20 +258,55 @@ std::vector<OutputFormat> Shader::getOutputTable() const {
 }
 void ShaderSet::updateResourceBindTable() {
   resource_bind_table_.clear();
+  uint32_t constant_count = 0;
+  std::unordered_set<std::string> temp(root_constant_names_);
   for (auto &shader : shader_set_) {
     for (auto &format : shader.second.getBindTable()) {
       // didn't appear we add it
       if (!resource_bind_table_.count(format.first)) {
         resource_bind_table_.emplace(format.first, format.second);
+        if (temp.count(format.first)) {
+          auto size = shader.second.getConstantBufferSizeByName(format.first);
+          if (size != 0) {
+            resource_bind_table_[format.first].type_ =
+                BindType::BIND_TYPE_SIT_ROOT_CONSTANT;
+            resource_bind_table_[format.first].resource_count_ = size / 4;
+            temp.erase(format.first);
+            ++constant_count;
+          }
+        }
       } else {
         resource_bind_table_[format.first].visiblity_ =
             ShaderType::SHADER_TYPE_ALL;
       }
     }
   }
+  if (temp.size()) {
+    std::string error("Have Invalid root constant name :");
+    for (auto &s : temp) {
+      error += " , ";
+      error += s;
+    }
+    throw std::exception(error.c_str());
+  }
 }
 ShaderSet::ShaderSet(const std::unordered_map<ShaderType, Shader> &shader_set)
     : shader_set_(shader_set) {
+  if (shader_set_.count(ShaderType::SHADER_TYPE_COMPUTE)) {
+    throw std::exception("Compute Shader can't add to shader set");
+  }
+  updateResourceBindTable();
+}
+ShaderSet::ShaderSet(const std::vector<Shader> &shader_set,
+                     const std::vector<std::string> &root_constants_names)
+    : root_constant_names_(root_constants_names.begin(),
+                           root_constants_names.end()) {
+  addAsVector(shader_set);
+}
+ShaderSet::ShaderSet(const std::unordered_map<ShaderType, Shader> &shader_set,
+                     const std::vector<std::string> &root_constants_names)
+    : root_constant_names_(root_constants_names.begin(),
+                           root_constants_names.end()) {
   if (shader_set_.count(ShaderType::SHADER_TYPE_COMPUTE)) {
     throw std::exception("Compute Shader can't add to shader set");
   }

@@ -55,6 +55,11 @@ public:
   void bindComputeResource(const std::shared_ptr<Resource::Resource> &resource,
                            const std::string &slot_name,
                            unsigned int usage_index = 0);
+  void bindComputeConstants(const void *data, uint32_t num_32bit_constant,
+                            const std::string &slot_name,
+                            uint32_t constant_offset = 0);
+  void bindComputeConstants(const void *data, uint32_t num_32bit_constant,
+                            uint32_t slot_index, uint32_t constant_offset = 0);
   void setStaticUsageHeap();
   void dispatch(unsigned int x, unsigned int y, unsigned int z);
   void

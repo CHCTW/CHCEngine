@@ -263,6 +263,36 @@ void GraphicsContext::bindGraphicsResource(
   bindGraphicsResource(resource, slot_index, usage_index);
 }
 
+void GraphicsContext::bindGraphicsConstants(const void *data,
+                                            uint32_t num_32bit_constant,
+                                            const std::string &slot_name,
+                                            uint32_t constant_offset) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  unsigned int slot_index = graphics_layout_->getSlotIndex(slot_name);
+  bindGraphicsConstants(data, slot_index, num_32bit_constant, constant_offset);
+}
+
+void GraphicsContext::bindGraphicsConstants(const void *data,
+                                            uint32_t num_32bit_constant,
+                                            uint32_t slot_index,
+                                            uint32_t constant_offset) {
+  if (!graphics_layout_) {
+    throw std::exception(
+        "Need to set graphics bind layout first in this context");
+  }
+  auto total =
+      graphics_layout_->getBindSlot(slot_index).formats_[0].resource_count_;
+  if (num_32bit_constant + constant_offset > total) {
+    throw std::exception("Bind Graphics Constants bind too many constants or "
+                         "have too large offset");
+  }
+  context_command_->bindGraphicsConstants(data, slot_index, num_32bit_constant,
+                                          constant_offset);
+}
+
 void GraphicsContext::bindGraphicsSampler(
     const std::shared_ptr<Sampler::Sampler> &sampler, unsigned int slot_index) {
   if (!graphics_layout_) {

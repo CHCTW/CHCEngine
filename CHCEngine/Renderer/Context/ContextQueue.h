@@ -24,6 +24,10 @@ public:
       const std::vector<std::shared_ptr<ContextClass>> &submit_context,
       const std::shared_ptr<ContextFence> &context_fence) {
     std::lock_guard<std::mutex> lock(submit_mutex_);
+    for (int i = 0; i < submit_context.size(); ++i) {
+      submit_context[i]->waitRecordingDone();
+      submit_context[i]->closeContext();
+    }
     uint32_t total_commands_count = 0;
     for (uint32_t i = 1; i < submit_context.size(); ++i) {
       submit_context[i]->resolvePreviousContextStateAndSelfClear(
@@ -43,8 +47,6 @@ public:
         total_commands_count);
     uint32_t count = 0;
     for (int i = 0; i < submit_context.size(); ++i) {
-      submit_context[i]->waitRecordingDone();
-      submit_context[i]->closeContext();
       if (submit_context[i]->pending_transition_command_) {
 
         execute_commands[count] =
@@ -63,6 +65,10 @@ public:
       const std::vector<std::shared_ptr<ContextClass>> &submit_context,
       const std::shared_ptr<ContextFence> &context_fence) {
     std::lock_guard<std::mutex> lock(submit_mutex_);
+    for (int i = 0; i < submit_context.size(); ++i) {
+      submit_context[i]->waitRecordingDone();
+      submit_context[i]->closeContext();
+    }
     uint32_t total_commands_count = 0;
     for (uint32_t i = 1; i < submit_context.size(); ++i) {
       submit_context[i]->resolvePreviousContextStateAndSelfClear(
@@ -82,8 +88,6 @@ public:
         total_commands_count);
     uint32_t count = 0;
     for (int i = 0; i < submit_context.size(); ++i) {
-      submit_context[i]->waitRecordingDone();
-      submit_context[i]->closeContext();
       if (submit_context[i]->pending_transition_command_) {
 
         execute_commands[count] =

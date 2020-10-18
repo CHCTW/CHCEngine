@@ -79,8 +79,9 @@ void Context::resolvePreviousContextStateAndSelfClear(
       previours_context->context_resource_states_[rs.first] =
           std::move(rs.second);
     } else {
-      context_resource_states_[rs.first].addPreviousState(rs.first, rs.second,
-                                                          pending_transitons);
+      context_resource_states_[rs.first].addPreviousState(
+          rs.first, previours_context->context_resource_states_[rs.first],
+          pending_transitons);
     }
   }
   if (pending_transitons.size()) {

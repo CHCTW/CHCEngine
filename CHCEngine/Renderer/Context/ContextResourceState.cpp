@@ -166,9 +166,9 @@ void ContextSubResourceState::addPreviousState(
             resource.get(), previous_context_state.current_state_,
             first_transition_state_,
             ResourceTransitionFlag::RESOURCE_TRANSITION_FLAG_NONE, index});
-        previous_context_state.current_state_ = current_state_;
-        previous_context_state.previous_state_ = previous_state_;
       }
+      previous_context_state.current_state_ = current_state_;
+      previous_context_state.previous_state_ = previous_state_;
     } else {
       // when previous is tracked but no current,
       // just copy the state

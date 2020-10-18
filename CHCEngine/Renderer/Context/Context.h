@@ -87,6 +87,7 @@ protected:
   std::vector<UAVWait> uav_waits_;
   std::unordered_map<std::shared_ptr<Resource::Resource>, ContextResourceState>
       context_resource_states_;
+  // std::shared_ptr<Resource::SwapChainBuffer> present_swap_chain_;
   // copy context won't do resource tracking or either transition
   void updateContextResourceState(
       const std::shared_ptr<Resource::Resource> &resource,

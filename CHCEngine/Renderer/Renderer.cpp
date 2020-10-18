@@ -211,8 +211,8 @@ Renderer::Renderer()
     debub_controller->EnableDebugLayer();
     // SetEnableGPUD
     // debub_controller->
-    debub_controller->SetEnableGPUBasedValidation(true);
-    debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
+    // debub_controller->SetEnableGPUBasedValidation(true);
+    // debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
     // debub_controller->
     // Enable additional debug layers.
     dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;

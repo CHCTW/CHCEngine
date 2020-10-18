@@ -123,6 +123,9 @@ struct ContextCommand {
   void bindGraphicsResource(const Resource::Resource *resource,
                             unsigned int usage_index, unsigned int slot_index,
                             BindType bind_type, bool direct_bind);
+  void bindGraphicsConstants(const void *data, uint32_t slot_index,
+                             uint32_t constant_count,
+                             uint32_t constant_buffer_offset);
 
   void bindComputeResource(std::shared_ptr<Resource::Resource> resource,
                            unsigned int usage_index, unsigned int slot_index,
@@ -130,6 +133,9 @@ struct ContextCommand {
   void bindComputeResource(const Resource::Resource *resource,
                            unsigned int usage_index, unsigned int slot_index,
                            BindType bind_type, bool direct_bind);
+  void bindComputeConstants(const void *data, uint32_t slot_index,
+                            uint32_t constant_count,
+                            uint32_t constant_buffer_offset);
 
   void bindGraphicsSampler(std::shared_ptr<Sampler::Sampler> sampler,
                            unsigned int usage_index, unsigned int slot_index);
