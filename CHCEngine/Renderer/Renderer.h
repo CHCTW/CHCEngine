@@ -279,6 +279,7 @@ public:
   std::shared_ptr<Pipeline::Pipeline>
   getComputePipeline(const Pipeline::Shader &shader,
                      const std::shared_ptr<BindLayout> &bind_layout);
+  uint32_t getSwapChainIndex();
 };
 
 } // namespace Renderer

@@ -1,6 +1,7 @@
 #include "CHCEngine.h"
 #include "QuadHlslCompat.h"
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -8,7 +9,7 @@
 
 const static uint32_t width = 800;
 const static uint32_t height = 600;
-const static uint32_t quad_count = 1500;
+const static uint32_t quad_count = 5000;
 const static uint32_t quad_update_thrad_count = 14;
 const static uint32_t quad_draw_thrad_count = 14;
 
@@ -142,19 +143,20 @@ int main() {
       [&](std::chrono::duration<long long, std::nano> const &delta,
           uint64_t const &frame) {
         std::vector<std::thread> threads(quad_update_thrad_count);
-        uint32_t update_size = (quad_count + (quad_update_thrad_count - 1)) /
-                               quad_update_thrad_count;
+        uint32_t update_size = quad_count / quad_update_thrad_count;
+        uint32_t add = quad_count % quad_update_thrad_count;
         uint32_t start = 0;
-        uint32_t end = update_size;
         std::vector<std::shared_ptr<Context::Context>> copy_contexts;
         for (uint32_t i = 0; i < threads.size(); ++i) {
           auto copy = renderer.getCopyContext();
           copy_contexts.push_back(copy);
+          uint32_t end = start + update_size;
+          if (i < add)
+            ++end;
           threads[i] = std::thread(threadupdate, std::ref(quads), copy, start,
                                    end, delta.count());
-          start += update_size;
-          end += update_size;
-          end = (std::min)((uint32_t)quads.size(), end);
+          start = end;
+          // end = (std::min)((uint32_t)quads.size(), end);
         }
         for (uint32_t i = 0; i < threads.size(); ++i) {
           if (threads[i].joinable())
@@ -181,10 +183,12 @@ int main() {
   std::vector<std::vector<std::shared_ptr<Context::Context>>>
       submit_graphic_contexts(3u);
   std::vector<std::shared_ptr<Context::ContextFence>> graphics_fences(3u);
-  std::shared_ptr<Context::ContextFence> copy_fence;
-  copy_fence = renderer.getContextFence();
+  std::vector<std::shared_ptr<Context::ContextFence>> copy_fences(3u);
+  std::vector<std::vector<std::shared_ptr<Context::Context>>> copy_contexts(3u);
+
   for (uint32_t i = 0; i < 3; ++i) {
     graphics_fences[i] = renderer.getContextFence();
+    copy_fences[i] = renderer.getContextFence();
     for (uint32_t j = 0; j < quad_draw_thrad_count; ++j) {
       graphic_contexts[i].emplace_back(renderer.getGraphicsContext());
       submit_graphic_contexts[i].push_back(graphic_contexts[i].back());
@@ -198,7 +202,7 @@ int main() {
       if (context_index == 0) {
         graphic->clearRenderTarget(
             renderer.getSwapChainBuffer(swap_chain_index),
-            {0.1f, 0.6f, 0.7f, 0.0f});
+            {0.0f, 0.0f, 0.0f, 0.0f});
         graphic->clearDepthStencil(depth_buffer);
       }
       graphic->setPipeline(quad_pipeline);
@@ -224,45 +228,58 @@ int main() {
       std::cerr << "exception caught: " << e.what() << '\n';
     }
   };
-  uint32_t offset =
-      (quad_count + (quad_draw_thrad_count - 1)) / quad_draw_thrad_count;
+  auto before = std::chrono::high_resolution_clock::now();
+  auto deltas = std::chrono::high_resolution_clock::now() - before;
+  uint32_t offset = quad_count / quad_draw_thrad_count;
+  uint32_t plus = quad_count % quad_draw_thrad_count;
   renderer.addLoopCallback(
       "render loop",
       [&](Renderer &renderer,
           std::chrono::duration<long long, std::nano> const &delta,
           unsigned int swap_chain_index, unsigned long long const &frame) {
         uint32_t start = 0;
-        uint32_t end = offset;
         try {
-
+          // record next 2 frame record
+          // take advantage with multi threading record
+          // when submit context, it will wait until the
+          // record done, we can have cpu record and gpu work overlap
+          // put record before submit, by a little time since we might
+          // have to copy context from queue
+          uint32_t next = (swap_chain_index + 2u) % 3u;
           for (uint32_t i = 0; i < quad_draw_thrad_count; ++i) {
-            graphic_contexts[swap_chain_index][i]
-                ->recordCommands<Context::GraphicsContext>(
-                    std::bind(context_record, std::placeholders::_1, i, start,
-                              end, swap_chain_index),
-                    true);
-            start += offset;
-            end += offset;
-            end = (std::min)(end, quad_count);
+            uint32_t end = start + offset;
+            if (i < plus)
+              ++end;
+            graphic_contexts[next][i]->recordCommands<Context::GraphicsContext>(
+                std::bind(context_record, std::placeholders::_1, i, start, end,
+                          next),
+                true);
+            start = end;
           }
-          std::vector<std::shared_ptr<Context::Context>> copy_contexts;
+          // std::vector<std::shared_ptr<Context::Context>> copy_contexts;
+
           {
             std::lock_guard<std::mutex> lock(queue_mutex);
-            if (copy_updates_queue_.size()) {
-              copy_contexts = copy_updates_queue_.front();
+            while (copy_updates_queue_.size()) {
+              copy_contexts[next] = copy_updates_queue_.front();
               copy_updates_queue_.pop();
             }
           }
-          if (copy_contexts.size()) {
+          if (copy_contexts[swap_chain_index].size()) {
+            renderer.waitFenceSubmitContexts(graphics_fences[next],
+                                             copy_fences[swap_chain_index],
+                                             copy_contexts[swap_chain_index]);
+            copy_contexts[swap_chain_index].clear();
 
-            renderer.submitContexts(copy_fence, copy_contexts);
             renderer.waitFenceSubmitContexts(
-                copy_fence, graphics_fences[swap_chain_index],
+                copy_fences[swap_chain_index],
+                graphics_fences[swap_chain_index],
                 submit_graphic_contexts[swap_chain_index]);
-          } else {
 
-            renderer.submitContexts(graphics_fences[swap_chain_index],
-                                    submit_graphic_contexts[swap_chain_index]);
+          } else {
+            renderer.waitFenceSubmitContexts(
+                graphics_fences[next], graphics_fences[swap_chain_index],
+                submit_graphic_contexts[swap_chain_index]);
           }
           renderer.presentSwapChain();
         } catch (std::exception &e) {
@@ -270,8 +287,7 @@ int main() {
         }
       });
 
-  renderer.waitUntilWindowClose();
   window.waitUntilClose();
-
+  renderer.waitUntilWindowClose();
   return 0;
 }

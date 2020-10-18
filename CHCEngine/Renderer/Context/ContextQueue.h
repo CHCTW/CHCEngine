@@ -1,8 +1,9 @@
 #pragma once
+#include "../ClassName.h"
+
 #include <mutex>
 #include <wrl/client.h>
 
-#include "../ClassName.h"
 #include "Fence.h"
 #include "GraphicsContext.h"
 

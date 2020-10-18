@@ -211,8 +211,8 @@ Renderer::Renderer()
     debub_controller->EnableDebugLayer();
     // SetEnableGPUD
     // debub_controller->
-    debub_controller->SetEnableGPUBasedValidation(true);
-    debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
+    // debub_controller->SetEnableGPUBasedValidation(true);
+    // debub_controller->SetEnableSynchronizedCommandQueueValidation(true);
     // debub_controller->
     // Enable additional debug layers.
     dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
@@ -531,6 +531,9 @@ Renderer::getComputePipeline(const Pipeline::Shader &shader,
 
   return std::make_shared<Pipeline::Pipeline>(
       pipeline, Pipeline::PipelineType::PIPELINE_TYPE_COMPUTE, x, y, z);
+}
+uint32_t Renderer::getSwapChainIndex() {
+  return swap_chain_->GetCurrentBackBufferIndex();
 }
 } // namespace Renderer
 } // namespace CHCEngine

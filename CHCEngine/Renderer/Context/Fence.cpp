@@ -4,6 +4,7 @@
 #include "../D3D12Utilities.hpp"
 #include "Command.h"
 #include "FencePool.h"
+#include <chrono>
 #include <iostream>
 
 namespace CHCEngine {
@@ -13,6 +14,7 @@ void BaseFence::insertFenceSignal(
     const ComPtr<CommandQueue> &command_queue,
     std::vector<std::shared_ptr<ContextCommand>> &execute_commands) {
   std::lock_guard<std::mutex> lock(submit_mutex_);
+  // auto before = std::chrono::high_resolution_clock::now();
   waitFenceComplete();
   {
     std::lock_guard<std::mutex> lock(state_value_mutex_);
@@ -38,6 +40,8 @@ void BaseFence::insertFenceSignal(
   }
   ThrowIfFailed(command_queue->Signal(fence_.Get(), wait_value));
   waiting_thread_ = std::thread(&BaseFence::wait, this);
+  // auto delta = std::chrono::high_resolution_clock::now() - before;
+  // std::cout << "fence waiting time" << delta.count() / 1000000 << std::endl;
 }
 void BaseFence::completeCallback() {
   for (auto &command : executing_commands_) {
@@ -71,7 +75,7 @@ uint64_t BaseFence::getExpectedValue() {
 }
 std::pair<FenceState, uint64_t> BaseFence::getStateAndExpectedValue() {
   std::lock_guard<std::mutex> lock(state_value_mutex_);
-  return {state_,expected_value_};
+  return {state_, expected_value_};
 }
 void BaseFence::waitFenceComplete() {
   std::lock_guard<std::mutex> lock(wait_mutex_);

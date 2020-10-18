@@ -13,25 +13,25 @@ static std::function<void(MouseButton, Action)> mouse_button_callback_;
 static std::function<void(int, int)> window_size_callback_;
 static std::function<void(int, int)> framebuffer_size_callback_;
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action,
+void key_callback(GLFWwindow *window, int key, int scancode, int action,
                   int mods) {
   key_callback_(convertToKey(key), convertToAction(action));
 }
-void window_focus_callback(GLFWwindow* window, int focused) {
+void window_focus_callback(GLFWwindow *window, int focused) {
   focus_callback_();
 }
-void mouse_button_callback(GLFWwindow* window, int button, int action,
+void mouse_button_callback(GLFWwindow *window, int button, int action,
                            int mods) {
   mouse_button_callback_(convertToMouseButton(button), convertToAction(action));
 }
-void mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
+void mouse_move_callback(GLFWwindow *window, double xpos, double ypos) {
   mouse_move_callback_({static_cast<int>(xpos), static_cast<int>(ypos)});
 }
-void window_size_callback(GLFWwindow* window, int width, int height) {
+void window_size_callback(GLFWwindow *window, int width, int height) {
   window_size_callback_(width, height);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   framebuffer_size_callback_(width, height);
 }
 void Window::calculateDelta() {
@@ -49,15 +49,9 @@ void Window::calculateDelta() {
   previous_time_ = std::chrono::high_resolution_clock::now();
 }
 Window::Window()
-    : full_screen_(false),
-      width_(0),
-      height_(0),
-      frame_(0),
-      output_stream_(&std::cout),
-      delta_upper_bound_(dur(60000000)),
-      delta_lower_bound_(dur(0)),
-      delta_(0),
-      cursor_position_{0,0} {
+    : full_screen_(false), width_(0), height_(0), frame_(0),
+      output_stream_(&std::cout), delta_upper_bound_(dur(60000000)),
+      delta_lower_bound_(dur(0)), delta_(0), cursor_position_{0, 0} {
 
   adding_methods_[InputCallbackType::INPUT_CALLBACK_TYPE_KEY] =
       std::bind(&Window::addKeyCallBackFromQueue, this);
@@ -86,7 +80,7 @@ Window::~Window() {
   glfwDestroyWindow(glfw_window_);
   glfwTerminate();
 }
-void* Window::getWindow() { return glfw_window_; }
+void *Window::getWindow() { return glfw_window_; }
 void Window::resetInputState() {
   for (int key = Key::KEY_0; key != Key::KEY_TOTAL_COUNT; ++key) {
     input_state_.key[static_cast<Key>(key)] = Action::ACTION_RELEASE;
@@ -100,9 +94,9 @@ void Window::resetInputState() {
 void Window::openWindow(std::string name, unsigned int width,
                         unsigned int height, bool full_screen) {
 
-    // an interesting test when move Window to global variable, the 
-    // static variable actually call after Window(), thus will bind a empty
-    // function here, cause crash.
+  // an interesting test when move Window to global variable, the
+  // static variable actually call after Window(), thus will bind a empty
+  // function here, cause crash.
   key_callback_ = std::bind(&Window::keyStateUpdate, this,
                             std::placeholders::_1, std::placeholders::_2);
   focus_callback_ = std::bind(&Window::resetInputState, this);
@@ -123,14 +117,16 @@ void Window::openWindow(std::string name, unsigned int width,
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
-  void Window::waitUntilClose() {
-  if (loop_thread_.joinable()) loop_thread_.join();
+void Window::waitUntilClose() {
+  if (loop_thread_.joinable())
+    loop_thread_.join();
 }
 void Window::loop(std::string name, unsigned int width, unsigned int height,
                   bool full_screen) {
   auto currentTime = std::chrono::steady_clock::now();
   auto elapsed = std::chrono::steady_clock::now() - currentTime;
-  if (!glfwInit()) return;
+  if (!glfwInit())
+    return;
   glfw_window_ = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
   if (glfw_window_) {
     width_ = width;
@@ -158,13 +154,13 @@ void Window::loop(std::string name, unsigned int width, unsigned int height,
     }
   }
 }
-bool Window::conditionCheck(Condition const& condition) {
-  for (auto& key_condition : condition.key) {
+bool Window::conditionCheck(Condition const &condition) {
+  for (auto &key_condition : condition.key) {
     if (input_state_.key[key_condition.first] != key_condition.second) {
       return false;
     }
   }
-  for (auto& mouse_condition : condition.mouse) {
+  for (auto &mouse_condition : condition.mouse) {
     if (input_state_.mouse[mouse_condition.first] != mouse_condition.second) {
       return false;
     }
@@ -175,12 +171,13 @@ void Window::keyStateUpdate(Key key, Action action) {
   if (key == Key::KEY_ESCAPE && action == ACTION_PRESS)
     glfwSetWindowShouldClose(glfw_window_, GLFW_TRUE);
   input_state_.key[key] = action;
-  if (action == ACTION_PRESS) input_state_.key[key] = ACTION_REPEAT;
+  if (action == ACTION_PRESS)
+    input_state_.key[key] = ACTION_REPEAT;
   // KeyEvent key_event = { key,action };
   if (key_callback_names_.find(key) != key_callback_names_.end()) {
     if (key_callback_names_[key].find(action) !=
         key_callback_names_[key].end()) {
-      for (auto& callback : key_callback_names_[key][action]) {
+      for (auto &callback : key_callback_names_[key][action]) {
         if (conditionCheck(callback.second)) {
           key_callbacks_[callback.first].first(key, action);
         }
@@ -197,7 +194,7 @@ void Window::mouseStateUpdate(MouseButton mouse_button, Action action) {
       mouse_button_callback_names_.end()) {
     if (mouse_button_callback_names_[mouse_button].find(action) !=
         mouse_button_callback_names_[mouse_button].end()) {
-      for (auto& callback :
+      for (auto &callback :
            mouse_button_callback_names_[mouse_button][action]) {
         if (conditionCheck(callback.second)) {
           mouse_button_callbacks_[callback.first].first(mouse_button, action,
@@ -211,21 +208,21 @@ void Window::mouseMove(Vector position) {
   Vector offset = {position.X - cursor_position_.X,
                    position.Y - cursor_position_.Y};
   cursor_position_ = position;
-  for (auto& callback : mouse_move_callbacks_) {
+  for (auto &callback : mouse_move_callbacks_) {
     if (conditionCheck(callback.second.second)) {
       callback.second.first(cursor_position_, offset);
     }
   }
 }
 void Window::sizeChange(int width, int height) {
-  for (auto& callback : window_size_callbacks_) {
+  for (auto &callback : window_size_callbacks_) {
     callback.second(width, height);
   }
 }
 void Window::framebufferChange(int width, int height) {
   width_ = width;
   height_ = height;
-  for (auto& callback : framebuffer_size_callbacks_) {
+  for (auto &callback : framebuffer_size_callbacks_) {
     callback.second(width, height);
   }
 }
@@ -233,7 +230,7 @@ void Window::loopCalls() {
   for (int i = 0;
        i < static_cast<int>(LoopCallbackType::LOOP_CALLBACK_TYPE_COUNT); ++i) {
     auto type = static_cast<LoopCallbackType>(i);
-    for (auto& callback : loop_callbacks[type]) {
+    for (auto &callback : loop_callbacks[type]) {
       callback.second(delta_, frame_);
     }
   }
@@ -253,7 +250,7 @@ void Window::addKeyCallBackFromQueue() {
   std::lock_guard<std::mutex> lock(
       input_queue_mutex_[InputCallbackType::INPUT_CALLBACK_TYPE_KEY]);
   while (!key_adding_queue_.empty()) {
-    auto& callback = key_adding_queue_.front();
+    auto &callback = key_adding_queue_.front();
     key_callbacks_[std::get<0>(callback)] =
         std::pair<std::function<void(Key, Action)>, KeyEvent>(
             std::move(std::get<1>(callback)),
@@ -294,7 +291,7 @@ void Window::removeInputCallbackFromNames() {
        ++i) {
     InputCallbackType type = static_cast<InputCallbackType>(i);
     std::lock_guard<std::mutex> lock(input_remove_mutex_[type]);
-    for (auto& name : input_remove_names_[type]) {
+    for (auto &name : input_remove_names_[type]) {
       remove_methods_[type](name);
     }
     input_remove_names_[type].clear();
@@ -309,7 +306,7 @@ void Window::addInputCallbackFromQueue() {
   }
 }
 
-void Window::removeKeyCallBack(std::string& name) {
+void Window::removeKeyCallBack(std::string &name) {
   if (key_callbacks_.find(name) != key_callbacks_.end()) {
     Key key = key_callbacks_[name].second.first;
     Action action = key_callbacks_[name].second.second;
@@ -326,7 +323,7 @@ void Window::addMouseMoveCallbackFromQueue() {
   std::lock_guard<std::mutex> lock(
       input_queue_mutex_[InputCallbackType::INPUT_CALLBACK_TYPE_MOUSE_MOVE]);
   while (!mouse_move_adding_queue_.empty()) {
-    auto& callback = mouse_move_adding_queue_.front();
+    auto &callback = mouse_move_adding_queue_.front();
     mouse_move_callbacks_[std::get<0>(callback)] =
         std::make_pair(std::get<1>(callback), std::get<2>(callback));
     mouse_move_adding_queue_.pop_front();
@@ -346,7 +343,7 @@ bool Window::addMouseButtonCallback(std::string name,
   }
   return true;
 }
-void Window::removeMouseButtonCallback(std::string& name) {
+void Window::removeMouseButtonCallback(std::string &name) {
   if (mouse_button_callbacks_.find(name) != mouse_button_callbacks_.end()) {
     MouseButton mouse_button = mouse_button_callbacks_[name].second.first;
     Action action = mouse_button_callbacks_[name].second.second;
@@ -364,13 +361,13 @@ void Window::addWindowSizeCallbackFromQueue() {
   std::lock_guard<std::mutex> lock(
       input_queue_mutex_[InputCallbackType::INPUT_CALLBACK_TYPE_WINDOW_SIZE]);
   while (!window_size_adding_queue_.empty()) {
-    auto& callback = window_size_adding_queue_.front();
+    auto &callback = window_size_adding_queue_.front();
     window_size_callbacks_.emplace(std::get<0>(callback),
                                    std::get<1>(callback));
     window_size_adding_queue_.pop_front();
   };
 }
-void Window::removeWindowSizeCallback(std::string& name) {
+void Window::removeWindowSizeCallback(std::string &name) {
   window_size_callbacks_.erase(name);
 }
 void Window::addFrameBufferSizeCallbackFromQueue() {
@@ -378,13 +375,13 @@ void Window::addFrameBufferSizeCallbackFromQueue() {
       input_queue_mutex_
           [InputCallbackType::INPUT_CALLBACK_TYPE_FRAMEBUFFER_SIZE]);
   while (!framebuffer_size_adding_queue_.empty()) {
-    auto& callback = framebuffer_size_adding_queue_.front();
+    auto &callback = framebuffer_size_adding_queue_.front();
     framebuffer_size_callbacks_.emplace(std::get<0>(callback),
                                         std::get<1>(callback));
     framebuffer_size_adding_queue_.pop_front();
   };
 }
-void Window::removeFrameBufferSizeCallback(std::string& name) {
+void Window::removeFrameBufferSizeCallback(std::string &name) {
   framebuffer_size_callbacks_.erase(name);
 }
 void Window::addLoopCallbackFromQueue() {
@@ -393,7 +390,7 @@ void Window::addLoopCallbackFromQueue() {
     auto type = static_cast<LoopCallbackType>(i);
     std::lock_guard<std::mutex> lock(loop_queue_mutex_[type]);
     while (!loop_callback_adding_queue_[type].empty()) {
-      auto& callback = loop_callback_adding_queue_[type].front();
+      auto &callback = loop_callback_adding_queue_[type].front();
       loop_callbacks[type].emplace(std::get<0>(callback),
                                    std::get<1>(callback));
       loop_callback_adding_queue_[type].pop_front();
@@ -405,7 +402,7 @@ void Window::removeLoopCallbackFromNames() {
        i < static_cast<int>(LoopCallbackType::LOOP_CALLBACK_TYPE_COUNT); ++i) {
     LoopCallbackType type = static_cast<LoopCallbackType>(i);
     std::lock_guard<std::mutex> lock(loop_remove_mutex_[type]);
-    for (auto& name : loop_remove_names_[type]) {
+    for (auto &name : loop_remove_names_[type]) {
       loop_callbacks[type].erase(name);
     }
     loop_remove_names_[type].clear();
@@ -454,14 +451,14 @@ bool Window::addLoopCallback(std::string name, LoopCallback callback,
   }
   return false;
 }
-void Window::removeMouseMoveCallback(std::string& name) {
+void Window::removeMouseMoveCallback(std::string &name) {
   mouse_move_callbacks_.erase(name);
 }
 void Window::addMouseButtonCallbackFromQueue() {
   std::lock_guard<std::mutex> lock(
       input_queue_mutex_[InputCallbackType::INPUT_CALLBACK_TYPE_MOUSE_BUTTON]);
   while (!mouse_button_adding_queue_.empty()) {
-    auto& callback = mouse_button_adding_queue_.front();
+    auto &callback = mouse_button_adding_queue_.front();
     mouse_button_callbacks_[std::get<0>(callback)] = std::make_pair(
         std::get<1>(callback),
         std::make_pair(std::get<2>(callback), std::get<3>(callback)));
@@ -507,7 +504,7 @@ void Window::removeLoopCallback(std::string name) {
     }
   }
 }
-void Window::setMessageOutput(std::ostream& output_stream) {
+void Window::setMessageOutput(std::ostream &output_stream) {
   output_stream_ = &output_stream;
 }
 void Window::setFrameTimeUpperBound(long long nano_second) {
@@ -529,6 +526,6 @@ bool Window::checkLoopCallbackNameExist(std::string name) {
   std::lock_guard<std::mutex> lock(loop_callback_names_mutex_);
   return loop_callback_names_.find(name) != loop_callback_names_.end();
 }
-}  // namespace Window
+} // namespace Window
 
-}  // namespace CHCEngine
+} // namespace CHCEngine
