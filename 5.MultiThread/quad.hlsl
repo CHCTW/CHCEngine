@@ -12,6 +12,8 @@ struct PSInput
     float2 uv : PS_UV;
     float3 pcolor : COLOR;
 };
+
+
 PSInput VSMain(float2 position : POSITION, float2 uv : UV)
 {
     PSInput res;

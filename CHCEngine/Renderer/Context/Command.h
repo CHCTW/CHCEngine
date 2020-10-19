@@ -17,6 +17,7 @@ namespace Resource {
 class Resource;
 class Buffer;
 struct AllocateSpace;
+class DynamicBuffer;
 class Texture;
 } // namespace Resource
 namespace Sampler {
@@ -82,11 +83,14 @@ struct ContextCommand {
   ComPtr<PipelineState> pipeline_state_;
   std::unordered_map<std::shared_ptr<Resource::Resource>, ContextResourceState>
       context_resource_states_;
+  std::shared_ptr<Resource::DynamicBuffer> upload_buffer_;
   ContextCommand(unsigned long long id,
                  const ComPtr<CommandAllocator> &allocator,
                  const ComPtr<CommandList> &list,
-                 std::weak_ptr<ContextPoolBase> owner)
-      : id_(id), allocator_(allocator), list_(list), owner_(owner) {}
+                 std::weak_ptr<ContextPoolBase> owner,
+                 std::shared_ptr<Resource::DynamicBuffer> &&upload_buffer)
+      : id_(id), allocator_(allocator), list_(list), owner_(owner),
+        upload_buffer_(upload_buffer) {}
   void free();
   void reset();
   void close();
@@ -154,6 +158,7 @@ struct ContextCommand {
   void referenceTrackingResrouce(
       std::unordered_map<std::shared_ptr<Resource::Resource>,
                          ContextResourceState> &context_resource_states);
+  std::shared_ptr<Resource::AllocateSpace> &requestSpace(uint64_t byte_size);
 };
 } // namespace Context
 } // namespace Renderer

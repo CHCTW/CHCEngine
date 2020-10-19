@@ -2,7 +2,6 @@
 
 #include "ContextPool.h"
 
-
 #include "../D3D12Convert.h"
 #include "../D3D12Utilities.hpp"
 #include "../Resource/DynamicBuffer.h"
@@ -13,6 +12,7 @@ namespace Renderer {
 namespace Context {
 static unsigned int allocator_begin_size = 10;
 static unsigned int list_begin_size = 10;
+static const uint32_t default_dynamic_buffer_size_ = 128;
 template class ContextPool<GraphicsContext>;
 template class ContextPool<ComputeContext>;
 template class ContextPool<CopyContext>;
@@ -27,11 +27,12 @@ std::shared_ptr<ContextCommand> ContextPoolBase::getContextCommand() {
     ThrowIfFailed(device_->CreateCommandList(0, d3d12type, allocator.Get(),
                                              nullptr, IID_PPV_ARGS(&list)));
     unsigned long long size = pool_.size();
-    pool_.emplace_back(std::make_shared<ContextCommand>(size, allocator, list,
-                                                        weak_from_this()));
+    pool_.emplace_back(std::make_shared<ContextCommand>(
+        size, allocator, list, weak_from_this(),
+        std::make_shared<Resource::DynamicBuffer>(
+            device_, 1, default_dynamic_buffer_size_)));
     available_list_.emplace_front(size);
     // std::cout << "pool size " << pool_.size() << std::endl;
-
   }
   // this part need to consider, need to check the overhead for setting heap
   if (type_ == CommandType::COMMAND_TYPE_COMPUTE ||
@@ -40,7 +41,6 @@ std::shared_ptr<ContextCommand> ContextPoolBase::getContextCommand() {
     pool_[available_list_.front()]->setStaticDescriptorHeap();
   auto available_index = available_list_.front();
   available_list_.pop_front();
-
 
   return pool_[available_index];
 }

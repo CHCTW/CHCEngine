@@ -85,7 +85,7 @@ int main() {
       quad_count, sizeof(Position),
       {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV}},
       ResourceState::RESOURCE_STATE_COMMON,
-      Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC);
+      Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_STATIC);
   auto color_buffer = renderer.getBuffer(
       quad_count, sizeof(CircleColor),
       {{.usage_ = ResourceUsage::RESOURCE_USAGE_SRV}},
@@ -259,7 +259,7 @@ int main() {
           // when submit context, it will wait until the
           // record done,
           // we can have cpu record and gpu work overlap
-          // put record before submit, by a little time since we might
+          // put record before submit, buy a little time since we might
           // have to copy context from queue, high latency but low frame time
           // approach
           uint32_t next = (swap_chain_index + 2u) % 3u;

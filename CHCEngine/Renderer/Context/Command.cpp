@@ -106,7 +106,7 @@ void ContextCommand::updateBufferRegion(
   list_->CopyBufferRegion(buffer->gpu_resource_.Get(), offset,
                           allocate_space->buffer_.Get(),
                           allocate_space->gpu_offset_, data_byte_size);
-  allocated_spaces_.emplace_back(std::move(allocate_space));
+  // allocated_spaces_.emplace_back(std::move(allocate_space));
 }
 void ContextCommand::drawInstanced(unsigned int vertex_count,
                                    unsigned int instance_count,
@@ -332,9 +332,9 @@ void ContextCommand::updateTextureRegion(
                              nullptr);
   }
   // referenced_resources_.emplace_back(texture);
-  allocated_spaces_.insert(allocated_spaces_.end(),
+  /*allocated_spaces_.insert(allocated_spaces_.end(),
                            std::make_move_iterator(spaces.begin()),
-                           std::make_move_iterator(spaces.end()));
+                           std::make_move_iterator(spaces.end()));*/
 }
 void ContextCommand::dispatch(unsigned int x, unsigned int y, unsigned int z) {
   list_->Dispatch(x, y, z);
@@ -346,6 +346,11 @@ void ContextCommand::referenceTrackingResrouce(
   /*for (auto &p : context_resource_states) {
     referenced_resources_.emplace_back(p.first);
   }*/
+}
+std::shared_ptr<Resource::AllocateSpace> &
+ContextCommand::requestSpace(uint64_t byte_size) {
+  allocated_spaces_.emplace_back(upload_buffer_->reqeustSpace(byte_size));
+  return allocated_spaces_.back();
 }
 } // namespace Context
 } // namespace Renderer

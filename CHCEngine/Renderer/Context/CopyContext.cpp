@@ -33,14 +33,18 @@ void CopyContext::updateBuffer(const std::shared_ptr<Resource::Buffer> &buffer,
       Resource::ResourceUpdateType::RESOURCE_UPDATE_TYPE_DYNAMIC) {
     context_command_->updateBufferRegion(buffer, data, data_byte_size, offset);
   } else {
-    if (auto pool = pool_.lock()) {
+    auto space = context_command_->requestSpace(data_byte_size);
+    context_command_->updateBufferRegion(buffer, data, data_byte_size, offset,
+                                         space);
+    /*if (auto pool = pool_.lock()) {
       auto space = pool->getDynamicUploadBuffer()->reqeustSpace(data_byte_size);
+      // auto space = context_command_->requestSpace(data_byte_size);
       context_command_->updateBufferRegion(buffer, data, data_byte_size, offset,
                                            space);
     } else {
       throw std::exception(
           "Context Pool already deleted, can't get dynamic upload buffer");
-    }
+    }*/
   }
 }
 inline const char *
@@ -146,34 +150,35 @@ void CopyContext::updateTexture(
             char_data, row_count, inf.row_byte_sizes_[sub_index],
             inf.foot_prints_[sub_index]);
       } else {
-        if (pool) {
-          // allocate subresource size memory
-          unsigned long long require_space =
-              static_cast<unsigned long long>(row_count) *
-              static_cast<unsigned long long>(
-                  inf.foot_prints_[sub_index].Footprint.RowPitch);
-          // add more 512 byte since we need offset can be 512 byte algiment
-          allocate_spaces[copy_index] =
-              pool->getDynamicUploadBuffer()->reqeustSpace(
-                  require_space + texture_subresouce_offset_aligment);
-          char *copy_pont =
-              static_cast<char *>(allocate_spaces[copy_index]->copy_point_);
-          unsigned long long alignment_gpu_offset =
-              allocate_spaces[copy_index]->gpu_offset_;
-          alignment_gpu_offset = (alignment_gpu_offset +
-                                  (texture_subresouce_offset_aligment - 1)) &
-                                 ~(texture_subresouce_offset_aligment - 1);
-          copy_pont +=
-              (alignment_gpu_offset - allocate_spaces[copy_index]->gpu_offset_);
-          char_data = fillCopyLayoutAndCopy(
-              src_copy_layouts_[copy_index],
-              allocate_spaces[copy_index]->buffer_, alignment_gpu_offset,
-              copy_pont, char_data, row_count, inf.row_byte_sizes_[sub_index],
-              inf.foot_prints_[sub_index]);
-        } else {
+        // if (pool) {
+        // allocate subresource size memory
+        unsigned long long require_space =
+            static_cast<unsigned long long>(row_count) *
+            static_cast<unsigned long long>(
+                inf.foot_prints_[sub_index].Footprint.RowPitch);
+        // add more 512 byte since we need offset can be 512 byte algiment
+        // allocate_spaces[copy_index] =
+        //   pool->getDynamicUploadBuffer()->reqeustSpace(
+        //      require_space + texture_subresouce_offset_aligment);
+        allocate_spaces[copy_index] = context_command_->requestSpace(
+            require_space + texture_subresouce_offset_aligment);
+        char *copy_pont =
+            static_cast<char *>(allocate_spaces[copy_index]->copy_point_);
+        unsigned long long alignment_gpu_offset =
+            allocate_spaces[copy_index]->gpu_offset_;
+        alignment_gpu_offset =
+            (alignment_gpu_offset + (texture_subresouce_offset_aligment - 1)) &
+            ~(texture_subresouce_offset_aligment - 1);
+        copy_pont +=
+            (alignment_gpu_offset - allocate_spaces[copy_index]->gpu_offset_);
+        char_data = fillCopyLayoutAndCopy(
+            src_copy_layouts_[copy_index], allocate_spaces[copy_index]->buffer_,
+            alignment_gpu_offset, copy_pont, char_data, row_count,
+            inf.row_byte_sizes_[sub_index], inf.foot_prints_[sub_index]);
+        /*} else {
           throw std::exception("Context Pool already deleted, can't get "
                                "dynamic upload buffer");
-        }
+        }*/
       }
       ++copy_index;
     }
