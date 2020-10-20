@@ -1,5 +1,5 @@
 #include "RayMarchHLSLCompt.h"
-#define MAXIMUM_TRACE_STEP 250
+#define MAXIMUM_TRACE_STEP 500
 #define NORMAL_EPSILION 0.0001f
 float3 rayDirection(in float2 fragCoord, uint2 dim)
 {

@@ -1,7 +1,7 @@
 #define HLSL
 #include "RayMarch.hlsli"
 
-#define CLOSE_EPSLION 0.001
+#define CLOSE_EPSLION 0.0001
 
 RWTexture2D<float4> frame_buffer : register(u0);
 
@@ -41,7 +41,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         {
           
             
-            float value = pow(float(step) / MAXIMUM_TRACE_STEP, 2) * 10.0;
+            float value = pow(float(step) / MAXIMUM_TRACE_STEP, 2) * 30.0;
             frame_buffer[DTid.xy] = float4(value, value, value, value);
             
             //frame_buffer[DTid.xy] = float4(dir, 0.0);
