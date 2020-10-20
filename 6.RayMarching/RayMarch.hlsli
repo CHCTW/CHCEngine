@@ -7,6 +7,10 @@ float3 rayDirection(in float2 fragCoord, uint2 dim)
     
     xy = xy - float2(dim.x, dim.y) / 2.0;
     float z = float(dim.y) / tan(radians(90.0) / 2.0);
+    if (z == 0.0)
+    {
+        z = 1.0;
+    }
     return normalize(float3(xy, -z));
 }
 float signedDistanceSphereFunction(in float3 pos, in float3 center, float radius)
@@ -20,6 +24,6 @@ float3 estimateNormal(float3 p, in float3 center, float radius)
     return normalize(float3(
         signedDistanceSphereFunction(float3(p.x + NORMAL_EPSILION, p.y, p.z), center, radius) - signedDistanceSphereFunction(float3(p.x - NORMAL_EPSILION, p.y, p.z), center, radius),
         signedDistanceSphereFunction(float3(p.x, p.y + NORMAL_EPSILION, p.z), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y - NORMAL_EPSILION, p.z), center, radius),
-        signedDistanceSphereFunction(float3(p.x, p.y, p.z + NORMAL_EPSILION), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y, p.z - NORMAL_EPSILION), center, radius)
+        signedDistanceSphereFunction(float3(p.x, p.y, p.z - NORMAL_EPSILION), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y, p.z + NORMAL_EPSILION), center, radius)
     ));
 }
