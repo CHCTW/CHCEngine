@@ -7,8 +7,8 @@ using CHCEngine::Renderer::Pipeline::Shader;
 using CHCEngine::Renderer::Pipeline::ShaderSet;
 using CHCEngine::Renderer::Resource::Texture;
 using namespace CHCEngine::Renderer;
-uint32_t width = 800;
-uint32_t height = 600;
+uint32_t width = 1920;
+uint32_t height = 1080;
 
 int main() {
   CHCEngine::Window::Window window;

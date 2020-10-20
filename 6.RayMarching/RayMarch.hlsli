@@ -1,6 +1,8 @@
 #include "RayMarchHLSLCompt.h"
 #define MAXIMUM_TRACE_STEP 500
 #define NORMAL_EPSILION 0.0001f
+#define AO_EPSILION 0.001f
+#define AO_STEP 8
 float3 rayDirection(in float2 fragCoord, uint2 dim)
 {
     float2 xy = float2(fragCoord.x, dim.y - fragCoord.y);
@@ -19,11 +21,11 @@ float signedDistanceSphereFunction(in float3 pos, in float3 center, float radius
     return l - radius;
 }
 
-float3 estimateNormal(float3 p, in float3 center, float radius)
+float3 estimateNormalsignedDistanceSphere(float3 p, in float3 center, float radius)
 {
     return normalize(float3(
         signedDistanceSphereFunction(float3(p.x + NORMAL_EPSILION, p.y, p.z), center, radius) - signedDistanceSphereFunction(float3(p.x - NORMAL_EPSILION, p.y, p.z), center, radius),
         signedDistanceSphereFunction(float3(p.x, p.y + NORMAL_EPSILION, p.z), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y - NORMAL_EPSILION, p.z), center, radius),
-        signedDistanceSphereFunction(float3(p.x, p.y, p.z - NORMAL_EPSILION), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y, p.z + NORMAL_EPSILION), center, radius)
+        signedDistanceSphereFunction(float3(p.x, p.y, p.z + NORMAL_EPSILION), center, radius) - signedDistanceSphereFunction(float3(p.x, p.y, p.z - NORMAL_EPSILION), center, radius)
     ));
 }

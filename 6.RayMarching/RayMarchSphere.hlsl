@@ -6,10 +6,13 @@
 RWTexture2D<float4> frame_buffer : register(u0);
 
 [numthreads(16, 16, 1)]
+
+
+
 void CSMain(uint3 DTid : SV_DispatchThreadID)
 {
-    float3 center = float3(0, 0, -20);
-    float radius = 6.0f;
+    float3 center = float3(0.0, -2.0, -0.5);
+    float radius = 0.4f;
     uint2 dim;
     frame_buffer.GetDimensions(dim.x, dim.y);
     if (DTid.x < dim.x && DTid.y < dim.y)
@@ -20,11 +23,17 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         float3 pos = float3(0, 0, 0);
         uint step = 0;
         float dis = 0;
+        if (dir.x > 0)
+            center.x = 0.5;
+        else
+            center.x = -0.5;
         for (; step < MAXIMUM_TRACE_STEP; ++step)
         {
-            if (abs(pos.x) > dim.x || abs(pos.y) > dim.y || abs(pos.z) > 200)
+            if (abs(pos.z) > 2000)
                 break;
-            dis = signedDistanceSphereFunction(pos, center, radius);
+            float3 fold = pos;
+            fold.xz = fmod(fold.xz, float2(1.0, 1.0));
+            dis = signedDistanceSphereFunction(fold, center, radius);
             if (dis < CLOSE_EPSLION)
                 break;
             pos += dis * dir;
@@ -34,7 +43,9 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         
             frame_buffer[DTid.xy] = float4(0.3, 0.3, 0.3, 1.0);
             //float value = float(step) / MAXIMUM_TRACE_STEP;
-            float3 normal = estimateNormal(pos, center, radius);
+            float3 fold = pos;
+            fold.xz = fmod(fold.xz, float2(1.0, 1.0));
+            float3 normal = estimateNormalsignedDistanceSphere(fold, center, radius);
             frame_buffer[DTid.xy] = float4(normal, 0.0);
         }
         else
