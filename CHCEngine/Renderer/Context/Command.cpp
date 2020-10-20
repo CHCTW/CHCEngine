@@ -349,7 +349,7 @@ void ContextCommand::referenceTrackingResrouce(
 }
 std::shared_ptr<Resource::AllocateSpace> &
 ContextCommand::requestSpace(uint64_t byte_size) {
-  allocated_spaces_.emplace_back(upload_buffer_->reqeustSpace(byte_size));
+  allocated_spaces_.emplace_back(upload_buffer_->requestSpace(byte_size));
   return allocated_spaces_.back();
 }
 } // namespace Context

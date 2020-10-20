@@ -6,6 +6,8 @@
 #include "glfw/glfw3.h"
 namespace CHCEngine {
 namespace Window {
+// going to change to array of callbacks
+// maybe 16, which means support 16 windows
 static std::function<void(Key, Action)> key_callback_;
 static std::function<void()> focus_callback_;
 static std::function<void(Vector position)> mouse_move_callback_;

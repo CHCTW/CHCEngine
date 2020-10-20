@@ -4,9 +4,9 @@
 namespace CHCEngine {
 namespace Renderer {
 namespace Pipeline {
-struct Scissor : ScissorBase{
+struct Scissor : ScissorBase {
   Scissor(long right, long bottom) : ScissorBase{0, 0, right, bottom} {}
-
+  Scissor() {}
 };
 } // namespace Pipeline
 } // namespace Renderer

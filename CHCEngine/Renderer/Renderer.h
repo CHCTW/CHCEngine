@@ -19,6 +19,8 @@
 #include "DescriptorHeap.h"
 #include "Pipeline/BindLayout.h"
 #include "Pipeline/Pipeline.h"
+#include "Pipeline/Scissor.h"
+#include "Pipeline/Viewport.h"
 #include "Resource/DynamicBuffer.h"
 #include "Resource/ResourcePool.h"
 #include "Resource/SwapChainBuffer.h"

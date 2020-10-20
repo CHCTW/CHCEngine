@@ -5,6 +5,7 @@ namespace CHCEngine {
 namespace Renderer {
 namespace Pipeline {
 struct Viewport : public ViewportBase {
+  Viewport(){};
   Viewport(float width, float height)
       : ViewportBase{0.0f,
                      0.0f,

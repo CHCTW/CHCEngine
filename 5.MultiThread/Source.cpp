@@ -45,7 +45,7 @@ int main() {
 
   CHCEngine::Window::Window window;
   window.openWindow("Multi Thread", width, height);
-  // window.setFrameTimeLowerBound(30000000);
+  window.setFrameTimeLowerBound(15000000);
   // initial quads
   std::vector<Quad> quads(quad_count);
   std::vector<CircleColor> colors(quad_count);

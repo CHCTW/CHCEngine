@@ -164,7 +164,7 @@ DynamicBuffer::DynamicBuffer(ComPtr<Device> device,
                              unsigned long long default_size)
     : device_(device), alignment_(alignment), default_size_(default_size) {}
 std::shared_ptr<AllocateSpace>
-DynamicBuffer::reqeustSpace(unsigned long long size) {
+DynamicBuffer::requestSpace(unsigned long long size) {
   auto allocate = std::make_shared<AllocateSpace>();
   std::lock_guard<std::mutex> lock(dynamic_buffer_mutex_);
   if (ring_buffers_.empty()) {

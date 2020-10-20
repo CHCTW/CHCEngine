@@ -287,6 +287,7 @@ void Renderer::setSwapChain(Window::Window &window,
         buffer, swap_chain_range, n, size.X, size.Y);
     swap_chain_present_fence_[i] = fence_pool_->getContextFence();
   }
+
   loop_thread_ = std::thread(&Renderer::loop, this);
 }
 void Renderer::presentSwapChain() {
