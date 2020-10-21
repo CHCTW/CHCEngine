@@ -58,6 +58,13 @@ int main() {
   auto trace_pipeline =
       renderer.getComputePipeline(trace_shader, trace_bind_layout);
 
+  Shader tetrahedron_shader("RayMarchTetrahedron.hlsl", "CSMain",
+                            ShaderType::SHADER_TYPE_COMPUTE, true, {"Time"});
+  auto tetrahedron_bind_layout = renderer.getBindLayout(
+      tetrahedron_shader.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
+  auto tetrahedron_pipeline =
+      renderer.getComputePipeline(tetrahedron_shader, tetrahedron_bind_layout);
+
   std::vector<std::shared_ptr<CHCEngine::Renderer::ContextFence>>
       graphics_fences(3u);
   std::vector<std::shared_ptr<CHCEngine::Renderer::GraphicsContext>>
@@ -68,6 +75,7 @@ int main() {
   }
   CHCEngine::Renderer::Pipeline::Viewport viewport(0, 0, width, height);
   CHCEngine::Renderer::Pipeline::Scissor scissor(width, height);
+  auto start = std::chrono::system_clock::now();
   renderer.addLoopCallback(
       "RenderLoop",
       [&](CHCEngine::Renderer::Renderer &renderer,
@@ -75,8 +83,19 @@ int main() {
           unsigned int swap_chain_index, unsigned long long const &frame) {
         uint32_t wait_index = (swap_chain_index + 2) % 3u;
         uint32_t current = swap_chain_index;
-        graphics_contexts[current]->setPipeline(trace_pipeline);
-        graphics_contexts[current]->setComputeBindLayout(trace_bind_layout);
+        // graphics_contexts[current]->setPipeline(trace_pipeline);
+        // graphics_contexts[current]->setComputeBindLayout(trace_bind_layout);
+        graphics_contexts[current]->setPipeline(tetrahedron_pipeline);
+
+        graphics_contexts[current]->setComputeBindLayout(
+            tetrahedron_bind_layout);
+        auto now = std::chrono::system_clock::now();
+
+        std::chrono::duration<float> dur = now - start;
+
+        float second = dur.count();
+        graphics_contexts[current]->bindComputeConstants(&second, 1, "Time");
+
         graphics_contexts[current]->bindComputeResource(
             frame_buffer, "frame_buffer",
             static_cast<std::underlying_type_t<UsageIndex>>(
@@ -89,6 +108,7 @@ int main() {
         graphics_contexts[current]->setRenderTarget(
             renderer.getSwapChainBuffer(current));
         graphics_contexts[current]->setPipeline(full_screen_pipeline);
+
         graphics_contexts[current]->setGraphicsBindLayout(full_bind_layout);
         graphics_contexts[current]->bindGraphicsResource(
             frame_buffer, "frame_buffer",

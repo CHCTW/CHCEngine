@@ -45,6 +45,8 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
             //float value = float(step) / MAXIMUM_TRACE_STEP;
             float3 fold = pos;
             fold.xz = fmod(fold.xz, float2(1.0, 1.0));
+
+            
             float3 normal = estimateNormalsignedDistanceSphere(fold, center, radius);
             frame_buffer[DTid.xy] = float4(normal, 0.0);
         }
