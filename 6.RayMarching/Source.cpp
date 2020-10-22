@@ -65,6 +65,13 @@ int main() {
   auto tetrahedron_pipeline =
       renderer.getComputePipeline(tetrahedron_shader, tetrahedron_bind_layout);
 
+  Shader mandelbrot_shader("RayMarchMandelbrot.hlsl", "CSMain",
+                           ShaderType::SHADER_TYPE_COMPUTE, true, {"Time"});
+  auto mandelbrot_bind_layout = renderer.getBindLayout(
+      mandelbrot_shader.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
+  auto mandelbrot_pipeline =
+      renderer.getComputePipeline(mandelbrot_shader, mandelbrot_bind_layout);
+
   std::vector<std::shared_ptr<CHCEngine::Renderer::ContextFence>>
       graphics_fences(3u);
   std::vector<std::shared_ptr<CHCEngine::Renderer::GraphicsContext>>
@@ -85,14 +92,16 @@ int main() {
         uint32_t current = swap_chain_index;
         // graphics_contexts[current]->setPipeline(trace_pipeline);
         // graphics_contexts[current]->setComputeBindLayout(trace_bind_layout);
-        graphics_contexts[current]->setPipeline(tetrahedron_pipeline);
-
+        /*graphics_contexts[current]->setPipeline(tetrahedron_pipeline);
         graphics_contexts[current]->setComputeBindLayout(
-            tetrahedron_bind_layout);
+            tetrahedron_bind_layout);*/
+
+        graphics_contexts[current]->setPipeline(mandelbrot_pipeline);
+        graphics_contexts[current]->setComputeBindLayout(
+            mandelbrot_bind_layout);
+
         auto now = std::chrono::system_clock::now();
-
         std::chrono::duration<float> dur = now - start;
-
         float second = dur.count();
         graphics_contexts[current]->bindComputeConstants(&second, 1, "Time");
 

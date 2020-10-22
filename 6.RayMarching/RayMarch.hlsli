@@ -129,3 +129,10 @@ float GeometrySmith(float NV, float NL, float roughness)
     float ggx1 = GeometrySchlickGGX(NL, roughness);
     return ggx1 * ggx2;
 }
+float3 HUEtoRGB(in float H)
+{
+    float R = abs(H * 6 - 3) - 1;
+    float G = 2 - abs(H * 6 - 2);
+    float B = 2 - abs(H * 6 - 4);
+    return saturate(float3(R, G, B));
+}

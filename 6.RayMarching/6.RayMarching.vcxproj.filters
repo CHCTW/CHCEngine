@@ -29,6 +29,9 @@
     <FxCompile Include="RayMarchTetrahedron.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="RayMarchMandelbrot.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HLSLCompat.h">

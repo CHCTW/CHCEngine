@@ -43,7 +43,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
             float3 albedo = float3(0.2, 0.3, 0.6);
             float metallic = 0.9f;
 
-            float roughness = 0.3;
+            float roughness = 0.6;
             
             float3 F0 = float3(0.04, 0.04, 0.04);
             F0 = lerp(F0, albedo, float3(metallic, metallic, metallic)); // use metalic value to get F
@@ -87,16 +87,17 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
             
             }
             frame_buffer[DTid.xy]
-             = float4(albedo * 0.1, 0.0) +
-            float4(result, time);
+             = pow(abs(float4(albedo * 0.1, 0.0) +
+            float4(result, time)), 2.2);
             //frame_buffer[DTid.xy] =float4(normal, time);
             
 
         }
         else
         {
-            float value = pow(float(step) / MAXIMUM_TRACE_STEP, 2) * 60.0;
+            float value = pow(float(step) / MAXIMUM_TRACE_STEP, 2.2) * 60.0;
             frame_buffer[DTid.xy] = float4(value * 0.3, value, value, value);
         }
+
     }
 }
