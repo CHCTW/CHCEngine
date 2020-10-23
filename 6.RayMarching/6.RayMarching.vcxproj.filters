@@ -29,7 +29,10 @@
     <FxCompile Include="RayMarchTetrahedron.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="RayMarchMandelbrot.hlsl">
+    <FxCompile Include="RayMarchJuliaSet.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="RayMarchJulia4D.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

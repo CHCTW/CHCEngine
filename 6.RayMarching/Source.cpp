@@ -65,12 +65,19 @@ int main() {
   auto tetrahedron_pipeline =
       renderer.getComputePipeline(tetrahedron_shader, tetrahedron_bind_layout);
 
-  Shader mandelbrot_shader("RayMarchMandelbrot.hlsl", "CSMain",
-                           ShaderType::SHADER_TYPE_COMPUTE, true, {"Time"});
-  auto mandelbrot_bind_layout = renderer.getBindLayout(
-      mandelbrot_shader.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
-  auto mandelbrot_pipeline =
-      renderer.getComputePipeline(mandelbrot_shader, mandelbrot_bind_layout);
+  Shader julia_set_shader("RayMarchJuliaSet.hlsl", "CSMain",
+                          ShaderType::SHADER_TYPE_COMPUTE, true, {"Time"});
+  auto julia_set_bind_layout = renderer.getBindLayout(
+      julia_set_shader.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
+  auto julia_set_pipeline =
+      renderer.getComputePipeline(julia_set_shader, julia_set_bind_layout);
+
+  Shader julia_4d_shader("RayMarchJulia4D.hlsl", "CSMain",
+                         ShaderType::SHADER_TYPE_COMPUTE, true, {"Time"});
+  auto julia_4d_bind_layout = renderer.getBindLayout(
+      julia_4d_shader.getBindFormats(BindType::BIND_TYPE_SIT_ALL));
+  auto julia_4d_pipeline =
+      renderer.getComputePipeline(julia_4d_shader, julia_4d_bind_layout);
 
   std::vector<std::shared_ptr<CHCEngine::Renderer::ContextFence>>
       graphics_fences(3u);
@@ -96,9 +103,11 @@ int main() {
         graphics_contexts[current]->setComputeBindLayout(
             tetrahedron_bind_layout);*/
 
-        graphics_contexts[current]->setPipeline(mandelbrot_pipeline);
-        graphics_contexts[current]->setComputeBindLayout(
-            mandelbrot_bind_layout);
+        /*graphics_contexts[current]->setPipeline(julia_set_pipeline);
+        graphics_contexts[current]->setComputeBindLayout(julia_set_bind_layout);*/
+
+        graphics_contexts[current]->setPipeline(julia_4d_pipeline);
+        graphics_contexts[current]->setComputeBindLayout(julia_4d_bind_layout);
 
         auto now = std::chrono::system_clock::now();
         std::chrono::duration<float> dur = now - start;

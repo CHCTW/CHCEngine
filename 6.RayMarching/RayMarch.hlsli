@@ -1,9 +1,10 @@
 #include "RayMarchHLSLCompt.h"
 #define MAXIMUM_TRACE_STEP 500
-#define NORMAL_EPSILION 0.0001f
-#define AO_EPSILION 0.001f
+#define NORMAL_EPSILION 0.005f
+#define AO_EPSILION 0.01f
 #define AO_STEP 8
 #define TETRAHEDRON_ITERATION 12
+#define JULIA_ITERATION 12
 #define PI 3.14159
 float3 rayDirection(in float2 fragCoord, uint2 dim)
 {
@@ -135,4 +136,44 @@ float3 HUEtoRGB(in float H)
     float G = 2 - abs(H * 6 - 2);
     float B = 2 - abs(H * 6 - 4);
     return saturate(float3(R, G, B));
+}
+float singedDistanceFunction4DJulia(float3 pos, float4 c)
+{
+    float4 z = float4(pos, 0.0);
+    float mz2 = dot(z, z);
+    float md2 = 1.0;
+    float4 nz;
+    for (int i = 0; i < JULIA_ITERATION; ++i)
+    {
+        md2 *= 4.0 * mz2;
+        nz.x = z.x * z.x - dot(z.yzw, z.yzw);
+        nz.yzw = 2.0 * z.x * z.yzw;
+        z = nz + c;
+
+        mz2 = dot(z, z);
+        if (mz2 > 4.0)
+        {
+            break;
+        }
+    }
+    return 0.25 * sqrt(mz2 / md2) * log(mz2);
+}
+
+float3 estimateNormalsignedDistance4DJulia(float3 p, float4 c)
+{
+    return normalize(float3(
+        singedDistanceFunction4DJulia(float3(p.x + NORMAL_EPSILION, p.y, p.z), c) - singedDistanceFunction4DJulia(float3(p.x - NORMAL_EPSILION, p.y, p.z), c),
+        singedDistanceFunction4DJulia(float3(p.x, p.y + NORMAL_EPSILION, p.z), c) - singedDistanceFunction4DJulia(float3(p.x, p.y - NORMAL_EPSILION, p.z), c),
+        singedDistanceFunction4DJulia(float3(p.x, p.y, p.z + NORMAL_EPSILION), c) - singedDistanceFunction4DJulia(float3(p.x, p.y, p.z - NORMAL_EPSILION), c)
+    ));
+}
+float AO4DJulia(float3 p, float4 c, float3 normal)
+{
+    float total = 0.0;
+    for (int i = 0; i < AO_STEP; ++i)
+    {
+        total += ((i + 1) * AO_EPSILION - singedDistanceFunction4DJulia(p + normal * (i + 1) * AO_EPSILION, c)) / pow(2.0, i + 1);
+    }
+    return 1.0 - 10.0 * total;
+
 }

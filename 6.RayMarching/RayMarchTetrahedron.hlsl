@@ -28,7 +28,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         {
             if (abs(pos.z) > 2000)
                 break;
-            dis = signedDistanceFunctionTetrahedron(pos, size, scale, center, time);
+            dis = signedDistanceFunctionTetrahedron(pos, size, scale, center, time / 2.0);
             if (dis < CLOSE_EPSLION)
                 break;
             pos += dis * dir;
@@ -36,7 +36,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
         if (dis < CLOSE_EPSLION)
         {
             frame_buffer[DTid.xy] = float4(0.3, 0.3, 0.3, 1.0);
-            float3 normal = estimateNormalsignedDistanceTetrahedron(pos, size, scale, center, time);
+            float3 normal = estimateNormalsignedDistanceTetrahedron(pos, size, scale, center, time / 2.0);
             frame_buffer[DTid.xy] =
             float4(normal, 1.0);
             
