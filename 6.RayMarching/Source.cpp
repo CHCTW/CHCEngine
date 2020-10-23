@@ -1,3 +1,5 @@
+#include <atomic>
+
 #include "CHCEngine.h"
 
 #include "RayMarchHLSLCompt.h"
@@ -6,9 +8,15 @@ using CHCEngine::Renderer::Pipeline::Pipeline;
 using CHCEngine::Renderer::Pipeline::Shader;
 using CHCEngine::Renderer::Pipeline::ShaderSet;
 using CHCEngine::Renderer::Resource::Texture;
+using CHCEngine::Window::Action;
+using CHCEngine::Window::Condition;
+using CHCEngine::Window::Key;
+
 using namespace CHCEngine::Renderer;
+using namespace CHCEngine::Window;
 uint32_t width = 1920;
 uint32_t height = 1080;
+std::atomic<uint32_t> choose = 0;
 
 int main() {
   CHCEngine::Window::Window window;
@@ -90,6 +98,20 @@ int main() {
   CHCEngine::Renderer::Pipeline::Viewport viewport(0, 0, width, height);
   CHCEngine::Renderer::Pipeline::Scissor scissor(width, height);
   auto start = std::chrono::system_clock::now();
+
+  window.addKeyCallBack(
+      "Sphere", [&](Key key, Action action) { choose.store(0); }, Key::KEY_1,
+      Action::ACTION_PRESS);
+  window.addKeyCallBack(
+      "Tetrahedron", [&](Key key, Action action) { choose.store(1); },
+      Key::KEY_2, Action::ACTION_PRESS);
+  window.addKeyCallBack(
+      "Julia", [&](Key key, Action action) { choose.store(2); }, Key::KEY_3,
+      Action::ACTION_PRESS);
+  window.addKeyCallBack(
+      "Julia4D", [&](Key key, Action action) { choose.store(3); }, Key::KEY_4,
+      Action::ACTION_PRESS);
+
   renderer.addLoopCallback(
       "RenderLoop",
       [&](CHCEngine::Renderer::Renderer &renderer,
@@ -97,23 +119,34 @@ int main() {
           unsigned int swap_chain_index, unsigned long long const &frame) {
         uint32_t wait_index = (swap_chain_index + 2) % 3u;
         uint32_t current = swap_chain_index;
-        // graphics_contexts[current]->setPipeline(trace_pipeline);
-        // graphics_contexts[current]->setComputeBindLayout(trace_bind_layout);
-        /*graphics_contexts[current]->setPipeline(tetrahedron_pipeline);
-        graphics_contexts[current]->setComputeBindLayout(
-            tetrahedron_bind_layout);*/
+        uint32_t c = choose;
+        if (c == 0) {
+          graphics_contexts[current]->setPipeline(trace_pipeline);
+          graphics_contexts[current]->setComputeBindLayout(trace_bind_layout);
+        }
+        if (c == 1) {
+          graphics_contexts[current]->setPipeline(tetrahedron_pipeline);
+          graphics_contexts[current]->setComputeBindLayout(
+              tetrahedron_bind_layout);
+        }
+        if (c == 2) {
+          graphics_contexts[current]->setPipeline(julia_set_pipeline);
+          graphics_contexts[current]->setComputeBindLayout(
+              julia_set_bind_layout);
+        }
+        if (c == 3) {
+          graphics_contexts[current]->setPipeline(julia_4d_pipeline);
+          graphics_contexts[current]->setComputeBindLayout(
+              julia_4d_bind_layout);
+        }
 
-        /*graphics_contexts[current]->setPipeline(julia_set_pipeline);
-        graphics_contexts[current]->setComputeBindLayout(julia_set_bind_layout);*/
+        if (c > 0) {
 
-        graphics_contexts[current]->setPipeline(julia_4d_pipeline);
-        graphics_contexts[current]->setComputeBindLayout(julia_4d_bind_layout);
-
-        auto now = std::chrono::system_clock::now();
-        std::chrono::duration<float> dur = now - start;
-        float second = dur.count();
-        graphics_contexts[current]->bindComputeConstants(&second, 1, "Time");
-
+          auto now = std::chrono::system_clock::now();
+          std::chrono::duration<float> dur = now - start;
+          float second = dur.count();
+          graphics_contexts[current]->bindComputeConstants(&second, 1, "Time");
+        }
         graphics_contexts[current]->bindComputeResource(
             frame_buffer, "frame_buffer",
             static_cast<std::underlying_type_t<UsageIndex>>(
