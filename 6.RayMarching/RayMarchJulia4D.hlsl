@@ -16,7 +16,7 @@ void CSMain(uint3 DTid : SV_DispatchThreadID)
     frame_buffer.GetDimensions(dim.x, dim.y);
     float3 center = float3(0.0, 0.0, 5.0);
     float scale = 5;
-    float looptime = 5.0;
+    float looptime = 2.0;
     if (DTid.x < dim.x && DTid.y < dim.y)
     {
         float2 uv = DTid.xy;
